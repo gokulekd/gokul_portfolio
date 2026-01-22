@@ -416,6 +416,7 @@ class ProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<PortfolioController>();
+    final isMobile = ResponsiveHelper.isMobile(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
@@ -433,37 +434,51 @@ class ProjectCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             child: Image.network(
               imageUrl,
-              height: 200,
+              height: isMobile ? 180 : 200,
               width: double.infinity,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: isMobile ? 180 : 200,
+                  width: double.infinity,
+                  color: Colors.grey[200],
+                  child: const Icon(Icons.image_not_supported, size: 50),
+                );
+              },
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(isMobile ? 12 : 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   title,
                   style: GoogleFonts.manrope(
-                    fontSize: 18,
+                    fontSize: isMobile ? 16 : 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   description,
                   style: GoogleFonts.manrope(
-                    fontSize: 14,
+                    fontSize: isMobile ? 13 : 14,
                     color: Colors.grey[600],
                     height: 1.5,
                   ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 12),
                 Wrap(
@@ -487,6 +502,8 @@ class ProjectCard extends StatelessWidget {
                                   fontSize: 12,
                                   color: Colors.grey[700],
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           )
@@ -500,29 +517,50 @@ class ProjectCard extends StatelessWidget {
                         child: OutlinedButton.icon(
                           onPressed:
                               () => controller.launchUrlFromString(githubUrl!),
-                          icon: const Icon(FontAwesomeIcons.github, size: 16),
-                          label: const Text('GitHub'),
+                          icon: Icon(
+                            FontAwesomeIcons.github,
+                            size: isMobile ? 14 : 16,
+                          ),
+                          label: Text(
+                            'GitHub',
+                            style: TextStyle(
+                              fontSize: isMobile ? 12 : 14,
+                            ),
+                          ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.black87,
                             side: BorderSide(color: Colors.grey[300]!),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 8 : 12,
+                              vertical: isMobile ? 8 : 12,
+                            ),
                           ),
                         ),
                       ),
                     if (githubUrl != null && liveUrl != null)
-                      const SizedBox(width: 12),
+                      SizedBox(width: isMobile ? 8 : 12),
                     if (liveUrl != null)
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed:
                               () => controller.launchUrlFromString(liveUrl!),
-                          icon: const Icon(
+                          icon: Icon(
                             FontAwesomeIcons.externalLinkAlt,
-                            size: 16,
+                            size: isMobile ? 14 : 16,
                           ),
-                          label: const Text('Live Demo'),
+                          label: Text(
+                            'Live Demo',
+                            style: TextStyle(
+                              fontSize: isMobile ? 12 : 14,
+                            ),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF10B981),
                             foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 8 : 12,
+                              vertical: isMobile ? 8 : 12,
+                            ),
                           ),
                         ),
                       ),

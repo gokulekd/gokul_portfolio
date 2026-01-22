@@ -13,22 +13,28 @@ class FeaturedProjectsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<PortfolioController>();
     final isMobile = ResponsiveHelper.isMobile(context);
+    final isTablet = ResponsiveHelper.isTablet(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
+      padding: EdgeInsets.symmetric(
+        vertical: isMobile ? 40 : isTablet ? 60 : 80,
+        horizontal: isMobile ? 16 : isTablet ? 24 : 40,
+      ),
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Responsive layout: Column on mobile, Row on desktop
           isMobile
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       "Selected Work",
                       style: GoogleFonts.manrope(
-                        fontSize: 36,
+                        fontSize: isMobile ? 28 : 36,
                         fontWeight: FontWeight.w800,
                         color: Colors.black87,
                       ),
@@ -41,9 +47,9 @@ class FeaturedProjectsSection extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black87,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 20 : 24,
+                            vertical: isMobile ? 14 : 16,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
@@ -52,7 +58,7 @@ class FeaturedProjectsSection extends StatelessWidget {
                         child: Text(
                           "Become a client",
                           style: GoogleFonts.manrope(
-                            fontSize: 16,
+                            fontSize: isMobile ? 14 : 16,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -68,10 +74,12 @@ class FeaturedProjectsSection extends StatelessWidget {
                       child: Text(
                         "Selected Work",
                         style: GoogleFonts.manrope(
-                          fontSize: 48,
+                          fontSize: isTablet ? 40 : 48,
                           fontWeight: FontWeight.w800,
                           color: Colors.black87,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -80,9 +88,9 @@ class FeaturedProjectsSection extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black87,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isTablet ? 20 : 24,
+                          vertical: isTablet ? 14 : 16,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
@@ -91,14 +99,14 @@ class FeaturedProjectsSection extends StatelessWidget {
                       child: Text(
                         "Become a client",
                         style: GoogleFonts.manrope(
-                          fontSize: 16,
+                          fontSize: isTablet ? 14 : 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ],
                 ),
-          const SizedBox(height: 60),
+          SizedBox(height: isMobile ? 32 : isTablet ? 48 : 60),
 
           // Display first 2 projects as featured
           ListView.builder(
@@ -120,15 +128,15 @@ class FeaturedProjectsSection extends StatelessWidget {
             },
           ),
 
-          const SizedBox(height: 40),
+          SizedBox(height: isMobile ? 24 : 40),
 
           Center(
             child: OutlinedButton(
               onPressed: () => controller.changePage(3), // Go to Projects page
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 24 : 32,
+                  vertical: isMobile ? 14 : 16,
                 ),
                 side: const BorderSide(color: Colors.black87),
                 shape: RoundedRectangleBorder(
@@ -138,7 +146,7 @@ class FeaturedProjectsSection extends StatelessWidget {
               child: Text(
                 "View All Projects",
                 style: GoogleFonts.manrope(
-                  fontSize: 16,
+                  fontSize: isMobile ? 14 : 16,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
