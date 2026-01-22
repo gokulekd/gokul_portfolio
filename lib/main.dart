@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+// Responsive framework available but using manual MediaQuery approach for better control
+// import 'package:responsive_framework/responsive_framework.dart';
 
 import 'controllers/portfolio_controller.dart';
 import 'pages/about_page.dart';
@@ -30,6 +32,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.fade,
       transitionDuration: const Duration(milliseconds: 300),
+      // Responsive framework is configured via MediaQuery and LayoutBuilder
+      // All widgets use ResponsiveHelper for breakpoint detection
       theme: ThemeData(
         primarySwatch: Colors.lightGreen,
         primaryColor: const Color(0xFF82FF1F),
