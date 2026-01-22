@@ -248,6 +248,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "responsive_framework",
+      "rootUri": "file:///Users/gokulks/.pub-cache/hosted/pub.dev/responsive_framework-1.5.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "sky_engine",
       "rootUri": "file:///Users/gokulks/development/flutter/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",

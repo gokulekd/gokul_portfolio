@@ -14,6 +14,7 @@
         "get",
         "google_fonts",
         "lottie",
+        "responsive_framework",
         "url_launcher"
       ],
       "devDependencies": [
@@ -44,6 +45,14 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "responsive_framework",
+      "version": "1.5.1",
+      "dependencies": [
+        "collection",
+        "flutter"
       ]
     },
     {
