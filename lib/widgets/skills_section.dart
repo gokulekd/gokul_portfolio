@@ -195,96 +195,107 @@ class _SkillsSectionState extends State<SkillsSection>
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final isNarrow = constraints.maxWidth < 900;
+                  final maxContentWidth =
+                      isNarrow ? constraints.maxWidth : 1200.0;
+                  final horizontalPadding = isNarrow ? 24.0 : 80.0;
 
-                  final leftColumn = Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Section Title - Split into two lines
-                      RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: "My creative\n",
-                              style: GoogleFonts.manrope(
-                                fontSize: 56,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.black87,
-                                letterSpacing: -1,
-                                height: 1.1,
-                              ),
-                            ),
-                            TextSpan(
-                              text: "toolbox",
-                              style: GoogleFonts.manrope(
-                                fontSize: 56,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.black87,
-                                letterSpacing: -1,
-                                height: 1.1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      // Subtitle with green dot
-                      Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: AppColors.skillsGreen,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            "{02} - Tools & Skills",
-                            style: GoogleFonts.manrope(
-                              fontSize: 16,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-
-                  final rightColumn = Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ...List.generate(_skills.length, (index) {
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            bottom: index < _skills.length - 1 ? 20 : 0,
-                          ),
-                          child: _buildSkillCard(index),
-                        );
-                      }),
-                    ],
-                  );
-
-                  if (isNarrow) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  return Container(
+                    constraints: BoxConstraints(maxWidth: maxContentWidth),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        leftColumn,
+                        // Heading that fills top area
+                        SizedBox(
+                          width: double.infinity,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                "My Skills and Creative Toolbox",
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.manrope(
+                                  fontSize: isNarrow ? 40 : 64,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.black87,
+                                  letterSpacing: -1.5,
+                                  height: 1.1,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // Subtitle
+                              Text(
+                                "Technologies and tools I use to bring ideas to life",
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.manrope(
+                                  fontSize: isNarrow ? 16 : 20,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(height: 60),
-                        rightColumn,
+                        // Cards in 3x2 grid (3 left, 3 right)
+                        if (isNarrow)
+                          // Mobile: Single column
+                          Column(
+                            children: [
+                              ...List.generate(_skills.length, (index) {
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: index < _skills.length - 1 ? 20 : 0,
+                                  ),
+                                  child: _buildSkillCard(index),
+                                );
+                              }),
+                            ],
+                          )
+                        else
+                          // Desktop: 3 left, 3 right
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Left column - first 3 cards
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    ...List.generate(3, (index) {
+                                      return Padding(
+                                        padding: EdgeInsets.only(
+                                          bottom: index < 2 ? 20 : 0,
+                                        ),
+                                        child: _buildSkillCard(index),
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 24),
+                              // Right column - last 3 cards
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    ...List.generate(3, (index) {
+                                      return Padding(
+                                        padding: EdgeInsets.only(
+                                          bottom: index < 2 ? 20 : 0,
+                                        ),
+                                        child: _buildSkillCard(index + 3),
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
-                    );
-                  }
-
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 1, child: leftColumn),
-                      const SizedBox(width: 80),
-                      Expanded(flex: 2, child: rightColumn),
-                    ],
+                    ),
                   );
                 },
               ),
@@ -348,6 +359,7 @@ class _SkillsSectionState extends State<SkillsSection>
     final skill = _skills[index];
     final animation = _cardAnimations[index];
     final isVisible = _visibleCards.contains(index);
+    final percentage = skill['percentage'] as int;
 
     return AnimatedBuilder(
       animation: animation,
@@ -357,7 +369,8 @@ class _SkillsSectionState extends State<SkillsSection>
           child: Transform.translate(
             offset: Offset(0, isVisible ? (1 - animation.value) * 20 : 20),
             child: Container(
-              padding: const EdgeInsets.all(20),
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -369,93 +382,107 @@ class _SkillsSectionState extends State<SkillsSection>
                   ),
                 ],
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Icon Container (square)
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      skill['icon'] as IconData,
-                      color: skill['color'] as Color,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Skill name and description
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          skill['name'] as String,
-                          style: GoogleFonts.manrope(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
-                          ),
+                  Row(
+                    children: [
+                      // Icon Container (larger, more prominent)
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          skill['description'] as String,
-                          style: GoogleFonts.manrope(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w400,
-                          ),
+                        child: Icon(
+                          skill['icon'] as IconData,
+                          color: skill['color'] as Color,
+                          size: 32,
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Progress bar and percentage
-                  SizedBox(
-                    width: 200,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Stack(
+                      ),
+                      const SizedBox(width: 20),
+                      // Skill name and description
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              width: double.infinity,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(4),
+                            Text(
+                              skill['name'] as String,
+                              style: GoogleFonts.manrope(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
                               ),
                             ),
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 1500),
-                              curve: Curves.easeOutQuart,
-                              width:
-                                  isVisible
-                                      ? (200 *
-                                          (skill['percentage'] as int) /
-                                          100)
-                                      : 0,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: skill['color'] as Color,
-                                borderRadius: BorderRadius.circular(4),
+                            const SizedBox(height: 6),
+                            Text(
+                              skill['description'] as String,
+                              style: GoogleFonts.manrope(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${skill['percentage']}%',
-                          style: GoogleFonts.manrope(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: skill['color'] as Color,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // Progress bar with percentage pill
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final cardWidth = constraints.maxWidth;
+                      final fillWidth = cardWidth * (percentage / 100);
+
+                      return Stack(
+                        children: [
+                          // Background track
+                          Container(
+                            width: double.infinity,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                          // Animated fill with percentage pill
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 1500),
+                            curve: Curves.easeOutQuart,
+                            width: isVisible ? fillWidth : 0,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: skill['color'] as Color,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: skill['color'] as Color,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '$percentage%',
+                                  style: GoogleFonts.manrope(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
