@@ -6,6 +6,7 @@ import '../widgets/featured_projects_section.dart';
 import '../widgets/footer_section.dart';
 import '../widgets/hero_section_fixed.dart';
 import '../widgets/process_section.dart';
+import '../widgets/project_types_marquee.dart';
 import '../widgets/skills_section.dart';
 import '../widgets/stats_marquee.dart';
 
@@ -55,6 +56,9 @@ class _HomePageState extends State<HomePage> {
 
             // Featured Projects
             const FeaturedProjectsSection(),
+
+            // Project Types Marquee
+            const ProjectTypesMarquee(),
 
             // Process Section
             const ProcessSection(),
