@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
 import '../utils/responsive_helper.dart';
 
@@ -357,7 +358,7 @@ class CustomButton extends StatelessWidget {
     super.key,
     required this.text,
     required this.onPressed,
-    this.backgroundColor = const Color(0xFF82FF1F),
+    this.backgroundColor = AppColors.primaryGreen,
     this.textColor = Colors.black,
     this.icon,
   });
@@ -555,7 +556,7 @@ class ProjectCard extends StatelessWidget {
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
+                            backgroundColor: AppColors.darkGreen,
                             foregroundColor: Colors.white,
                             padding: EdgeInsets.symmetric(
                               horizontal: isMobile ? 8 : 12,
@@ -631,7 +632,7 @@ class ExperienceCard extends StatelessWidget {
                       style: GoogleFonts.manrope(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: const Color(0xFF10B981),
+                        color: AppColors.darkGreen,
                       ),
                     ),
                   ],
@@ -679,14 +680,14 @@ class ExperienceCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          color: AppColors.darkGreen.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           tech,
                           style: GoogleFonts.manrope(
                             fontSize: 12,
-                            color: const Color(0xFF10B981),
+                            color: AppColors.darkGreen,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

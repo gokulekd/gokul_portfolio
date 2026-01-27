@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
 import '../widgets/custom_widgets.dart';
 
@@ -51,7 +52,7 @@ class AboutPage extends StatelessWidget {
                     controller.personalInfo.value.title,
                     style: GoogleFonts.manrope(
                       fontSize: 18,
-                      color: const Color(0xFF10B981),
+                      color: AppColors.darkGreen,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -194,7 +195,7 @@ class AboutPage extends StatelessWidget {
                                   skill,
                                   style: GoogleFonts.manrope(
                                     fontSize: 14,
-                                    color: const Color(0xFF10B981),
+                                    color: AppColors.darkGreen,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -250,7 +251,7 @@ class AboutPage extends StatelessWidget {
                     children: [
                       Icon(
                         FontAwesomeIcons.envelope,
-                        color: const Color(0xFF10B981),
+                        color: AppColors.darkGreen,
                         size: 20,
                       ),
                       const SizedBox(width: 12),
@@ -270,7 +271,7 @@ class AboutPage extends StatelessWidget {
                     children: [
                       Icon(
                         FontAwesomeIcons.mapMarkerAlt,
-                        color: const Color(0xFF10B981),
+                        color: AppColors.darkGreen,
                         size: 20,
                       ),
                       const SizedBox(width: 12),

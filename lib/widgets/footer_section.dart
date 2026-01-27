@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../constants/colors.dart';
 import 'custom_widgets.dart';
 
 class FooterSection extends StatelessWidget {
@@ -32,7 +33,7 @@ class FooterSection extends StatelessWidget {
                   width: 8,
                   height: 8,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF82FF1F),
+                    color: AppColors.primaryGreen,
                     shape: BoxShape.circle,
                   ),
                 ),

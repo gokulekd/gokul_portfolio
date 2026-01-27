@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
 import '../widgets/custom_widgets.dart';
 
@@ -156,7 +157,7 @@ class ProjectsPage extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [const Color(0xFF10B981), const Color(0xFF059669)],
+                  colors: [AppColors.darkGreen, const Color(0xFF059669)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -187,7 +188,7 @@ class ProjectsPage extends StatelessWidget {
                     text: "Start a Project",
                     onPressed: controller.launchEmail,
                     backgroundColor: Colors.white,
-                    textColor: const Color(0xFF10B981),
+                    textColor: AppColors.darkGreen,
                     icon: Icons.rocket_launch,
                   ),
                 ],
@@ -203,7 +204,7 @@ class ProjectsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF10B981) : Colors.transparent,
+        color: isActive ? AppColors.darkGreen : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -227,7 +228,7 @@ class ProjectsPage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, color: const Color(0xFF10B981), size: 24),
+          Icon(icon, color: AppColors.darkGreen, size: 24),
           const SizedBox(height: 8),
           Text(
             value,

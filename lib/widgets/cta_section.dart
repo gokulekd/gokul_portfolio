@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
 import '../utils/responsive_helper.dart';
 
@@ -37,7 +38,7 @@ class CtaSection extends StatelessWidget {
             onPressed:
                 () => controller.changePage(5), // Navigate to Contact page
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF82FF1F),
+              backgroundColor: AppColors.primaryGreen,
               foregroundColor: Colors.black,
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 40 : 64,
