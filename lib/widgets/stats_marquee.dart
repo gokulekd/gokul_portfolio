@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../constants/colors.dart';
+
 class StatsMarquee extends StatefulWidget {
   const StatsMarquee({super.key});
 
@@ -93,7 +95,7 @@ class _StatsMarqueeState extends State<StatsMarquee>
             style: GoogleFonts.manrope(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF82FF1F),
+              color: AppColors.primaryGreen,
             ),
           ),
           const SizedBox(width: 12),

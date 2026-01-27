@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../constants/colors.dart';
+
 class ProcessSection extends StatelessWidget {
   const ProcessSection({super.key});
 
@@ -103,7 +105,7 @@ class ProcessSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF82FF1F).withOpacity(0.1),
+              color: AppColors.primaryGreen.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -111,7 +113,7 @@ class ProcessSection extends StatelessWidget {
               style: GoogleFonts.manrope(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF10B981), // Darker green for text
+                color: AppColors.darkGreen, // Darker green for text
               ),
             ),
           ),

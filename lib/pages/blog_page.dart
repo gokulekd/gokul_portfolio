@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
 import '../widgets/custom_widgets.dart';
 
@@ -54,7 +55,7 @@ class BlogPage extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [const Color(0xFF10B981), const Color(0xFF059669)],
+                  colors: [AppColors.darkGreen, const Color(0xFF059669)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -136,7 +137,7 @@ class BlogPage extends StatelessWidget {
                     text: "Read More",
                     onPressed: () => _showBlogPost(controller.blogPosts.first),
                     backgroundColor: Colors.white,
-                    textColor: const Color(0xFF10B981),
+                    textColor: AppColors.darkGreen,
                     icon: FontAwesomeIcons.arrowRight,
                   ),
                 ],
@@ -188,7 +189,7 @@ class BlogPage extends StatelessWidget {
                 children: [
                   Icon(
                     FontAwesomeIcons.envelope,
-                    color: const Color(0xFF10B981),
+                    color: AppColors.darkGreen,
                     size: 32,
                   ),
                   const SizedBox(height: 16),
@@ -224,7 +225,7 @@ class BlogPage extends StatelessWidget {
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: const BorderSide(
-                                color: Color(0xFF10B981),
+                                color: AppColors.darkGreen,
                               ),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
@@ -241,7 +242,7 @@ class BlogPage extends StatelessWidget {
                           Get.snackbar(
                             'Success',
                             'Thank you for subscribing!',
-                            backgroundColor: const Color(0xFF10B981),
+                            backgroundColor: AppColors.darkGreen,
                             colorText: Colors.white,
                           );
                         },
@@ -331,14 +332,14 @@ class BlogPage extends StatelessWidget {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withOpacity(0.1),
+                                color: AppColors.darkGreen.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Text(
                                 tag,
                                 style: GoogleFonts.manrope(
                                   fontSize: 12,
-                                  color: const Color(0xFF10B981),
+                                  color: AppColors.darkGreen,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
