@@ -114,8 +114,13 @@ class ProcessSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 80),
+      padding: EdgeInsets.symmetric(
+        vertical: 80,
+        horizontal: isMobile ? 24 : 0,
+      ),
       color: Colors.black,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -142,33 +147,167 @@ class ProcessSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            "How it works",
-            style: GoogleFonts.manrope(
-              fontSize: 60,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 0),
+            child: Text(
+              "How it works",
+              style: GoogleFonts.manrope(
+                fontSize: 60,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 60),
           Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1200),
-              child: Column(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 0),
+                child: Column(
+                  children: [
+                    ...List.generate(
+                      _steps.length,
+                      (index) => Column(
+                        children: [
+                          _buildProcessStep(_steps[index], context),
+                          if (index < _steps.length - 1)
+                            Container(
+                              margin: const EdgeInsets.symmetric(vertical: 32),
+                              height: 1,
+                              color: Colors.grey[800],
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProcessStep(ProcessStep step, BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
+    // Label tag with round container
+    final labelWidget = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.grey[300]!, width: 1),
+      ),
+      child: Text(
+        step.label,
+        style: GoogleFonts.manrope(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: Colors.black87,
+        ),
+      ),
+    );
+
+    // Number and slash widget
+    final numberWidget = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          "/",
+          style: GoogleFonts.manrope(fontSize: 20, color: Colors.grey[400]),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          step.number,
+          style: GoogleFonts.manrope(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF10B981),
+          ),
+        ),
+      ],
+    );
+
+    // Main content
+    final contentWidget = Padding(
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title with time estimate
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  step.title,
+                  style: GoogleFonts.manrope(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Row(
                 children: [
-                  ...List.generate(
-                    _steps.length,
-                    (index) => Column(
-                      children: [
-                        _buildProcessStep(_steps[index]),
-                        if (index < _steps.length - 1)
-                          Container(
-                            margin: const EdgeInsets.symmetric(vertical: 32),
-                            height: 1,
-                            color: Colors.grey[800],
+                  Icon(Icons.access_time, size: 18, color: Colors.grey[400]),
+                  const SizedBox(width: 4),
+                  Text(
+                    "/${step.timeEstimate}/",
+                    style: GoogleFonts.manrope(
+                      fontSize: 18,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Bullet points
+          ...step.items.map(
+            (item) => Padding(
+              padding: EdgeInsets.only(
+                bottom: 12,
+                left: isMobile ? 4 : 0,
+                right: isMobile ? 4 : 0,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "* ",
+                    style: GoogleFonts.manrope(
+                      fontSize: 20,
+                      color: const Color(0xFF10B981),
+                    ),
+                  ),
+                  Expanded(
+                    child: RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: item.key,
+                            style: GoogleFonts.manrope(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
-                      ],
+                          TextSpan(
+                            text: " ${item.description}",
+                            style: GoogleFonts.manrope(
+                              fontSize: 20,
+                              color: Colors.grey[300],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -178,131 +317,34 @@ class ProcessSection extends StatelessWidget {
         ],
       ),
     );
-  }
 
-  Widget _buildProcessStep(ProcessStep step) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Label tag
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: Colors.white, width: 1),
-          ),
-          child: Text(
-            step.label,
-            style: GoogleFonts.manrope(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+    if (isMobile) {
+      // Mobile layout: label on top
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [labelWidget, const SizedBox(width: 12), numberWidget],
             ),
-          ),
+            const SizedBox(height: 16),
+            contentWidget,
+          ],
         ),
-        const SizedBox(width: 8),
-        // Forward slash
-        Text(
-          "/",
-          style: GoogleFonts.manrope(fontSize: 20, color: Colors.grey[400]),
-        ),
-        const SizedBox(width: 8),
-        // Number in lime green
-        Text(
-          step.number,
-          style: GoogleFonts.manrope(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF10B981),
-          ),
-        ),
-        const SizedBox(width: 16),
-        // Main content
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Title with time estimate
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      step.title,
-                      style: GoogleFonts.manrope(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        size: 18,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        "/${step.timeEstimate}/",
-                        style: GoogleFonts.manrope(
-                          fontSize: 18,
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Bullet points
-              ...step.items.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "* ",
-                        style: GoogleFonts.manrope(
-                          fontSize: 20,
-                          color: const Color(0xFF10B981),
-                        ),
-                      ),
-                      Expanded(
-                        child: RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: item.key,
-                                style: GoogleFonts.manrope(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              TextSpan(
-                                text: " ${item.description}",
-                                style: GoogleFonts.manrope(
-                                  fontSize: 20,
-                                  color: Colors.grey[300],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+      );
+    } else {
+      // Desktop layout: label on the left
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          labelWidget,
+          const SizedBox(width: 8),
+          numberWidget,
+          const SizedBox(width: 16),
+          Expanded(child: contentWidget),
+        ],
+      );
+    }
   }
 }
