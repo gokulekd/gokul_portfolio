@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
             const CtaSection(),
 
             // Skills Section
-            const SkillsSection(),
+            SkillsSection(scrollController: _scrollController),
 
             // Featured Projects
             const FeaturedProjectsSection(),

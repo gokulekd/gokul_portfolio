@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
 import 'custom_widgets.dart';
 
@@ -558,7 +559,7 @@ class _HeroSectionState extends State<HeroSection>
                   ElevatedButton(
                     onPressed: _onButtonPressed,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF82FF1F),
+                      backgroundColor: AppColors.primaryGreen,
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,

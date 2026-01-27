@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
 import '../widgets/custom_widgets.dart';
 
@@ -81,7 +82,7 @@ class ContactPage extends StatelessWidget {
                       Get.snackbar(
                         'Location',
                         'Based in ${controller.personalInfo.value.location}',
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: AppColors.darkGreen,
                         colorText: Colors.white,
                       );
                     },
@@ -229,7 +230,7 @@ class ContactPage extends StatelessWidget {
                             Get.snackbar(
                               'Resume',
                               'Resume download feature coming soon!',
-                              backgroundColor: const Color(0xFF10B981),
+                              backgroundColor: AppColors.darkGreen,
                               colorText: Colors.white,
                             );
                           },
@@ -250,7 +251,7 @@ class ContactPage extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [const Color(0xFF10B981), const Color(0xFF059669)],
+                  colors: [AppColors.darkGreen, const Color(0xFF059669)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -292,7 +293,7 @@ class ContactPage extends StatelessWidget {
                       }
                     },
                     backgroundColor: Colors.white,
-                    textColor: const Color(0xFF10B981),
+                    textColor: AppColors.darkGreen,
                     icon: FontAwesomeIcons.paperPlane,
                   ),
                 ],
@@ -328,7 +329,7 @@ class ContactPage extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, color: const Color(0xFF10B981), size: 32),
+            Icon(icon, color: AppColors.darkGreen, size: 32),
             const SizedBox(height: 12),
             Text(
               title,
@@ -363,10 +364,10 @@ class ContactPage extends StatelessWidget {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
+              color: AppColors.darkGreen.withOpacity(0.1),
               borderRadius: BorderRadius.circular(30),
             ),
-            child: Icon(icon, color: const Color(0xFF10B981), size: 24),
+            child: Icon(icon, color: AppColors.darkGreen, size: 24),
           ),
           const SizedBox(height: 8),
           Text(

@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 // Responsive framework available but using manual MediaQuery approach for better control
 // import 'package:responsive_framework/responsive_framework.dart';
 
+import 'constants/colors.dart';
 import 'controllers/portfolio_controller.dart';
 import 'pages/about_page.dart';
 import 'pages/blog_page.dart';
@@ -36,10 +37,10 @@ class MyApp extends StatelessWidget {
       // All widgets use ResponsiveHelper for breakpoint detection
       theme: ThemeData(
         primarySwatch: Colors.lightGreen,
-        primaryColor: const Color(0xFF82FF1F),
+        primaryColor: AppColors.primaryGreen,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF82FF1F),
-          primary: const Color(0xFF82FF1F),
+          seedColor: AppColors.primaryGreen,
+          primary: AppColors.primaryGreen,
           brightness: Brightness.light,
         ),
         textTheme: GoogleFonts.manropeTextTheme(),
@@ -55,7 +56,7 @@ class MyApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF82FF1F),
+            backgroundColor: AppColors.primaryGreen,
             foregroundColor:
                 Colors.black, // Dark text on bright green looks better/standard
             shape: RoundedRectangleBorder(

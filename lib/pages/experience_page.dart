@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
 import '../widgets/custom_widgets.dart';
 
@@ -119,7 +120,7 @@ class ExperiencePage extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [const Color(0xFF10B981), const Color(0xFF059669)],
+                  colors: [AppColors.darkGreen, const Color(0xFF059669)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -150,7 +151,7 @@ class ExperiencePage extends StatelessWidget {
                     text: "Get In Touch",
                     onPressed: controller.launchEmail,
                     backgroundColor: Colors.white,
-                    textColor: const Color(0xFF10B981),
+                    textColor: AppColors.darkGreen,
                     icon: Icons.email,
                   ),
                 ],
@@ -173,7 +174,7 @@ class ExperiencePage extends StatelessWidget {
             height: 8,
             margin: const EdgeInsets.only(top: 8),
             decoration: const BoxDecoration(
-              color: Color(0xFF10B981),
+              color: AppColors.darkGreen,
               shape: BoxShape.circle,
             ),
           ),
