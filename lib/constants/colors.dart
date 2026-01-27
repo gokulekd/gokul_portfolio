@@ -12,7 +12,7 @@ class AppColors {
 
   /// Alternative green used in skills section
   /// RGB: (103, 209, 16) | Hex: #67D110
-  static const Color skillsGreen = Color.fromARGB(255, 103, 209, 16);
+  static const Color skillsGreen = Color.fromARGB(255, 86, 167, 20);
 
   /// Darker green used for text and accents
   /// Hex: #10B981
