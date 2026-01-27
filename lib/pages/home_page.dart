@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../widgets/custom_widgets.dart';
 import '../widgets/cta_section.dart';
+import '../widgets/custom_widgets.dart';
 import '../widgets/featured_projects_section.dart';
 import '../widgets/footer_section.dart';
 import '../widgets/hero_section_fixed.dart';
