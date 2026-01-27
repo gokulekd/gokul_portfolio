@@ -50,11 +50,11 @@ class _HomePageState extends State<HomePage> {
             // CTA Section
             const CtaSection(),
 
-            // Featured Projects
-            const FeaturedProjectsSection(),
-
             // Skills Section
             const SkillsSection(),
+
+            // Featured Projects
+            const FeaturedProjectsSection(),
 
             // Process Section
             const ProcessSection(),
