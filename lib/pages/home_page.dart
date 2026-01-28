@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../widgets/cta_section.dart';
 import '../widgets/contact_section.dart';
+import '../widgets/cta_section.dart';
 import '../widgets/custom_widgets.dart';
 import '../widgets/faq_section.dart';
 import '../widgets/featured_cards_section.dart';
@@ -78,7 +78,8 @@ class _HomePageState extends State<HomePage> {
 
             // Contact Section
             const ContactSection(),
-
+            // Stats Marquee
+            const StatsMarquee(),
             // Footer Section
             const FooterSection(),
           ],

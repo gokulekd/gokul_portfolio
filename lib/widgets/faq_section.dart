@@ -91,7 +91,7 @@ class _FAQSectionState extends State<FAQSection> {
                       width: 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: AppColors.darkGreen,
+                        color: AppColors.primaryGreen,
                         shape: BoxShape.circle,
                       ),
                     ),

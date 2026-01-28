@@ -524,9 +524,7 @@ class ProjectCard extends StatelessWidget {
                           ),
                           label: Text(
                             'GitHub',
-                            style: TextStyle(
-                              fontSize: isMobile ? 12 : 14,
-                            ),
+                            style: TextStyle(fontSize: isMobile ? 12 : 14),
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.black87,
@@ -551,12 +549,15 @@ class ProjectCard extends StatelessWidget {
                           ),
                           label: Text(
                             'Live Demo',
-                            style: TextStyle(
-                              fontSize: isMobile ? 12 : 14,
-                            ),
+                            style: TextStyle(fontSize: isMobile ? 12 : 14),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.darkGreen,
+                            backgroundColor: const Color.fromARGB(
+                              255,
+                              109,
+                              203,
+                              32,
+                            ),
                             foregroundColor: Colors.white,
                             padding: EdgeInsets.symmetric(
                               horizontal: isMobile ? 8 : 12,

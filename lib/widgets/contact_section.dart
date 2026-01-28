@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../constants/colors.dart';
 
 class SocialPlatform {
@@ -57,9 +58,7 @@ class ContactSection extends StatelessWidget {
         vertical: 80,
         horizontal: isMobile ? 24 : 0,
       ),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-      ),
+      decoration: BoxDecoration(color: Colors.grey[100]),
       child: Stack(
         children: [
           // Background geometric patterns
@@ -69,10 +68,7 @@ class ContactSection extends StatelessWidget {
             child: Opacity(
               opacity: 0.1,
               child: CustomPaint(
-                size: Size(
-                  isMobile ? 200 : 300,
-                  isMobile ? 200 : 300,
-                ),
+                size: Size(isMobile ? 200 : 300, isMobile ? 200 : 300),
                 painter: _GeometricPatternPainter(),
               ),
             ),
@@ -101,7 +97,7 @@ class ContactSection extends StatelessWidget {
                           width: 6,
                           height: 6,
                           decoration: BoxDecoration(
-                            color: AppColors.darkGreen,
+                            color: AppColors.primaryGreen,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -121,93 +117,93 @@ class ContactSection extends StatelessWidget {
                     // Social cards grid
                     isMobile
                         ? Column(
-                            children: [
-                              // Top row - 2 cards
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[0],
-                                      context,
-                                    ),
+                          children: [
+                            // Top row - 2 cards
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildSocialCard(
+                                    _platforms[0],
+                                    context,
                                   ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[1],
-                                      context,
-                                    ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildSocialCard(
+                                    _platforms[1],
+                                    context,
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[2],
-                                      context,
-                                    ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildSocialCard(
+                                    _platforms[2],
+                                    context,
                                   ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[3],
-                                      context,
-                                    ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildSocialCard(
+                                    _platforms[3],
+                                    context,
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              _buildGetInTouchCard(context),
-                            ],
-                          )
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildGetInTouchCard(context),
+                          ],
+                        )
                         : Column(
-                            children: [
-                              // Top row - 3 cards
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[0],
-                                      context,
-                                    ),
+                          children: [
+                            // Top row - 3 cards
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildSocialCard(
+                                    _platforms[0],
+                                    context,
                                   ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[1],
-                                      context,
-                                    ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildSocialCard(
+                                    _platforms[1],
+                                    context,
                                   ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[2],
-                                      context,
-                                    ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildSocialCard(
+                                    _platforms[2],
+                                    context,
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // Bottom row - 2 cards
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[3],
-                                      context,
-                                    ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            // Bottom row - 2 cards
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildSocialCard(
+                                    _platforms[3],
+                                    context,
                                   ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    flex: 2,
-                                    child: _buildGetInTouchCard(context),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  flex: 2,
+                                  child: _buildGetInTouchCard(context),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                   ],
                 ),
               ),
@@ -257,7 +253,7 @@ class ContactSection extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.darkGreen,
+                  color: AppColors.skillsGreen,
                   shape: BoxShape.circle,
                 ),
                 child: Center(child: platform.icon),
@@ -274,10 +270,7 @@ class ContactSection extends StatelessWidget {
       onTap: () {
         // Navigate to contact form or email
         // You can customize this action
-        final email = Uri(
-          scheme: 'mailto',
-          path: 'your-email@example.com',
-        );
+        final email = Uri(scheme: 'mailto', path: 'your-email@example.com');
         launchUrl(email);
       },
       borderRadius: BorderRadius.circular(16),
@@ -285,11 +278,11 @@ class ContactSection extends StatelessWidget {
         height: 140,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppColors.darkGreen,
+          color: AppColors.skillsGreen,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppColors.darkGreen.withOpacity(0.3),
+              color: AppColors.skillsGreen.withOpacity(0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -328,25 +321,28 @@ class ContactSection extends StatelessWidget {
 class _GeometricPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.grey[600]!
-      ..style = PaintingStyle.fill;
+    final paint =
+        Paint()
+          ..color = Colors.grey[600]!
+          ..style = PaintingStyle.fill;
 
     // Draw overlapping triangles/polygons
-    final path1 = Path()
-      ..moveTo(0, size.height * 0.3)
-      ..lineTo(size.width * 0.4, 0)
-      ..lineTo(size.width * 0.6, size.height * 0.5)
-      ..lineTo(size.width * 0.2, size.height)
-      ..close();
+    final path1 =
+        Path()
+          ..moveTo(0, size.height * 0.3)
+          ..lineTo(size.width * 0.4, 0)
+          ..lineTo(size.width * 0.6, size.height * 0.5)
+          ..lineTo(size.width * 0.2, size.height)
+          ..close();
     canvas.drawPath(path1, paint);
 
-    final path2 = Path()
-      ..moveTo(size.width * 0.3, size.height * 0.2)
-      ..lineTo(size.width * 0.7, size.height * 0.1)
-      ..lineTo(size.width, size.height * 0.4)
-      ..lineTo(size.width * 0.5, size.height * 0.8)
-      ..close();
+    final path2 =
+        Path()
+          ..moveTo(size.width * 0.3, size.height * 0.2)
+          ..lineTo(size.width * 0.7, size.height * 0.1)
+          ..lineTo(size.width, size.height * 0.4)
+          ..lineTo(size.width * 0.5, size.height * 0.8)
+          ..close();
     canvas.drawPath(path2, paint);
   }
 
@@ -370,11 +366,12 @@ class _TwitterIcon extends StatelessWidget {
 class _TwitterIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round;
+    final paint =
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5
+          ..strokeCap = StrokeCap.round;
 
     // Draw X shape
     canvas.drawLine(
@@ -399,21 +396,19 @@ class _GitHubIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(24, 24),
-      painter: _GitHubIconPainter(),
-    );
+    return CustomPaint(size: const Size(24, 24), painter: _GitHubIconPainter());
   }
 }
 
 class _GitHubIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
+    final paint =
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..strokeCap = StrokeCap.round;
 
     final centerX = size.width / 2;
     final centerY = size.height / 2;
@@ -456,16 +451,21 @@ class _LinkedInIcon extends StatelessWidget {
 class _LinkedInIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
+    final paint =
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.fill;
 
     // Draw "in" text (simplified as rectangles)
     // Letter "i"
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.width * 0.3, size.height * 0.2, size.width * 0.15,
-            size.height * 0.6),
+        Rect.fromLTWH(
+          size.width * 0.3,
+          size.height * 0.2,
+          size.width * 0.15,
+          size.height * 0.6,
+        ),
         const Radius.circular(2),
       ),
       paint,
@@ -479,16 +479,24 @@ class _LinkedInIconPainter extends CustomPainter {
     // Letter "n"
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.width * 0.55, size.height * 0.2, size.width * 0.15,
-            size.height * 0.6),
+        Rect.fromLTWH(
+          size.width * 0.55,
+          size.height * 0.2,
+          size.width * 0.15,
+          size.height * 0.6,
+        ),
         const Radius.circular(2),
       ),
       paint,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.width * 0.55, size.height * 0.2, size.width * 0.3,
-            size.height * 0.15),
+        Rect.fromLTWH(
+          size.width * 0.55,
+          size.height * 0.2,
+          size.width * 0.3,
+          size.height * 0.15,
+        ),
         const Radius.circular(2),
       ),
       paint,
@@ -505,19 +513,17 @@ class _MediumIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(24, 24),
-      painter: _MediumIconPainter(),
-    );
+    return CustomPaint(size: const Size(24, 24), painter: _MediumIconPainter());
   }
 }
 
 class _MediumIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
+    final paint =
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.fill;
 
     // Draw two overlapping circles (Medium logo)
     canvas.drawCircle(
@@ -540,12 +546,13 @@ class _MediumIconPainter extends CustomPainter {
 class _ArrowIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
+    final paint =
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round;
 
     // Draw curved arrow pointing bottom-right
     final path = Path();
@@ -566,9 +573,10 @@ class _ArrowIconPainter extends CustomPainter {
     canvas.drawPath(path, paint);
 
     // Arrow head
-    final arrowPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
+    final arrowPaint =
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.fill;
 
     final arrowPath = Path();
     arrowPath.moveTo(size.width * 0.8, size.height * 0.8);

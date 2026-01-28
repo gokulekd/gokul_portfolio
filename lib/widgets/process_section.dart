@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gokul_portfolio/constants/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ProcessStep {
@@ -140,7 +141,7 @@ class ProcessSection extends StatelessWidget {
                 width: 6,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981),
+                  color: AppColors.skillsGreen,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -226,7 +227,7 @@ class ProcessSection extends StatelessWidget {
           style: GoogleFonts.manrope(
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF10B981),
+            color: AppColors.skillsGreen,
           ),
         ),
       ],
