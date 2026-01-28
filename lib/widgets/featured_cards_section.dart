@@ -27,7 +27,7 @@ class FeaturedCardsSection extends StatelessWidget {
     FeaturedCard(
       number: "95+",
       description: "Percent customer satisfaction",
-      backgroundColor: AppColors.darkGreen,
+      backgroundColor: AppColors.primaryGreen,
       textColor: Color(0xFF374151), // Dark grey
       numberColor: Colors.white,
       icon: _SatisfactionIcon(),
@@ -140,9 +140,7 @@ class _SatisfactionIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: _ArcPainter(
-        color: const Color(0xFF65A30D), // Slightly lighter green
-      ),
+      painter: _ArcPainter(color: AppColors.primaryGreen),
       size: const Size(double.infinity, 80),
     );
   }
