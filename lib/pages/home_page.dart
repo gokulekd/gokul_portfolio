@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/cta_section.dart';
+import '../widgets/contact_section.dart';
 import '../widgets/custom_widgets.dart';
+import '../widgets/faq_section.dart';
+import '../widgets/featured_cards_section.dart';
 import '../widgets/featured_projects_section.dart';
 import '../widgets/footer_section.dart';
 import '../widgets/hero_section_fixed.dart';
@@ -9,6 +12,7 @@ import '../widgets/process_section.dart';
 import '../widgets/project_types_marquee.dart';
 import '../widgets/skills_section.dart';
 import '../widgets/stats_marquee.dart';
+import '../widgets/testimonials_section_new.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -62,6 +66,18 @@ class _HomePageState extends State<HomePage> {
 
             // Process Section
             const ProcessSection(),
+
+            // Featured Cards Section
+            const FeaturedCardsSection(),
+
+            // Testimonials Section
+            const TestimonialsSectionNew(),
+
+            // FAQ Section
+            const FAQSection(),
+
+            // Contact Section
+            const ContactSection(),
 
             // Footer Section
             const FooterSection(),
