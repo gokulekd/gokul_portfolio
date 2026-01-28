@@ -17,8 +17,18 @@ class FeaturedProjectsSection extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        vertical: isMobile ? 40 : isTablet ? 60 : 80,
-        horizontal: isMobile ? 16 : isTablet ? 24 : 40,
+        vertical:
+            isMobile
+                ? 40
+                : isTablet
+                ? 60
+                : 80,
+        horizontal:
+            isMobile
+                ? 16
+                : isTablet
+                ? 24
+                : 40,
       ),
       color: Colors.white,
       child: Column(
@@ -28,69 +38,28 @@ class FeaturedProjectsSection extends StatelessWidget {
           // Responsive layout: Column on mobile, Row on desktop
           isMobile
               ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "Selected Work",
-                      style: GoogleFonts.manrope(
-                        fontSize: isMobile ? 28 : 36,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black87,
-                      ),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Selected Work",
+                    style: GoogleFonts.manrope(
+                      fontSize: isMobile ? 28 : 36,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black87,
                     ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => controller.changePage(5),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black87,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 20 : 24,
-                            vertical: isMobile ? 14 : 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: Text(
-                          "Become a client",
-                          style: GoogleFonts.manrope(
-                            fontSize: isMobile ? 14 : 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        "Selected Work",
-                        style: GoogleFonts.manrope(
-                          fontSize: isTablet ? 40 : 48,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.black87,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    ElevatedButton(
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
                       onPressed: () => controller.changePage(5),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black87,
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(
-                          horizontal: isTablet ? 20 : 24,
-                          vertical: isTablet ? 14 : 16,
+                          horizontal: isMobile ? 20 : 24,
+                          vertical: isMobile ? 14 : 16,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
@@ -99,14 +68,62 @@ class FeaturedProjectsSection extends StatelessWidget {
                       child: Text(
                         "Become a client",
                         style: GoogleFonts.manrope(
-                          fontSize: isTablet ? 14 : 16,
+                          fontSize: isMobile ? 14 : 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                  ],
-                ),
-          SizedBox(height: isMobile ? 32 : isTablet ? 48 : 60),
+                  ),
+                ],
+              )
+              : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: Text(
+                      "Selected Work",
+                      style: GoogleFonts.manrope(
+                        fontSize: isTablet ? 40 : 48,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black87,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton(
+                    onPressed: () => controller.changePage(5),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black87,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 20 : 24,
+                        vertical: isTablet ? 14 : 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: Text(
+                      "Become a client",
+                      style: GoogleFonts.manrope(
+                        fontSize: isTablet ? 14 : 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+          SizedBox(
+            height:
+                isMobile
+                    ? 32
+                    : isTablet
+                    ? 48
+                    : 60,
+          ),
 
           // Display first 2 projects as featured
           ListView.builder(
