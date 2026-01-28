@@ -1,5 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../constants/colors.dart';
+
+class FAQItem {
+  final String number;
+  final String question;
+  final String answer;
+
+  const FAQItem({
+    required this.number,
+    required this.question,
+    required this.answer,
+  });
+}
 
 class FAQSection extends StatefulWidget {
   const FAQSection({super.key});
@@ -9,164 +22,172 @@ class FAQSection extends StatefulWidget {
 }
 
 class _FAQSectionState extends State<FAQSection> {
-  final List<bool> _faqExpandedStates = [false, false, false, false];
+  int? _expandedIndex;
+
+  static const List<FAQItem> _faqItems = [
+    FAQItem(
+      number: "01",
+      question: "What is your typical project timeline?",
+      answer:
+          "Project timelines vary depending on the scope and complexity. A typical website project takes 2-4 weeks from discovery to launch. This includes design, development, content integration, and testing phases. I'll provide a detailed timeline during our initial consultation based on your specific requirements.",
+    ),
+    FAQItem(
+      number: "02",
+      question: "Do you offer ongoing maintenance and support?",
+      answer:
+          "Yes, I offer ongoing maintenance and support packages to keep your website running smoothly. This includes regular updates, security patches, content updates, and technical support. We can discuss a maintenance plan that fits your needs and budget.",
+    ),
+    FAQItem(
+      number: "03",
+      question: "Can you work with existing brand guidelines?",
+      answer:
+          "Absolutely! I can work with your existing brand guidelines, including colors, fonts, logos, and design elements. I'll ensure your new website aligns perfectly with your brand identity while bringing fresh, modern design solutions to enhance your online presence.",
+    ),
+    FAQItem(
+      number: "04",
+      question: "How do you handle revisions and feedback?",
+      answer:
+          "I believe in collaborative design and development. During the project, I'll share work-in-progress updates and incorporate your feedback. Each project includes a set number of revision rounds to ensure we get everything just right. Additional revisions can be arranged if needed.",
+    ),
+  ];
+
+  void _toggleExpansion(int index) {
+    setState(() {
+      _expandedIndex = _expandedIndex == index ? null : index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
+      padding: EdgeInsets.symmetric(
+        vertical: 80,
+        horizontal: isMobile ? 24 : 0,
+      ),
+      color: Colors.white,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 48),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Section identifier
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "{05} – FAQ",
+                      style: GoogleFonts.manrope(
+                        fontSize: 18,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: AppColors.darkGreen,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Main title
+                Text(
+                  "Got Questions?",
+                  style: GoogleFonts.manrope(
+                    fontSize: isMobile ? 40 : 60,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.grey[900],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 60),
+                // FAQ Items
+                ...List.generate(
+                  _faqItems.length,
+                  (index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _buildFAQItem(_faqItems[index], index, isMobile),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFAQItem(FAQItem item, int index, bool isMobile) {
+    final isExpanded = _expandedIndex == index;
+
+    return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Colors.white, Colors.grey[50]!],
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
         ),
       ),
       child: Column(
         children: [
-          // Section identifier
-          Text(
-            "{05} — FAQ",
-            style: GoogleFonts.manrope(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[500],
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Main heading
-          Text(
-            "Got Questions?",
-            style: GoogleFonts.manrope(
-              fontSize: 48,
-              fontWeight: FontWeight.w800,
-              color: Colors.black87,
-              height: 1.1,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 60),
-
-          // FAQ items
-          _buildFAQSection(),
-        ],
-      ),
-    );
-  }
-
-  List<Map<String, String>> get _faqItems => [
-    {
-      'question': 'What services do you offer?',
-      'answer':
-          'I offer mobile app development using Flutter, UI/UX design, and consultation services. I specialize in creating cross-platform mobile applications that work seamlessly on both iOS and Android.',
-    },
-    {
-      'question': 'How long does a typical project take?',
-      'answer':
-          'Project timelines vary depending on complexity. A simple app might take 2-4 weeks, while a complex application could take 2-6 months. I provide detailed timelines during our initial consultation.',
-    },
-    {
-      'question': 'Do you work with clients remotely?',
-      'answer':
-          'Yes, I work with clients worldwide remotely. I use modern communication tools and project management platforms to ensure smooth collaboration regardless of location.',
-    },
-    {
-      'question': 'What is your pricing structure?',
-      'answer':
-          'My pricing is project-based and depends on the scope, complexity, and timeline. I offer competitive rates and provide detailed quotes after understanding your requirements. Contact me for a personalized quote.',
-    },
-  ];
-
-  Widget _buildFAQSection() {
-    return Column(
-      children: List.generate(_faqItems.length, (index) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          child: _buildFAQItem(index),
-        );
-      }),
-    );
-  }
-
-  Widget _buildFAQItem(int index) {
-    final faq = _faqItems[index];
-    final isExpanded = _faqExpandedStates[index];
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Question header
+          // Question row
           InkWell(
-            onTap: () {
-              setState(() {
-                _faqExpandedStates[index] = !_faqExpandedStates[index];
-              });
-            },
-            borderRadius: BorderRadius.circular(16),
+            onTap: () => _toggleExpansion(index),
+            borderRadius: BorderRadius.circular(12),
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               child: Row(
                 children: [
-                  // Question number
+                  // Number and question
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Text(
+                          "${item.number}/",
+                          style: GoogleFonts.manrope(
+                            fontSize: 18,
+                            color: Colors.grey[400],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            item.question,
+                            style: GoogleFonts.manrope(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[900],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Expand/collapse button
                   Container(
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00D4AA),
-                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Center(
-                      child: Text(
-                        '${index + 1}',
-                        style: GoogleFonts.manrope(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Question text
-                  Expanded(
-                    child: Text(
-                      faq['question']!,
-                      style: GoogleFonts.manrope(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
-                  // Expand/collapse icon
-                  AnimatedRotation(
-                    turns: isExpanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(
+                    child: AnimatedRotation(
+                      turns: isExpanded ? 0.125 : 0, // 45 degrees when expanded
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
                         Icons.add,
-                        color: Colors.black87,
+                        color: Colors.white,
                         size: 20,
                       ),
                     ),
@@ -175,27 +196,24 @@ class _FAQSectionState extends State<FAQSection> {
               ),
             ),
           ),
-          // Answer content
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            height: isExpanded ? null : 0,
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 300),
-              opacity: isExpanded ? 1.0 : 0.0,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                child: Text(
-                  faq['answer']!,
-                  style: GoogleFonts.manrope(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.grey[600],
-                    height: 1.6,
-                  ),
+          // Answer (expandable)
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Text(
+                item.answer,
+                style: GoogleFonts.manrope(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                  height: 1.6,
                 ),
               ),
             ),
+            crossFadeState: isExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 200),
           ),
         ],
       ),
