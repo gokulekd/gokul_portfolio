@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../controllers/portfolio_controller.dart';
+import '../routes/app_routes.dart';
 
 class PageAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -30,7 +31,9 @@ class PageAppBar extends StatelessWidget implements PreferredSizeWidget {
             onBackPressed ??
             () {
               try {
-                Get.find<PortfolioController>().changePage(0);
+                final controller = Get.find<PortfolioController>();
+                controller.changePage(0);
+                Get.offNamed(AppRoutes.home);
               } catch (_) {
                 Get.back();
               }

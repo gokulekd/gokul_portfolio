@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../controllers/portfolio_controller.dart';
+import '../routes/app_routes.dart';
 import '../utils/responsive_helper.dart';
 import 'custom_widgets.dart';
 
@@ -53,7 +54,10 @@ class FeaturedProjectsSection extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => controller.changePage(5),
+                      onPressed: () {
+                        controller.changePage(5);
+                        Get.offNamed(AppRoutes.contact);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black87,
                         foregroundColor: Colors.white,
@@ -94,7 +98,10 @@ class FeaturedProjectsSection extends StatelessWidget {
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton(
-                    onPressed: () => controller.changePage(5),
+                    onPressed: () {
+                        controller.changePage(5);
+                        Get.offNamed(AppRoutes.contact);
+                      },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black87,
                       foregroundColor: Colors.white,
@@ -149,7 +156,10 @@ class FeaturedProjectsSection extends StatelessWidget {
 
           Center(
             child: OutlinedButton(
-              onPressed: () => controller.changePage(3), // Go to Projects page
+              onPressed: () {
+                controller.changePage(3);
+                Get.offNamed(AppRoutes.projects);
+              },
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(
                   horizontal: isMobile ? 24 : 32,
