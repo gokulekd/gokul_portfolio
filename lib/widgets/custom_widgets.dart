@@ -5,7 +5,17 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
+import '../routes/app_routes.dart';
 import '../utils/responsive_helper.dart';
+
+void _navigateToPage(PortfolioController controller, Map<String, dynamic> item) {
+  final index = item['index'] as int;
+  final route = AppRoutes.indexToRoute[index];
+  if (route != null) {
+    controller.changePage(index);
+    Get.offNamed(route);
+  }
+}
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({super.key});
@@ -27,7 +37,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       backgroundColor: Colors.white,
-      elevation: 0,
+      elevation: 1,
+      scrolledUnderElevation: 1,
+      surfaceTintColor: Colors.transparent,
       automaticallyImplyLeading: false,
 
       toolbarHeight: 80.0,
@@ -46,38 +58,47 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                     ),
               )
               : null,
-      title: InkWell(
-        onTap: () => controller.changePage(0),
-        child: Padding(
-          padding: const EdgeInsets.only(left: 50),
-          child: ClipRect(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.center,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundColor: Colors.grey[300],
-                    backgroundImage: const AssetImage(
-                      'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
-                    ),
-                    onBackgroundImageError: (exception, stackTrace) {
-                      // Fallback
-                    },
+      title: Align(
+        alignment: Alignment.centerLeft,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 280),
+          child: InkWell(
+            onTap: () {
+              controller.changePage(0);
+              Get.offNamed(AppRoutes.home);
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(left: 24),
+              child: ClipRect(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundColor: Colors.grey[300],
+                        backgroundImage: const AssetImage(
+                          'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
+                        ),
+                        onBackgroundImageError: (exception, stackTrace) {
+                          // Fallback
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        controller.personalInfo.value.name,
+                        style: GoogleFonts.manrope(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    controller.personalInfo.value.name,
-                    style: GoogleFonts.manrope(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -99,7 +120,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                           isContactMe
                               ? ElevatedButton(
                                 onPressed: () {
-                                  controller.changePage(item['index'] as int);
+                                  _navigateToPage(controller, item);
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.black87,
@@ -127,7 +148,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   if (item['action'] == 'resume') {
                                     controller.launchResume();
                                   } else {
-                                    controller.changePage(item['index'] as int);
+                                    _navigateToPage(controller, item);
                                   }
                                 },
                                 child: Text(
@@ -185,6 +206,7 @@ class CustomDrawer extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 controller.changePage(0);
+                Get.offNamed(AppRoutes.home);
               },
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -256,7 +278,7 @@ class CustomDrawer extends StatelessWidget {
                       if (item['action'] == 'resume') {
                         controller.launchResume();
                       } else {
-                        controller.changePage(item['index'] as int);
+                        _navigateToPage(controller, item);
                       }
                     },
                   );

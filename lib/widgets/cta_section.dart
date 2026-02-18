@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
+import '../routes/app_routes.dart';
 import '../utils/responsive_helper.dart';
 
 class CtaSection extends StatelessWidget {
@@ -35,8 +36,10 @@ class CtaSection extends StatelessWidget {
           ),
           const SizedBox(height: 48),
           ElevatedButton(
-            onPressed:
-                () => controller.changePage(5), // Navigate to Contact page
+            onPressed: () {
+              controller.changePage(5);
+              Get.offNamed(AppRoutes.contact);
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryGreen,
               foregroundColor: Colors.black,

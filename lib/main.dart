@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lottie/lottie.dart';
+
 // Responsive framework available but using manual MediaQuery approach for better control
 // import 'package:responsive_framework/responsive_framework.dart';
 
@@ -73,88 +73,13 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: Colors.white,
       ),
-      initialRoute: AppRoutes.home,
+      initialRoute: AppRoutes.splash,
       getPages: AppRoutes.routes,
-      home: const SplashScreen(),
     );
   }
 }
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _navigateToMain();
-  }
-
-  _navigateToMain() async {
-    await Future.delayed(const Duration(seconds: 3), () {});
-    if (mounted) {
-      Get.off(
-        () => const MainWrapper(),
-        transition: Transition.fade,
-        duration: const Duration(milliseconds: 300),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Lottie Animation
-            SizedBox(
-              width: 400,
-              height: 400,
-              child: Lottie.asset(
-                'assets/lottie/loading.json',
-                fit: BoxFit.contain,
-                repeat: true,
-                animate: true,
-              ),
-            ),
-            const SizedBox(height: 30),
-            // App Title
-            Text(
-              'Gokul K S',
-              style: GoogleFonts.manrope(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Portfolio',
-              style: GoogleFonts.manrope(
-                fontSize: 18,
-                fontWeight: FontWeight.w300,
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 50),
-            // Loading indicator
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
+// MainWrapper is unused but kept for potential future use
 class MainWrapper extends StatelessWidget {
   const MainWrapper({super.key});
 
@@ -163,24 +88,18 @@ class MainWrapper extends StatelessWidget {
     final controller = Get.find<PortfolioController>();
 
     return Obx(() {
-      switch (controller.currentPageIndex.value) {
-        case 0:
-          return const HomePage();
-        case 1:
-          return const AboutPage();
-        case 2:
-          return const ExperiencePage();
-        case 3:
-          return const ProjectsPage();
-        case 4:
-          return const BlogPage();
-        case 5:
-          return const ContactPage();
-        case 6:
-          return const SkillsPage();
-        default:
-          return const HomePage();
-      }
+      final index = controller.currentPageIndex.value;
+      final page = switch (index) {
+        0 => const HomePage(),
+        1 => const AboutPage(),
+        2 => const ExperiencePage(),
+        3 => const ProjectsPage(),
+        4 => const BlogPage(),
+        5 => const ContactPage(),
+        6 => const SkillsPage(),
+        _ => const HomePage(),
+      };
+      return KeyedSubtree(key: ValueKey<int>(index), child: page);
     });
   }
 }
