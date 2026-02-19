@@ -16,18 +16,21 @@ class FooterSection extends StatelessWidget {
 
     return Container(
       color: const Color(0xFF0A0A0A), // Dark almost black background
-      padding: EdgeInsets.symmetric(
-        vertical: isNarrow ? 100 : 140,
-        horizontal: isNarrow ? 32 : 120,
-      ),
       child: Stack(
         children: [
           // Background decorative elements
           Positioned.fill(child: CustomPaint(painter: _BackgroundPainter())),
           // Main content
-          isNarrow
-              ? _buildMobileLayout(context, controller)
-              : _buildDesktopLayout(context, controller),
+          Padding(
+            padding: EdgeInsets.symmetric(
+              vertical: isNarrow ? 100 : 140,
+              horizontal: isNarrow ? 32 : 120,
+            ),
+            child:
+                isNarrow
+                    ? _buildMobileLayout(context, controller)
+                    : _buildDesktopLayout(context, controller),
+          ),
         ],
       ),
     );
@@ -46,6 +49,28 @@ class FooterSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Section identifier
+              Row(
+                children: [
+                  Text(
+                    "{08} – Footer",
+                    style: GoogleFonts.manrope(
+                      fontSize: 18,
+                      color: Colors.white.withOpacity(0.6),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGreen,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
               // Main Heading
               RichText(
                 text: TextSpan(
@@ -116,6 +141,28 @@ class FooterSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Section identifier
+        Row(
+          children: [
+            Text(
+              "{08} – Footer",
+              style: GoogleFonts.manrope(
+                fontSize: 18,
+                color: Colors.white.withOpacity(0.6),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: AppColors.primaryGreen,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
         // Main Heading
         RichText(
           text: TextSpan(
@@ -220,7 +267,7 @@ class FooterSection extends StatelessWidget {
                       // Link not found
                     }
                   }),
-                  const SizedBox(width: 24),
+                  const SizedBox(width: 16),
                   _buildSocialIcon(FontAwesomeIcons.dribbble, () {
                     try {
                       final dribbbleLink = controller
@@ -233,7 +280,7 @@ class FooterSection extends StatelessWidget {
                       // Link not found
                     }
                   }),
-                  const SizedBox(width: 24),
+                  const SizedBox(width: 16),
                   _buildSocialIcon(FontAwesomeIcons.linkedin, () {
                     try {
                       final linkedInLink = controller
@@ -349,64 +396,162 @@ class FooterSection extends StatelessWidget {
   }
 }
 
-// Custom painter for background decorative elements
+// Custom painter for background decorative elements - Enhanced Creative Style
 class _BackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint =
+    // 1. Ambient Glow (Subtle gradient behind text area)
+    final glowPaint =
         Paint()
-          ..color = Colors.grey[900]!.withOpacity(0.3)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.5;
+          ..shader = RadialGradient(
+            colors: [
+              AppColors.primaryGreen.withOpacity(0.12),
+              Colors.transparent,
+            ],
+            center: const Alignment(-0.8, -0.6), // Top-left bias
+            radius: 1.2,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
-    // Draw subtle curved lines
-    final path1 = Path();
-    path1.moveTo(size.width * 0.1, size.height * 0.2);
-    path1.quadraticBezierTo(
-      size.width * 0.3,
-      size.height * 0.1,
-      size.width * 0.5,
-      size.height * 0.2,
-    );
-    path1.quadraticBezierTo(
-      size.width * 0.7,
-      size.height * 0.3,
-      size.width * 0.9,
-      size.height * 0.2,
-    );
-    canvas.drawPath(path1, paint);
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), glowPaint);
 
-    final path2 = Path();
-    path2.moveTo(size.width * 0.2, size.height * 0.6);
-    path2.quadraticBezierTo(
-      size.width * 0.4,
-      size.height * 0.5,
-      size.width * 0.6,
-      size.height * 0.6,
-    );
-    path2.quadraticBezierTo(
-      size.width * 0.8,
-      size.height * 0.7,
-      size.width * 0.95,
-      size.height * 0.6,
-    );
+    final paint = Paint()..style = PaintingStyle.fill;
+
+    // 2. Top-Right Complex Fluid Shape
+    // Layer A: Larger, fainter backing
+    final path1a =
+        Path()
+          ..moveTo(size.width * 0.5, 0)
+          ..quadraticBezierTo(
+            size.width * 0.7,
+            size.height * 0.4,
+            size.width,
+            size.height * 0.5,
+          )
+          ..lineTo(size.width, 0)
+          ..close();
+
+    paint.shader = LinearGradient(
+      colors: [AppColors.tealGreen.withOpacity(0.08), Colors.transparent],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    canvas.drawPath(path1a, paint);
+
+    // Layer B: Sharper, brighter foreground blob
+    final path1b =
+        Path()
+          ..moveTo(size.width * 0.65, 0)
+          ..cubicTo(
+            size.width * 0.75,
+            size.height * 0.15,
+            size.width * 0.85,
+            size.height * 0.35,
+            size.width,
+            size.height * 0.3,
+          )
+          ..lineTo(size.width, 0)
+          ..close();
+
+    paint.shader = LinearGradient(
+      colors: [
+        AppColors.primaryGreen.withOpacity(0.25),
+        AppColors.skillsGreen.withOpacity(0.05),
+      ],
+      begin: Alignment.topRight,
+      end: Alignment.bottomLeft,
+    ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    canvas.drawPath(path1b, paint);
+
+    // 3. Bottom-Left Organic Wave
+    final path2 =
+        Path()
+          ..moveTo(0, size.height * 0.45)
+          ..cubicTo(
+            size.width * 0.15,
+            size.height * 0.5,
+            size.width * 0.3,
+            size.height * 0.75,
+            size.width * 0.5,
+            size.height,
+          )
+          ..lineTo(0, size.height)
+          ..close();
+
+    paint.shader = LinearGradient(
+      colors: [
+        AppColors.primaryGreen.withOpacity(0.15),
+        Colors.blue.withOpacity(0.08),
+      ],
+      begin: Alignment.bottomLeft,
+      end: Alignment.topRight,
+    ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawPath(path2, paint);
 
-    // Draw some subtle shapes
-    final shapePaint =
+    // 4. Creative Accents (Strokes & Circles)
+    final strokePaint =
         Paint()
-          ..color = Colors.grey[800]!.withOpacity(0.2)
-          ..style = PaintingStyle.fill;
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..shader = LinearGradient(
+            colors: [
+              Colors.white.withOpacity(0.1),
+              Colors.white.withOpacity(0.0),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
+    // Large decorative circle outline (Top Right)
     canvas.drawCircle(
-      Offset(size.width * 0.15, size.height * 0.3),
-      30,
-      shapePaint,
+      Offset(size.width * 0.85, size.height * 0.2),
+      80,
+      strokePaint,
+    );
+
+    // Floating Curve Line (Bottom)
+    final linePath =
+        Path()
+          ..moveTo(size.width * 0.1, size.height * 0.85)
+          ..quadraticBezierTo(
+            size.width * 0.3,
+            size.height * 0.8,
+            size.width * 0.4,
+            size.height * 0.95,
+          );
+    canvas.drawPath(linePath, strokePaint);
+
+    // 5. Particles (floating dots for detail)
+    final particlePaint = Paint()..style = PaintingStyle.fill;
+
+    // Large faint particle
+    particlePaint.color = AppColors.primaryGreen.withOpacity(0.1);
+    canvas.drawCircle(
+      Offset(size.width * 0.2, size.height * 0.6),
+      8,
+      particlePaint,
+    );
+
+    // Small bright particles
+    particlePaint.color = AppColors.primaryGreen.withOpacity(0.3);
+    canvas.drawCircle(
+      Offset(size.width * 0.75, size.height * 0.1),
+      3,
+      particlePaint,
     );
     canvas.drawCircle(
-      Offset(size.width * 0.85, size.height * 0.7),
-      40,
-      shapePaint,
+      Offset(size.width * 0.92, size.height * 0.45),
+      2.5,
+      particlePaint,
+    );
+    canvas.drawCircle(
+      Offset(size.width * 0.55, size.height * 0.85),
+      2,
+      particlePaint,
+    );
+    canvas.drawCircle(
+      Offset(size.width * 0.05, size.height * 0.3),
+      2,
+      particlePaint,
     );
   }
 

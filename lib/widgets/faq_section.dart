@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../constants/colors.dart';
 
 class FAQItem {
@@ -62,65 +63,78 @@ class _FAQSectionState extends State<FAQSection> {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Container(
-      padding: EdgeInsets.symmetric(
-        vertical: 80,
-        horizontal: isMobile ? 24 : 0,
-      ),
-      color: Colors.white,
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 48),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Section identifier
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "{05} – FAQ",
-                      style: GoogleFonts.manrope(
-                        fontSize: 18,
-                        color: Colors.grey[400],
+      decoration: const BoxDecoration(color: Colors.white),
+      child: Stack(
+        children: [
+          // Background decorative elements
+          Positioned.fill(child: CustomPaint(painter: _BackgroundPainter())),
+          // Main content
+          Padding(
+            padding: EdgeInsets.symmetric(
+              vertical: 80,
+              horizontal: isMobile ? 24 : 0,
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 48),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Section identifier
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "{06} – FAQ",
+                            style: GoogleFonts.manrope(
+                              fontSize: 18,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryGreen,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryGreen,
-                        shape: BoxShape.circle,
+                      const SizedBox(height: 16),
+                      // Main title
+                      Text(
+                        "Got Questions?",
+                        style: GoogleFonts.manrope(
+                          fontSize: isMobile ? 40 : 60,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.grey[900],
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // Main title
-                Text(
-                  "Got Questions?",
-                  style: GoogleFonts.manrope(
-                    fontSize: isMobile ? 40 : 60,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.grey[900],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 60),
-                // FAQ Items
-                ...List.generate(
-                  _faqItems.length,
-                  (index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _buildFAQItem(_faqItems[index], index, isMobile),
+                      const SizedBox(height: 60),
+                      // FAQ Items
+                      ...List.generate(
+                        _faqItems.length,
+                        (index) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: _buildFAQItem(
+                            _faqItems[index],
+                            index,
+                            isMobile,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -132,10 +146,7 @@ class _FAQSectionState extends State<FAQSection> {
       decoration: BoxDecoration(
         color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey[200]!,
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
       ),
       child: Column(
         children: [
@@ -185,11 +196,7 @@ class _FAQSectionState extends State<FAQSection> {
                     child: AnimatedRotation(
                       turns: isExpanded ? 0.125 : 0, // 45 degrees when expanded
                       duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        Icons.add,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                      child: Icon(Icons.add, color: Colors.white, size: 20),
                     ),
                   ),
                 ],
@@ -210,13 +217,320 @@ class _FAQSectionState extends State<FAQSection> {
                 ),
               ),
             ),
-            crossFadeState: isExpanded
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
+            crossFadeState:
+                isExpanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
             duration: const Duration(milliseconds: 200),
           ),
         ],
       ),
     );
   }
+}
+
+// Custom painter for background decorative elements - Adapted for White Background
+// Custom painter for geometric background elements
+class _BackgroundPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..style = PaintingStyle.fill;
+    final strokePaint =
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5;
+
+    // 1. Cluster (Top Right)
+    // Smaller Triangle
+    final path1 =
+        Path()
+          ..moveTo(size.width * 0.88, size.height * 0.15)
+          ..lineTo(size.width * 0.94, size.height * 0.22)
+          ..lineTo(size.width * 0.82, size.height * 0.25)
+          ..close();
+
+    paint.shader = LinearGradient(
+      colors: [
+        AppColors.primaryGreen.withOpacity(0.25),
+        AppColors.primaryGreen.withOpacity(0.8),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    canvas.drawPath(path1, paint);
+
+    // Added Shape: Small Circle near triangle
+    paint.shader = null;
+    paint.color = AppColors.primaryGreen.withOpacity(0.3);
+    canvas.drawCircle(Offset(size.width * 0.92, size.height * 0.12), 4, paint);
+
+    // Added Shape: Cross near triangle
+    _drawCross(
+      canvas,
+      Offset(size.width * 0.8, size.height * 0.18),
+      8,
+      AppColors.primaryGreen.withOpacity(0.4),
+    );
+
+    // 2. Hollow Hexagon (Bottom Left)
+    final center2 = Offset(size.width * 0.15, size.height * 0.75);
+
+    // Simplifed Polygon (Hexagon-ish)
+    final hexPath = Path();
+    hexPath.moveTo(center2.dx + 40, center2.dy);
+    hexPath.lineTo(center2.dx + 20, center2.dy + 35);
+    hexPath.lineTo(center2.dx - 20, center2.dy + 35);
+    hexPath.lineTo(center2.dx - 40, center2.dy);
+    hexPath.lineTo(center2.dx - 20, center2.dy - 35);
+    hexPath.lineTo(center2.dx + 20, center2.dy - 35);
+    hexPath.close();
+
+    strokePaint.color = AppColors.primaryGreen.withOpacity(0.35);
+    canvas.drawPath(hexPath, strokePaint);
+
+    // 3. Scattered Shapes (Increased Count)
+
+    // Crosses
+    _drawCross(
+      canvas,
+      Offset(size.width * 0.15, size.height * 0.2),
+      15,
+      AppColors.primaryGreen.withOpacity(0.6),
+    );
+    _drawCross(
+      canvas,
+      Offset(size.width * 0.9, size.height * 0.6),
+      10,
+      AppColors.primaryGreen.withOpacity(0.5),
+    );
+    _drawCross(
+      canvas,
+      Offset(size.width * 0.5, size.height * 0.85),
+      12,
+      AppColors.primaryGreen.withOpacity(0.5),
+    );
+    _drawCross(
+      canvas,
+      Offset(size.width * 0.35, size.height * 0.45),
+      8,
+      AppColors.primaryGreen.withOpacity(0.55),
+    );
+    _drawCross(
+      canvas,
+      Offset(size.width * 0.75, size.height * 0.15),
+      14,
+      AppColors.primaryGreen.withOpacity(0.45),
+    );
+
+    // Filled Circles
+    paint.shader = null;
+    paint.color = AppColors.primaryGreen.withOpacity(0.4);
+    canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.15), 6, paint);
+
+    paint.color = AppColors.primaryGreen.withOpacity(0.38);
+    canvas.drawCircle(Offset(size.width * 0.05, size.height * 0.5), 18, paint);
+
+    paint.color = AppColors.primaryGreen.withOpacity(0.42);
+    canvas.drawCircle(Offset(size.width * 0.45, size.height * 0.65), 4, paint);
+
+    // Hollow Circles
+    strokePaint.color = AppColors.primaryGreen.withOpacity(0.45);
+    canvas.drawCircle(
+      Offset(size.width * 0.8, size.height * 0.8),
+      25,
+      strokePaint,
+    );
+
+    strokePaint.color = AppColors.primaryGreen.withOpacity(0.4);
+    canvas.drawCircle(
+      Offset(size.width * 0.25, size.height * 0.3),
+      15,
+      strokePaint,
+    );
+
+    // Diamond - Moved to Bottom
+    _drawDiamond(
+      canvas,
+      Offset(size.width * 0.5, size.height * 0.9),
+      15,
+      AppColors.primaryGreen.withOpacity(0.5),
+      true,
+    );
+
+    // 5. Connecting Lines
+    final linePaint =
+        Paint()
+          ..color = AppColors.primaryGreen.withOpacity(0.3)
+          ..strokeWidth = 1.5;
+
+    canvas.drawLine(
+      Offset(size.width * 0.15, size.height * 0.2),
+      Offset(size.width * 0.25, size.height * 0.3),
+      linePaint,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.8, size.height * 0.8),
+      Offset(size.width * 0.9, size.height * 0.6),
+      linePaint,
+    );
+    // 6. Additional Scattered Shapes (High Density)
+
+    // More Triangles
+    _drawTriangle(
+      canvas,
+      Offset(size.width * 0.1, size.height * 0.4),
+      15,
+      AppColors.primaryGreen.withOpacity(0.4),
+    );
+    _drawTriangle(
+      canvas,
+      Offset(size.width * 0.7, size.height * 0.9),
+      10,
+      AppColors.primaryGreen.withOpacity(0.45),
+    );
+    _drawTriangle(
+      canvas,
+      Offset(size.width * 0.3, size.height * 0.1),
+      8,
+      AppColors.primaryGreen.withOpacity(0.42),
+    );
+
+    // More Crosses
+    _drawCross(
+      canvas,
+      Offset(size.width * 0.65, size.height * 0.4),
+      10,
+      AppColors.primaryGreen.withOpacity(0.48),
+    );
+    _drawCross(
+      canvas,
+      Offset(size.width * 0.25, size.height * 0.85),
+      12,
+      AppColors.primaryGreen.withOpacity(0.4),
+    );
+    _drawCross(
+      canvas,
+      Offset(size.width * 0.05, size.height * 0.25),
+      8,
+      AppColors.primaryGreen.withOpacity(0.5),
+    );
+    _drawCross(
+      canvas,
+      Offset(size.width * 0.95, size.height * 0.5),
+      14,
+      AppColors.primaryGreen.withOpacity(0.45),
+    );
+
+    // More Dots
+    paint.color = AppColors.primaryGreen.withOpacity(0.38);
+    canvas.drawCircle(Offset(size.width * 0.55, size.height * 0.35), 5, paint);
+    canvas.drawCircle(Offset(size.width * 0.85, size.height * 0.65), 7, paint);
+    canvas.drawCircle(Offset(size.width * 0.35, size.height * 0.95), 4, paint);
+    canvas.drawCircle(Offset(size.width * 0.15, size.height * 0.05), 6, paint);
+
+    // More Diamonds
+    _drawDiamond(
+      canvas,
+      Offset(size.width * 0.9, size.height * 0.15),
+      12,
+      AppColors.primaryGreen.withOpacity(0.45),
+      true,
+    );
+    _drawDiamond(
+      canvas,
+      Offset(size.width * 0.2, size.height * 0.55),
+      10,
+      AppColors.primaryGreen.withOpacity(0.4),
+      false,
+    );
+    _drawDiamond(
+      canvas,
+      Offset(size.width * 0.6, size.height * 0.8),
+      15,
+      AppColors.primaryGreen.withOpacity(0.42),
+      true,
+    );
+
+    // More connecting lines
+    canvas.drawLine(
+      Offset(size.width * 0.1, size.height * 0.4),
+      Offset(size.width * 0.05, size.height * 0.25),
+      linePaint,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.7, size.height * 0.9),
+      Offset(size.width * 0.6, size.height * 0.8),
+      linePaint,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.9, size.height * 0.15),
+      Offset(size.width * 0.95, size.height * 0.5),
+      linePaint,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.55, size.height * 0.35),
+      Offset(size.width * 0.65, size.height * 0.4),
+      linePaint,
+    );
+  }
+
+  void _drawCross(Canvas canvas, Offset center, double size, Color color) {
+    final paint =
+        Paint()
+          ..color = color
+          ..strokeWidth = 2
+          ..style = PaintingStyle.stroke;
+
+    canvas.drawLine(
+      Offset(center.dx - size / 2, center.dy),
+      Offset(center.dx + size / 2, center.dy),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(center.dx, center.dy - size / 2),
+      Offset(center.dx, center.dy + size / 2),
+      paint,
+    );
+  }
+
+  void _drawTriangle(Canvas canvas, Offset center, double size, Color color) {
+    final paint =
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.moveTo(center.dx, center.dy - size);
+    path.lineTo(center.dx + size, center.dy + size);
+    path.lineTo(center.dx - size, center.dy + size);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawDiamond(
+    Canvas canvas,
+    Offset center,
+    double size,
+    Color color,
+    bool filled,
+  ) {
+    final paint =
+        Paint()
+          ..color = color
+          ..style = filled ? PaintingStyle.fill : PaintingStyle.stroke
+          ..strokeWidth = filled ? 0 : 1.5;
+
+    final path = Path();
+    path.moveTo(center.dx, center.dy - size);
+    path.lineTo(center.dx + size, center.dy);
+    path.lineTo(center.dx, center.dy + size);
+    path.lineTo(center.dx - size, center.dy);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

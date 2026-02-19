@@ -25,8 +25,8 @@ class ProcessItem {
   const ProcessItem({required this.key, required this.description});
 }
 
-class ProcessSection extends StatelessWidget {
-  const ProcessSection({super.key});
+class FreelanceProcessSection extends StatelessWidget {
+  const FreelanceProcessSection({super.key});
 
   static const List<ProcessStep> _steps = [
     ProcessStep(
@@ -130,7 +130,7 @@ class ProcessSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "{03} - Process",
+                "{04} - Freelance Process",
                 style: GoogleFonts.manrope(
                   fontSize: 18,
                   color: Colors.grey[400],

@@ -8,11 +8,11 @@ class AppColors {
   // Primary Green Colors
   /// Primary bright green used for CTAs, buttons, and highlights
   /// Hex: #82FF1F
-  static const Color primaryGreen = Color(0xFF82FF1F);
+  static const Color primaryGreen = Color.fromARGB(255, 109, 217, 76);
 
   /// Alternative green used in skills section
   /// RGB: (103, 209, 16) | Hex: #67D110
-  static const Color skillsGreen = Color.fromARGB(255, 86, 167, 20);
+  static const Color skillsGreen = Color.fromARGB(255, 90, 167, 28);
 
   /// Darker green used for text and accents
   /// Hex: #10B981

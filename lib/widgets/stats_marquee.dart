@@ -4,7 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import '../constants/colors.dart';
 
 class StatsMarquee extends StatefulWidget {
-  const StatsMarquee({super.key});
+  final Color backgroundColor;
+  final EdgeInsetsGeometry padding;
+
+  const StatsMarquee({
+    super.key,
+    this.backgroundColor = Colors.white,
+    this.padding = const EdgeInsets.only(top: 40),
+  });
 
   @override
   State<StatsMarquee> createState() => _StatsMarqueeState();
@@ -55,8 +62,8 @@ class _StatsMarqueeState extends State<StatsMarquee>
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      color: Colors.white,
-      padding: const EdgeInsets.only(top: 40),
+      color: widget.backgroundColor,
+      padding: widget.padding,
       child: Container(
         color: const Color(0xFF2F2F2F),
         padding: const EdgeInsets.symmetric(vertical: 20),

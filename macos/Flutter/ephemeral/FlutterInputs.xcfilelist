@@ -1362,7 +1362,7 @@
 /Users/gokulks/development/flutter/packages/flutter_tools/lib/src/build_system/targets/icon_tree_shaker.dart
 /Users/gokulks/development/flutter/packages/flutter_tools/lib/src/build_system/targets/macos.dart
 /Users/gokulks/development/flutter/packages/flutter_tools/lib/src/build_system/targets/native_assets.dart
-/Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/DOES_NOT_EXIST_RERUN_FOR_WILDCARD124566868
+/Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/DOES_NOT_EXIST_RERUN_FOR_WILDCARD1003220524
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/assets/lottie/loading.json
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/constants/colors.dart
@@ -1376,6 +1376,7 @@
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/pages/home_page.dart
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/pages/projects_page.dart
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/pages/skills_page.dart
+/Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/pages/splash_screen.dart
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/routes/app_routes.dart
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/utils/responsive_helper.dart
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/widgets/contact_section.dart
@@ -1385,8 +1386,8 @@
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/widgets/featured_cards_section.dart
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/widgets/featured_projects_section.dart
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/widgets/footer_section.dart
+/Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/widgets/freelance_process_section.dart
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/widgets/hero_section_fixed.dart
-/Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/widgets/process_section.dart
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/widgets/project_types_marquee.dart
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/widgets/skills_section.dart
 /Users/gokulks/personal projects/gokul_portfolio/gokul_portfolio/lib/widgets/stats_marquee.dart
