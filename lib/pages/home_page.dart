@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/contact_section.dart';
-import '../widgets/cta_section.dart';
 import '../widgets/custom_widgets.dart';
 import '../widgets/faq_section.dart';
-import '../widgets/featured_cards_section.dart';
-import '../widgets/featured_projects_section.dart';
 import '../widgets/footer_section.dart';
+import '../widgets/freelance_process_section.dart';
 import '../widgets/hero_section_fixed.dart';
-import '../widgets/process_section.dart';
 import '../widgets/project_types_marquee.dart';
+import '../widgets/proud_achievements_section.dart';
+import '../widgets/selected_projects_section.dart';
 import '../widgets/skills_section.dart';
 import '../widgets/stats_marquee.dart';
 import '../widgets/testimonials_section_new.dart';
@@ -53,22 +52,21 @@ class _HomePageState extends State<HomePage> {
             const StatsMarquee(),
 
             // CTA Section
-            const CtaSection(),
 
             // Skills Section
             SkillsSection(scrollController: _scrollController),
 
-            // Featured Projects
-            const FeaturedProjectsSection(),
+            // Selected Projects
+            const SelectedProjectsSection(),
 
             // Project Types Marquee
             const ProjectTypesMarquee(),
 
-            // Process Section
-            const ProcessSection(),
+            // Proud Achievements Section
+            const ProudAchievementsSection(),
 
-            // Featured Cards Section
-            const FeaturedCardsSection(),
+            // Process Section
+            const FreelanceProcessSection(),
 
             // Testimonials Section
             const TestimonialsSectionNew(),
@@ -79,7 +77,10 @@ class _HomePageState extends State<HomePage> {
             // Contact Section
             const ContactSection(),
             // Stats Marquee
-            const StatsMarquee(),
+            const StatsMarquee(
+              backgroundColor: Color(0xFF0A0A0A),
+              padding: EdgeInsets.zero,
+            ),
             // Footer Section
             const FooterSection(),
           ],

@@ -99,9 +99,9 @@ class FeaturedProjectsSection extends StatelessWidget {
                   const SizedBox(width: 16),
                   ElevatedButton(
                     onPressed: () {
-                        controller.changePage(5);
-                        Get.offNamed(AppRoutes.contact);
-                      },
+                      controller.changePage(5);
+                      Get.offNamed(AppRoutes.contact);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black87,
                       foregroundColor: Colors.white,

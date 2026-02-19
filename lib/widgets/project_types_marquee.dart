@@ -63,8 +63,7 @@ class _ProjectTypesMarqueeState extends State<ProjectTypesMarquee>
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      color: Colors.white,
-      padding: const EdgeInsets.only(top: 40),
+      color: Colors.black,
       child: Container(
         color: const Color(0xFF2F2F2F),
         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -76,10 +75,14 @@ class _ProjectTypesMarqueeState extends State<ProjectTypesMarquee>
             children: List.generate(10, (index) {
               return Row(
                 children: [
-                  ..._projectTypes.map((type) => [
-                        _buildProjectTypeItem(type),
-                        _buildSeparator(),
-                      ]).expand((element) => element),
+                  ..._projectTypes
+                      .map(
+                        (type) => [
+                          _buildProjectTypeItem(type),
+                          _buildSeparator(),
+                        ],
+                      )
+                      .expand((element) => element),
                 ],
               );
             }),

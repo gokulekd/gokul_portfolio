@@ -8,7 +8,10 @@ import '../controllers/portfolio_controller.dart';
 import '../routes/app_routes.dart';
 import '../utils/responsive_helper.dart';
 
-void _navigateToPage(PortfolioController controller, Map<String, dynamic> item) {
+void _navigateToPage(
+  PortfolioController controller,
+  Map<String, dynamic> item,
+) {
   final index = item['index'] as int;
   final route = AppRoutes.indexToRoute[index];
   if (route != null) {
