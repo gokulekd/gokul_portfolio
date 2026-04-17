@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
+import '../controllers/portfolio_controller.dart';
+import '../models/firebase_content_models.dart';
 import '../widgets/contact_section.dart';
 import '../widgets/custom_widgets.dart';
 import '../widgets/faq_section.dart';
@@ -38,6 +41,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<PortfolioController>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CustomAppBar(),
@@ -46,24 +51,46 @@ class _HomePageState extends State<HomePage> {
         children: [
           SingleChildScrollView(
             controller: _scrollController,
-            child: Column(
-              children: [
-                const HeroSection(),
-                const StatsMarquee(),
-                SkillsSection(scrollController: _scrollController),
-                const SelectedProjectsSection(),
-                const ProjectTypesMarquee(),
-                const ProudAchievementsSection(),
-                const FreelanceProcessSection(),
-                const TestimonialsSectionNew(),
-                const FAQSection(),
-                const ContactSection(),
-                const StatsMarquee(
-                  backgroundColor: Color(0xFF0A0A0A),
-                  padding: EdgeInsets.zero,
-                ),
-                const FooterSection(),
-              ],
+            child: Obx(
+              () => Column(
+                children: [
+                  if (controller.isSectionVisible(SiteSectionKeys.hero))
+                    const HeroSection(),
+                  if (controller.isSectionVisible(SiteSectionKeys.statsTop))
+                    const StatsMarquee(),
+                  if (controller.isSectionVisible(
+                    SiteSectionKeys.skillsExperience,
+                  ))
+                    SkillsSection(scrollController: _scrollController),
+                  if (controller.isSectionVisible(
+                    SiteSectionKeys.featuredProjects,
+                  ))
+                    const SelectedProjectsSection(),
+                  if (controller.isSectionVisible(
+                    SiteSectionKeys.developmentAreas,
+                  ))
+                    const ProjectTypesMarquee(),
+                  if (controller.isSectionVisible(SiteSectionKeys.achievements))
+                    const ProudAchievementsSection(),
+                  if (controller.isSectionVisible(
+                    SiteSectionKeys.freelanceProcess,
+                  ))
+                    const FreelanceProcessSection(),
+                  if (controller.isSectionVisible(SiteSectionKeys.testimonials))
+                    const TestimonialsSectionNew(),
+                  if (controller.isSectionVisible(SiteSectionKeys.faq))
+                    const FAQSection(),
+                  if (controller.isSectionVisible(SiteSectionKeys.contact))
+                    const ContactSection(),
+                  if (controller.isSectionVisible(SiteSectionKeys.statsBottom))
+                    const StatsMarquee(
+                      backgroundColor: Color(0xFF0A0A0A),
+                      padding: EdgeInsets.zero,
+                    ),
+                  if (controller.isSectionVisible(SiteSectionKeys.footer))
+                    const FooterSection(),
+                ],
+              ),
             ),
           ),
           // Scroll progress bar overlaid at the very top

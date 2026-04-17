@@ -23,34 +23,54 @@ class ContactSection extends StatelessWidget {
   const ContactSection({super.key});
 
   List<SocialPlatform> _buildPlatforms(PortfolioController controller) {
-    String _url(String platform) =>
+    String urlFor(String platform) =>
         controller.getSocialLink(platform)?.url ?? '';
 
     return [
       SocialPlatform(
         name: "Twitter/X",
-        url: _url('Twitter'),
-        icon: const FaIcon(FontAwesomeIcons.xTwitter, color: Colors.black, size: 22),
+        url: urlFor('Twitter'),
+        icon: const FaIcon(
+          FontAwesomeIcons.xTwitter,
+          color: Colors.black,
+          size: 22,
+        ),
       ),
       SocialPlatform(
         name: "GitHub",
-        url: _url('GitHub'),
-        icon: const FaIcon(FontAwesomeIcons.github, color: Colors.black, size: 22),
+        url: urlFor('GitHub'),
+        icon: const FaIcon(
+          FontAwesomeIcons.github,
+          color: Colors.black,
+          size: 22,
+        ),
       ),
       SocialPlatform(
         name: "LinkedIn",
-        url: _url('LinkedIn'),
-        icon: const FaIcon(FontAwesomeIcons.linkedinIn, color: Colors.black, size: 22),
+        url: urlFor('LinkedIn'),
+        icon: const FaIcon(
+          FontAwesomeIcons.linkedinIn,
+          color: Colors.black,
+          size: 22,
+        ),
       ),
       SocialPlatform(
         name: "Medium",
-        url: _url('Medium'),
-        icon: const FaIcon(FontAwesomeIcons.medium, color: Colors.black, size: 22),
+        url: urlFor('Medium'),
+        icon: const FaIcon(
+          FontAwesomeIcons.medium,
+          color: Colors.black,
+          size: 22,
+        ),
       ),
       SocialPlatform(
         name: "Instagram",
-        url: _url('Instagram'),
-        icon: const FaIcon(FontAwesomeIcons.instagram, color: Colors.black, size: 22),
+        url: urlFor('Instagram'),
+        icon: const FaIcon(
+          FontAwesomeIcons.instagram,
+          color: Colors.black,
+          size: 22,
+        ),
       ),
     ];
   }
@@ -65,130 +85,185 @@ class ContactSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<PortfolioController>();
-    final _platforms = _buildPlatforms(controller);
     final isMobile = MediaQuery.of(context).size.width < 768;
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white, // Dark almost black background
-      ),
-      child: Stack(
-        children: [
-          // Background decorative elements
-          Positioned.fill(child: CustomPaint(painter: _BackgroundPainter())),
-          // Main content
-          Padding(
-            padding: EdgeInsets.symmetric(
-              vertical: 80,
-              horizontal: isMobile ? 24 : 0,
-            ),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1200),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 48),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Section identifier
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "{07} – Contact me",
-                            style: GoogleFonts.manrope(
-                              fontSize: 18,
-                              color: Colors.black,
+    return Obx(() {
+      final platforms = _buildPlatforms(controller);
+
+      return Container(
+        decoration: const BoxDecoration(
+          color: Colors.white, // Dark almost black background
+        ),
+        child: Stack(
+          children: [
+            // Background decorative elements
+            Positioned.fill(child: CustomPaint(painter: _BackgroundPainter())),
+            // Main content
+            Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: 80,
+                horizontal: isMobile ? 24 : 0,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1200),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 16 : 48,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Section identifier
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "{07} – Contact me",
+                              style: GoogleFonts.manrope(
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryGreen,
-                              shape: BoxShape.circle,
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryGreen,
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      // Main title
-                      Text(
-                        "I'm all over the internet",
-                        style: GoogleFonts.manrope(
-                          fontSize: isMobile ? 40 : 60,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.black,
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 60),
-                      // Social cards grid
-                      isMobile
-                          ? Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(child: _buildSocialCard(_platforms[0], context)),
-                                  const SizedBox(width: 16),
-                                  Expanded(child: _buildSocialCard(_platforms[1], context)),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: _buildSocialCard(_platforms[2], context)),
-                                  const SizedBox(width: 16),
-                                  Expanded(child: _buildSocialCard(_platforms[3], context)),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: _buildSocialCard(_platforms[4], context)),
-                                  const SizedBox(width: 16),
-                                  Expanded(child: _buildGetInTouchCard(context)),
-                                ],
-                              ),
-                            ],
-                          )
-                          : Column(
-                            children: [
-                              // Top row - 3 cards
-                              Row(
-                                children: [
-                                  Expanded(child: _buildSocialCard(_platforms[0], context)),
-                                  const SizedBox(width: 16),
-                                  Expanded(child: _buildSocialCard(_platforms[1], context)),
-                                  const SizedBox(width: 16),
-                                  Expanded(child: _buildSocialCard(_platforms[2], context)),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // Bottom row - 3 cards + get in touch
-                              Row(
-                                children: [
-                                  Expanded(child: _buildSocialCard(_platforms[3], context)),
-                                  const SizedBox(width: 16),
-                                  Expanded(child: _buildSocialCard(_platforms[4], context)),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    flex: 2,
-                                    child: _buildGetInTouchCard(context),
-                                  ),
-                                ],
-                              ),
-                            ],
+                        const SizedBox(height: 16),
+                        // Main title
+                        Text(
+                          "I'm all over the internet",
+                          style: GoogleFonts.manrope(
+                            fontSize: isMobile ? 40 : 60,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black,
                           ),
-                    ],
+                        ),
+                        const SizedBox(height: 60),
+                        // Social cards grid
+                        isMobile
+                            ? Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildSocialCard(
+                                        platforms[0],
+                                        context,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _buildSocialCard(
+                                        platforms[1],
+                                        context,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildSocialCard(
+                                        platforms[2],
+                                        context,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _buildSocialCard(
+                                        platforms[3],
+                                        context,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildSocialCard(
+                                        platforms[4],
+                                        context,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _buildGetInTouchCard(context),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            )
+                            : Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildSocialCard(
+                                        platforms[0],
+                                        context,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _buildSocialCard(
+                                        platforms[1],
+                                        context,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _buildSocialCard(
+                                        platforms[2],
+                                        context,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildSocialCard(
+                                        platforms[3],
+                                        context,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _buildSocialCard(
+                                        platforms[4],
+                                        context,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      flex: 2,
+                                      child: _buildGetInTouchCard(context),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildSocialCard(SocialPlatform platform, BuildContext context) {
@@ -201,10 +276,10 @@ class ContactSection extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF171717),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -231,7 +306,7 @@ class ContactSection extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withOpacity(0.8),
+                  color: AppColors.primaryGreen.withValues(alpha: 0.8),
                   shape: BoxShape.circle,
                 ),
                 child: Center(child: platform.icon),
@@ -246,20 +321,22 @@ class ContactSection extends StatelessWidget {
   Widget _buildGetInTouchCard(BuildContext context) {
     final controller = Get.find<PortfolioController>();
     return InkWell(
-      onTap: () => controller.launchEmail(
-        subject: 'Let\'s work together!',
-        body: 'Hi Gokul,\n\nI came across your portfolio and would love to discuss a project with you.\n\n',
-      ),
+      onTap:
+          () => controller.launchEmail(
+            subject: 'Let\'s work together!',
+            body:
+                'Hi Gokul,\n\nI came across your portfolio and would love to discuss a project with you.\n\n',
+          ),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         height: 140,
         decoration: BoxDecoration(
           color: const Color(0xFF171717),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           boxShadow: [
             BoxShadow(
-              color: AppColors.skillsGreen.withOpacity(0.5),
+              color: AppColors.skillsGreen.withValues(alpha: 0.5),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -296,10 +373,10 @@ class ContactSection extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                           ),
                         ),
                         child: const FaIcon(
@@ -342,8 +419,8 @@ class _BackgroundPainter extends CustomPainter {
 
     paint.shader = LinearGradient(
       colors: [
-        AppColors.primaryGreen.withOpacity(0.1), // Reduced from 0.25
-        AppColors.primaryGreen.withOpacity(0.35), // Reduced from 0.8
+        AppColors.primaryGreen.withValues(alpha: 0.1), // Reduced from 0.25
+        AppColors.primaryGreen.withValues(alpha: 0.35), // Reduced from 0.8
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -352,7 +429,9 @@ class _BackgroundPainter extends CustomPainter {
 
     // Added Shape: Small Circle near triangle
     paint.shader = null;
-    paint.color = AppColors.primaryGreen.withOpacity(0.12); // Reduced from 0.3
+    paint.color = AppColors.primaryGreen.withValues(
+      alpha: 0.12,
+    ); // Reduced from 0.3
     canvas.drawCircle(Offset(size.width * 0.92, size.height * 0.12), 4, paint);
 
     // Added Shape: Cross near triangle
@@ -360,7 +439,7 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.8, size.height * 0.18),
       8,
-      AppColors.primaryGreen.withOpacity(0.15), // Reduced from 0.4
+      AppColors.primaryGreen.withValues(alpha: 0.15), // Reduced from 0.4
     );
 
     // 2. Hollow Hexagon (Bottom Left)
@@ -376,8 +455,8 @@ class _BackgroundPainter extends CustomPainter {
     hexPath.lineTo(center2.dx + 20, center2.dy - 35);
     hexPath.close();
 
-    strokePaint.color = AppColors.primaryGreen.withOpacity(
-      0.15,
+    strokePaint.color = AppColors.primaryGreen.withValues(
+      alpha: 0.15,
     ); // Reduced from 0.35
     canvas.drawPath(hexPath, strokePaint);
 
@@ -388,53 +467,57 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.15, size.height * 0.2),
       15,
-      AppColors.primaryGreen.withOpacity(0.25), // Reduced
+      AppColors.primaryGreen.withValues(alpha: 0.25), // Reduced
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.9, size.height * 0.6),
       10,
-      AppColors.primaryGreen.withOpacity(0.2), // Reduced
+      AppColors.primaryGreen.withValues(alpha: 0.2), // Reduced
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.5, size.height * 0.85),
       12,
-      AppColors.primaryGreen.withOpacity(0.2), // Reduced
+      AppColors.primaryGreen.withValues(alpha: 0.2), // Reduced
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.35, size.height * 0.45),
       8,
-      AppColors.primaryGreen.withOpacity(0.22), // Reduced
+      AppColors.primaryGreen.withValues(alpha: 0.22), // Reduced
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.75, size.height * 0.15),
       14,
-      AppColors.primaryGreen.withOpacity(0.18), // Reduced
+      AppColors.primaryGreen.withValues(alpha: 0.18), // Reduced
     );
 
     // Filled Circles
     paint.shader = null;
-    paint.color = AppColors.primaryGreen.withOpacity(0.15); // Reduced
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.15); // Reduced
     canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.15), 6, paint);
 
-    paint.color = AppColors.primaryGreen.withOpacity(0.12); // Reduced
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.12); // Reduced
     canvas.drawCircle(Offset(size.width * 0.05, size.height * 0.5), 18, paint);
 
-    paint.color = AppColors.primaryGreen.withOpacity(0.18); // Reduced
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.18); // Reduced
     canvas.drawCircle(Offset(size.width * 0.45, size.height * 0.65), 4, paint);
 
     // Hollow Circles
-    strokePaint.color = AppColors.primaryGreen.withOpacity(0.18); // Reduced
+    strokePaint.color = AppColors.primaryGreen.withValues(
+      alpha: 0.18,
+    ); // Reduced
     canvas.drawCircle(
       Offset(size.width * 0.8, size.height * 0.8),
       25,
       strokePaint,
     );
 
-    strokePaint.color = AppColors.primaryGreen.withOpacity(0.15); // Reduced
+    strokePaint.color = AppColors.primaryGreen.withValues(
+      alpha: 0.15,
+    ); // Reduced
     canvas.drawCircle(
       Offset(size.width * 0.25, size.height * 0.3),
       15,
@@ -446,14 +529,14 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.5, size.height * 0.9),
       15,
-      AppColors.primaryGreen.withOpacity(0.2), // Reduced
+      AppColors.primaryGreen.withValues(alpha: 0.2), // Reduced
       true,
     );
 
     // 5. Connecting Lines
     final linePaint =
         Paint()
-          ..color = AppColors.primaryGreen.withOpacity(0.12) // Reduced
+          ..color = AppColors.primaryGreen.withValues(alpha: 0.12) // Reduced
           ..strokeWidth = 1.5;
 
     canvas.drawLine(
@@ -473,19 +556,19 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.1, size.height * 0.4),
       15,
-      AppColors.primaryGreen.withOpacity(0.16),
+      AppColors.primaryGreen.withValues(alpha: 0.16),
     );
     _drawTriangle(
       canvas,
       Offset(size.width * 0.7, size.height * 0.9),
       10,
-      AppColors.primaryGreen.withOpacity(0.18),
+      AppColors.primaryGreen.withValues(alpha: 0.18),
     );
     _drawTriangle(
       canvas,
       Offset(size.width * 0.3, size.height * 0.1),
       8,
-      AppColors.primaryGreen.withOpacity(0.16),
+      AppColors.primaryGreen.withValues(alpha: 0.16),
     );
 
     // More Crosses
@@ -493,29 +576,29 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.65, size.height * 0.4),
       10,
-      AppColors.primaryGreen.withOpacity(0.2),
+      AppColors.primaryGreen.withValues(alpha: 0.2),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.25, size.height * 0.85),
       12,
-      AppColors.primaryGreen.withOpacity(0.15),
+      AppColors.primaryGreen.withValues(alpha: 0.15),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.05, size.height * 0.25),
       8,
-      AppColors.primaryGreen.withOpacity(0.2),
+      AppColors.primaryGreen.withValues(alpha: 0.2),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.95, size.height * 0.5),
       14,
-      AppColors.primaryGreen.withOpacity(0.18),
+      AppColors.primaryGreen.withValues(alpha: 0.18),
     );
 
     // More Dots
-    paint.color = AppColors.primaryGreen.withOpacity(0.15);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.15);
     canvas.drawCircle(Offset(size.width * 0.55, size.height * 0.35), 5, paint);
     canvas.drawCircle(Offset(size.width * 0.85, size.height * 0.65), 7, paint);
     canvas.drawCircle(Offset(size.width * 0.35, size.height * 0.95), 4, paint);
@@ -526,21 +609,21 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.9, size.height * 0.15),
       12,
-      AppColors.primaryGreen.withOpacity(0.18),
+      AppColors.primaryGreen.withValues(alpha: 0.18),
       true,
     );
     _drawDiamond(
       canvas,
       Offset(size.width * 0.2, size.height * 0.55),
       10,
-      AppColors.primaryGreen.withOpacity(0.16),
+      AppColors.primaryGreen.withValues(alpha: 0.16),
       false,
     );
     _drawDiamond(
       canvas,
       Offset(size.width * 0.6, size.height * 0.8),
       15,
-      AppColors.primaryGreen.withOpacity(0.17),
+      AppColors.primaryGreen.withValues(alpha: 0.17),
       true,
     );
 
@@ -650,8 +733,8 @@ class _CreativeCardPainter extends CustomPainter {
 
     paint.shader = LinearGradient(
       colors: [
-        AppColors.primaryGreen.withOpacity(0.4),
-        AppColors.tealGreen.withOpacity(0.1),
+        AppColors.primaryGreen.withValues(alpha: 0.4),
+        AppColors.tealGreen.withValues(alpha: 0.1),
       ],
       begin: Alignment.topRight,
       end: Alignment.bottomLeft,
@@ -673,8 +756,8 @@ class _CreativeCardPainter extends CustomPainter {
 
     paint.shader = LinearGradient(
       colors: [
-        AppColors.primaryGreen.withOpacity(0.2),
-        Colors.blue.withOpacity(0.1),
+        AppColors.primaryGreen.withValues(alpha: 0.2),
+        Colors.blue.withValues(alpha: 0.1),
       ],
       begin: Alignment.bottomLeft,
       end: Alignment.topRight,
@@ -689,8 +772,8 @@ class _CreativeCardPainter extends CustomPainter {
           ..strokeWidth = 2
           ..shader = LinearGradient(
             colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.white.withOpacity(0),
+              Colors.white.withValues(alpha: 0.1),
+              Colors.white.withValues(alpha: 0),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,

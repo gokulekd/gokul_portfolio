@@ -17,171 +17,189 @@ class SelectedProjectsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<PortfolioController>();
     final isMobile = ResponsiveHelper.isMobile(context);
+    return Obx(() {
+      final featuredProjects = controller.featuredProjects;
 
-    return Container(
-      width: double.infinity,
-      color: Colors.white,
-      child: Stack(
-        children: [
-          // Background Painting - Now guaranteed to cover full width
-          Positioned.fill(child: CustomPaint(painter: _BackgroundPainter())),
+      return Container(
+        width: double.infinity,
+        color: Colors.white,
+        child: Stack(
+          children: [
+            // Background Painting - Now guaranteed to cover full width
+            Positioned.fill(child: CustomPaint(painter: _BackgroundPainter())),
 
-          // Main Content Wrapper
-          Container(
-            width: double.infinity,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(vertical: 80),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1200),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Section Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "{02} - Selected Work",
-                          style: GoogleFonts.manrope(
-                            fontSize: 18,
-                            color: Colors.black,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primaryGreen,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Title
-                    Text(
-                      "Featured Projects",
-                      style: GoogleFonts.manrope(
-                        fontSize: isMobile ? 40 : 60,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black,
-                        height: 1.1,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 60),
-
-                    // Projects List
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: 2, // Show only top 2
-                      separatorBuilder:
-                          (context, index) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 60),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Divider(
-                                    color: Colors.grey[200],
-                                    thickness: 1,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                  ),
-                                  child: Container(
-                                    width: 12,
-                                    height: 12,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      border: Border.all(
-                                        color: AppColors.primaryGreen,
-                                        width: 2,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Divider(
-                                    color: Colors.grey[200],
-                                    thickness: 1,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      itemBuilder: (context, index) {
-                        if (index >= controller.projects.length) {
-                          return const SizedBox.shrink();
-                        }
-                        final project = controller.projects[index];
-                        return _FeaturedProjectCard(
-                          title: project.title,
-                          description: project.description,
-                          imageUrl: project.imageUrl,
-                          technologies: project.technologies,
-                          githubUrl: project.githubUrl,
-                          liveUrl: project.liveUrl,
-                          isReversed: index % 2 != 0, // Alternate layout
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 60),
-
-                    // View All Button
-                    ElevatedButton(
-                      onPressed: () {
-                        controller.changePage(3);
-                        Get.offNamed(AppRoutes.projects);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryGreen,
-                        foregroundColor: Colors.black,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isMobile ? 40 : 64,
-                          vertical: 20,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+            // Main Content Wrapper
+            Container(
+              width: double.infinity,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(vertical: 80),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Section Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "View All Projects",
+                            "{02} - Selected Work",
                             style: GoogleFonts.manrope(
-                              fontSize: isMobile ? 18 : 22,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
                               color: Colors.black,
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          const Icon(
-                            Icons.arrow_forward,
-                            color: Colors.black,
-                            size: 20,
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              color: AppColors.primaryGreen,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+
+                      // Title
+                      Text(
+                        "Featured Projects",
+                        style: GoogleFonts.manrope(
+                          fontSize: isMobile ? 40 : 60,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black,
+                          height: 1.1,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 60),
+
+                      // Projects List
+                      if (featuredProjects.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 32),
+                          child: Text(
+                            'Featured projects will appear here once they are published from the admin portal.',
+                            style: GoogleFonts.manrope(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        )
+                      else
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: math.min(featuredProjects.length, 2),
+                          separatorBuilder:
+                              (context, index) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 60,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Divider(
+                                        color: Colors.grey[200],
+                                        thickness: 1,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                      ),
+                                      child: Container(
+                                        width: 12,
+                                        height: 12,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border.all(
+                                            color: AppColors.primaryGreen,
+                                            width: 2,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Divider(
+                                        color: Colors.grey[200],
+                                        thickness: 1,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          itemBuilder: (context, index) {
+                            if (index >= featuredProjects.length) {
+                              return const SizedBox.shrink();
+                            }
+                            final project = featuredProjects[index];
+                            return _FeaturedProjectCard(
+                              title: project.title,
+                              description: project.description,
+                              imageUrl: project.imageUrl,
+                              technologies: project.technologies,
+                              githubUrl: project.githubUrl,
+                              liveUrl: project.liveUrl,
+                              isReversed: index % 2 != 0,
+                            );
+                          },
+                        ),
+
+                      const SizedBox(height: 60),
+
+                      // View All Button
+                      ElevatedButton(
+                        onPressed: () {
+                          controller.changePage(3);
+                          Get.offNamed(AppRoutes.projects);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryGreen,
+                          foregroundColor: Colors.black,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 40 : 64,
+                            vertical: 20,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "View All Projects",
+                              style: GoogleFonts.manrope(
+                                fontSize: isMobile ? 18 : 22,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Icon(
+                              Icons.arrow_forward,
+                              color: Colors.black,
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 }
 
@@ -234,7 +252,7 @@ class _FeaturedProjectCard extends StatelessWidget {
             border: Border.all(color: Colors.grey[200]!),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -301,7 +319,7 @@ class _FeaturedProjectCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryGreen.withOpacity(0.15),
+            color: AppColors.primaryGreen.withValues(alpha: 0.15),
             offset: const Offset(0, 20),
             blurRadius: 40,
             spreadRadius: -10,
@@ -353,13 +371,11 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final bool isPrimary;
 
   const _ActionButton({
     required this.icon,
     required this.label,
     required this.onTap,
-    this.isPrimary = false,
   });
 
   @override
@@ -370,12 +386,9 @@ class _ActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: isPrimary ? AppColors.primaryGreen : Colors.transparent,
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(30),
-          border:
-              isPrimary
-                  ? null
-                  : Border.all(color: Colors.black.withOpacity(0.2)),
+          border: Border.all(color: Colors.black.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
@@ -415,7 +428,7 @@ class _BackgroundPainter extends CustomPainter {
     // Code Syntax < />
     final codeSlashPaint =
         Paint()
-          ..color = AppColors.primaryGreen.withOpacity(0.78)
+          ..color = AppColors.primaryGreen.withValues(alpha: 0.78)
           ..strokeWidth = 2
           ..style = PaintingStyle.stroke;
 
@@ -440,13 +453,13 @@ class _BackgroundPainter extends CustomPainter {
       Offset(size.width * 0.94, size.height * 0.15),
       12,
       5, // Pentagon
-      AppColors.primaryGreen.withOpacity(0.67),
+      AppColors.primaryGreen.withValues(alpha: 0.67),
       false,
     );
 
     // Added Shape: Small Circle near triangle
     paint.shader = null;
-    paint.color = AppColors.primaryGreen.withOpacity(0.49);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.49);
     canvas.drawCircle(Offset(size.width * 0.92, size.height * 0.12), 4, paint);
 
     // Added Shape: Cross near triangle
@@ -454,7 +467,7 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.8, size.height * 0.18),
       8,
-      AppColors.primaryGreen.withOpacity(0.40),
+      AppColors.primaryGreen.withValues(alpha: 0.40),
     );
 
     // 2. Hollow Hexagon (Bottom Left)
@@ -470,7 +483,7 @@ class _BackgroundPainter extends CustomPainter {
     hexPath.lineTo(center2.dx + 20, center2.dy - 35);
     hexPath.close();
 
-    strokePaint.color = AppColors.primaryGreen.withOpacity(0.5);
+    strokePaint.color = AppColors.primaryGreen.withValues(alpha: 0.5);
     canvas.drawPath(hexPath, strokePaint);
 
     // 3. Scattered Shapes (Significantly Increased Count & Distribution)
@@ -480,30 +493,30 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.05, size.height * 0.2),
       12,
-      AppColors.primaryGreen.withOpacity(0.3),
+      AppColors.primaryGreen.withValues(alpha: 0.3),
     );
     canvas.drawCircle(
       Offset(size.width * 0.08, size.height * 0.25),
       4,
-      paint..color = AppColors.primaryGreen.withOpacity(0.4),
+      paint..color = AppColors.primaryGreen.withValues(alpha: 0.4),
     );
     _drawDiamond(
       canvas,
       Offset(size.width * 0.12, size.height * 0.4),
       8,
-      AppColors.primaryGreen.withOpacity(0.25),
+      AppColors.primaryGreen.withValues(alpha: 0.25),
       false,
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.04, size.height * 0.6),
       10,
-      AppColors.primaryGreen.withOpacity(0.35),
+      AppColors.primaryGreen.withValues(alpha: 0.35),
     );
     canvas.drawCircle(
       Offset(size.width * 0.1, size.height * 0.8),
       6,
-      paint..color = AppColors.primaryGreen.withOpacity(0.2),
+      paint..color = AppColors.primaryGreen.withValues(alpha: 0.2),
     );
 
     // --- RIGHT SIDE ---
@@ -511,44 +524,44 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.95, size.height * 0.3),
       14,
-      AppColors.primaryGreen.withOpacity(0.3),
+      AppColors.primaryGreen.withValues(alpha: 0.3),
     );
     canvas.drawCircle(
       Offset(size.width * 0.92, size.height * 0.45),
       8,
-      paint..color = AppColors.primaryGreen.withOpacity(0.25),
+      paint..color = AppColors.primaryGreen.withValues(alpha: 0.25),
     );
     _drawDiamond(
       canvas,
       Offset(size.width * 0.96, size.height * 0.65),
       10,
-      AppColors.primaryGreen.withOpacity(0.3),
+      AppColors.primaryGreen.withValues(alpha: 0.3),
       true,
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.9, size.height * 0.85),
       12,
-      AppColors.primaryGreen.withOpacity(0.4),
+      AppColors.primaryGreen.withValues(alpha: 0.4),
     );
 
     // --- TOP AREA ---
     canvas.drawCircle(
       Offset(size.width * 0.3, size.height * 0.05),
       5,
-      paint..color = AppColors.primaryGreen.withOpacity(0.3),
+      paint..color = AppColors.primaryGreen.withValues(alpha: 0.3),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.5, size.height * 0.08),
       10,
-      AppColors.primaryGreen.withOpacity(0.25),
+      AppColors.primaryGreen.withValues(alpha: 0.25),
     );
     _drawDiamond(
       canvas,
       Offset(size.width * 0.7, size.height * 0.06),
       6,
-      AppColors.primaryGreen.withOpacity(0.35),
+      AppColors.primaryGreen.withValues(alpha: 0.35),
       false,
     );
 
@@ -557,25 +570,25 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.2, size.height * 0.95),
       10,
-      AppColors.primaryGreen.withOpacity(0.3),
+      AppColors.primaryGreen.withValues(alpha: 0.3),
     );
     canvas.drawCircle(
       Offset(size.width * 0.4, size.height * 0.92),
       7,
-      paint..color = AppColors.primaryGreen.withOpacity(0.2),
+      paint..color = AppColors.primaryGreen.withValues(alpha: 0.2),
     );
     _drawDiamond(
       canvas,
       Offset(size.width * 0.6, size.height * 0.96),
       9,
-      AppColors.primaryGreen.withOpacity(0.28),
+      AppColors.primaryGreen.withValues(alpha: 0.28),
       true,
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.8, size.height * 0.93),
       12,
-      AppColors.primaryGreen.withOpacity(0.32),
+      AppColors.primaryGreen.withValues(alpha: 0.32),
     );
 
     // --- CENTER/RANDOM SCATTER (Existing logic, slightly adjusted) ---
@@ -583,47 +596,47 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.15, size.height * 0.2),
       15,
-      AppColors.primaryGreen.withOpacity(0.25),
+      AppColors.primaryGreen.withValues(alpha: 0.25),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.5, size.height * 0.85),
       12,
-      AppColors.primaryGreen.withOpacity(0.6),
+      AppColors.primaryGreen.withValues(alpha: 0.6),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.35, size.height * 0.45),
       8,
-      AppColors.primaryGreen.withOpacity(0.50),
+      AppColors.primaryGreen.withValues(alpha: 0.50),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.75, size.height * 0.15),
       14,
-      AppColors.primaryGreen.withOpacity(0.70),
+      AppColors.primaryGreen.withValues(alpha: 0.70),
     );
 
     // Filled Circles
     paint.shader = null;
-    paint.color = AppColors.primaryGreen.withOpacity(0.4);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.4);
     canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.15), 6, paint);
 
-    paint.color = AppColors.primaryGreen.withOpacity(0.58);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.58);
     canvas.drawCircle(Offset(size.width * 0.05, size.height * 0.5), 18, paint);
 
-    paint.color = AppColors.primaryGreen.withOpacity(0.40);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.40);
     canvas.drawCircle(Offset(size.width * 0.45, size.height * 0.65), 4, paint);
 
     // Hollow Circles
-    strokePaint.color = AppColors.primaryGreen.withOpacity(0.69);
+    strokePaint.color = AppColors.primaryGreen.withValues(alpha: 0.69);
     canvas.drawCircle(
       Offset(size.width * 0.8, size.height * 0.8),
       25,
       strokePaint,
     );
 
-    strokePaint.color = AppColors.primaryGreen.withOpacity(0.78);
+    strokePaint.color = AppColors.primaryGreen.withValues(alpha: 0.78);
     canvas.drawCircle(
       Offset(size.width * 0.25, size.height * 0.3),
       15,
@@ -635,14 +648,16 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.7, size.height * 0.92), // Moved from 0.5 to 0.7
       15,
-      AppColors.primaryGreen.withOpacity(0.45),
+      AppColors.primaryGreen.withValues(alpha: 0.45),
       true,
     );
 
     // 5. Connecting Lines
     final linePaint =
         Paint()
-          ..color = AppColors.primaryGreen.withOpacity(0.3) // Reduced opacity
+          ..color = AppColors.primaryGreen.withValues(
+            alpha: 0.3,
+          ) // Reduced opacity
           ..strokeWidth = 1.0;
 
     canvas.drawLine(
