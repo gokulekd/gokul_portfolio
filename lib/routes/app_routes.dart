@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../pages/about_page.dart';
+import '../pages/admin_page.dart';
 import '../pages/blog_page.dart';
 import '../pages/contact_page.dart';
 import '../pages/experience_page.dart';
@@ -18,8 +19,8 @@ class AppRoutes {
   static const String blog = '/blog';
   static const String contact = '/contact';
   static const String skills = '/skills';
+  static const String admin = '/admin';
 
-  /// Maps menu index to route for navigation
   static const Map<int, String> indexToRoute = {
     0: home,
     1: about,
@@ -39,5 +40,6 @@ class AppRoutes {
     GetPage(name: blog, page: () => const BlogPage()),
     GetPage(name: contact, page: () => const ContactPage()),
     GetPage(name: skills, page: () => const SkillsPage()),
+    GetPage(name: admin, page: () => const AdminPage()),
   ];
 }
