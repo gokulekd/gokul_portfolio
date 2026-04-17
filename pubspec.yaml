@@ -57,6 +57,12 @@ dependencies:
   # HTTP Client for API calls
   http: ^1.2.1
 
+  # Firebase
+  firebase_core: ^3.13.0
+  firebase_auth: ^5.5.2
+  cloud_firestore: ^5.6.7
+  google_sign_in: ^6.2.1
+
   # Local persistence for theme preference
   shared_preferences: ^2.2.3
 

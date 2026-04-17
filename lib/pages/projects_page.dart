@@ -57,7 +57,7 @@ class ProjectsPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1),
                     spreadRadius: 1,
                     blurRadius: 10,
                     offset: const Offset(0, 2),
@@ -76,14 +76,21 @@ class ProjectsPage extends StatelessWidget {
             const SizedBox(height: 32),
 
             // Projects Grid
-            ...controller.projects.map(
-              (project) => ProjectCard(
-                title: project.title,
-                description: project.description,
-                imageUrl: project.imageUrl,
-                technologies: project.technologies,
-                githubUrl: project.githubUrl,
-                liveUrl: project.liveUrl,
+            Obx(
+              () => Column(
+                children:
+                    controller.publishedProjects
+                        .map(
+                          (project) => ProjectCard(
+                            title: project.title,
+                            description: project.description,
+                            imageUrl: project.imageUrl,
+                            technologies: project.technologies,
+                            githubUrl: project.githubUrl,
+                            liveUrl: project.liveUrl,
+                          ),
+                        )
+                        .toList(),
               ),
             ),
 
@@ -97,7 +104,7 @@ class ProjectsPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1),
                     spreadRadius: 1,
                     blurRadius: 10,
                     offset: const Offset(0, 2),
@@ -178,7 +185,7 @@ class ProjectsPage extends StatelessWidget {
                     "I'm always excited to work on new and challenging projects. Let's discuss how we can bring your ideas to life!",
                     style: GoogleFonts.manrope(
                       fontSize: 16,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       height: 1.6,
                     ),
                     textAlign: TextAlign.center,
