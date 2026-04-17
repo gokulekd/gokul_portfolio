@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
+import '../controllers/theme_controller.dart';
 import '../routes/app_routes.dart';
 import '../utils/responsive_helper.dart';
 
@@ -109,8 +110,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions:
           isMobileOrTablet
-              ? null
+              ? [
+                  // Theme toggle on mobile
+                  _buildThemeToggle(),
+                  const SizedBox(width: 8),
+                ]
               : [
+                // Theme toggle
+                _buildThemeToggle(),
+                const SizedBox(width: 8),
                 ...menuItems.map((item) {
                   final isContactMe = item['title'] == 'Contact me';
                   return Align(
@@ -168,6 +176,33 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 }),
                 const SizedBox(width: 16),
               ],
+    );
+  }
+
+  Widget _buildThemeToggle() {
+    final themeController = Get.find<ThemeController>();
+    return Obx(
+      () => Tooltip(
+        message: themeController.isDarkMode.value
+            ? 'Switch to Light Mode'
+            : 'Switch to Dark Mode',
+        child: IconButton(
+          onPressed: themeController.toggleTheme,
+          icon: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: Icon(
+              themeController.isDarkMode.value
+                  ? Icons.light_mode_rounded
+                  : Icons.dark_mode_rounded,
+              key: ValueKey(themeController.isDarkMode.value),
+              color: themeController.isDarkMode.value
+                  ? Colors.amber
+                  : Colors.black54,
+              size: 22,
+            ),
+          ),
+        ),
+      ),
     );
   }
 

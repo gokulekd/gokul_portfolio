@@ -6,7 +6,9 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
+import '../routes/app_routes.dart';
 import '../utils/responsive_helper.dart';
+import 'available_badge.dart';
 import 'custom_widgets.dart';
 
 class HeroSection extends StatefulWidget {
@@ -383,7 +385,11 @@ class _HeroSectionState extends State<HeroSection>
             },
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+
+        // Available for work badge
+        const AvailableForWorkBadge(),
+        const SizedBox(height: 16),
 
         // Name and Title
         AnimatedBuilder(
@@ -602,8 +608,12 @@ class _HeroSectionState extends State<HeroSection>
             return Opacity(
               opacity: _taglineOpacity.value,
               child: _buildLargeButton(
-                "See what i can do",
-                () {},
+                "See what I can do",
+                () {
+                  final ctrl = Get.find<PortfolioController>();
+                  ctrl.changePage(3);
+                  Get.toNamed(AppRoutes.projects);
+                },
                 context,
               ),
             );
@@ -673,7 +683,11 @@ class _HeroSectionState extends State<HeroSection>
                   },
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
+
+              // Available for work badge (desktop)
+              const Center(child: AvailableForWorkBadge()),
+              const SizedBox(height: 16),
 
               // Name and Title
               Center(
@@ -916,8 +930,12 @@ class _HeroSectionState extends State<HeroSection>
                     return Opacity(
                       opacity: _taglineOpacity.value,
                       child: _buildLargeButton(
-                        "See what i can do",
-                        () {},
+                        "See what I can do",
+                        () {
+                          final ctrl = Get.find<PortfolioController>();
+                          ctrl.changePage(3);
+                          Get.toNamed(AppRoutes.projects);
+                        },
                         context,
                       ),
                     );

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../constants/colors.dart';
+import '../controllers/portfolio_controller.dart';
 
 class SocialPlatform {
   final String name;
@@ -20,44 +22,38 @@ class SocialPlatform {
 class ContactSection extends StatelessWidget {
   const ContactSection({super.key});
 
-  static final List<SocialPlatform> _platforms = [
-    SocialPlatform(
-      name: "Twitter/X",
-      url: "https://twitter.com",
-      icon: const FaIcon(
-        FontAwesomeIcons.xTwitter,
-        color: Colors.black,
-        size: 22,
+  List<SocialPlatform> _buildPlatforms(PortfolioController controller) {
+    String _url(String platform) =>
+        controller.getSocialLink(platform)?.url ?? '';
+
+    return [
+      SocialPlatform(
+        name: "Twitter/X",
+        url: _url('Twitter'),
+        icon: const FaIcon(FontAwesomeIcons.xTwitter, color: Colors.black, size: 22),
       ),
-    ),
-    SocialPlatform(
-      name: "GitHub",
-      url: "https://github.com",
-      icon: const FaIcon(
-        FontAwesomeIcons.github,
-        color: Colors.black,
-        size: 22,
+      SocialPlatform(
+        name: "GitHub",
+        url: _url('GitHub'),
+        icon: const FaIcon(FontAwesomeIcons.github, color: Colors.black, size: 22),
       ),
-    ),
-    SocialPlatform(
-      name: "LinkedIn",
-      url: "https://linkedin.com",
-      icon: const FaIcon(
-        FontAwesomeIcons.linkedinIn,
-        color: Colors.black,
-        size: 22,
+      SocialPlatform(
+        name: "LinkedIn",
+        url: _url('LinkedIn'),
+        icon: const FaIcon(FontAwesomeIcons.linkedinIn, color: Colors.black, size: 22),
       ),
-    ),
-    SocialPlatform(
-      name: "Medium",
-      url: "https://medium.com",
-      icon: const FaIcon(
-        FontAwesomeIcons.medium,
-        color: Colors.black,
-        size: 22,
+      SocialPlatform(
+        name: "Medium",
+        url: _url('Medium'),
+        icon: const FaIcon(FontAwesomeIcons.medium, color: Colors.black, size: 22),
       ),
-    ),
-  ];
+      SocialPlatform(
+        name: "Instagram",
+        url: _url('Instagram'),
+        icon: const FaIcon(FontAwesomeIcons.instagram, color: Colors.black, size: 22),
+      ),
+    ];
+  }
 
   Future<void> _launchURL(String url) async {
     final uri = Uri.parse(url);
@@ -68,6 +64,8 @@ class ContactSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<PortfolioController>();
+    final _platforms = _buildPlatforms(controller);
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Container(
@@ -129,44 +127,29 @@ class ContactSection extends StatelessWidget {
                       isMobile
                           ? Column(
                             children: [
-                              // Top row - 2 cards
                               Row(
                                 children: [
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[0],
-                                      context,
-                                    ),
-                                  ),
+                                  Expanded(child: _buildSocialCard(_platforms[0], context)),
                                   const SizedBox(width: 16),
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[1],
-                                      context,
-                                    ),
-                                  ),
+                                  Expanded(child: _buildSocialCard(_platforms[1], context)),
                                 ],
                               ),
                               const SizedBox(height: 16),
                               Row(
                                 children: [
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[2],
-                                      context,
-                                    ),
-                                  ),
+                                  Expanded(child: _buildSocialCard(_platforms[2], context)),
                                   const SizedBox(width: 16),
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[3],
-                                      context,
-                                    ),
-                                  ),
+                                  Expanded(child: _buildSocialCard(_platforms[3], context)),
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              _buildGetInTouchCard(context),
+                              Row(
+                                children: [
+                                  Expanded(child: _buildSocialCard(_platforms[4], context)),
+                                  const SizedBox(width: 16),
+                                  Expanded(child: _buildGetInTouchCard(context)),
+                                ],
+                              ),
                             ],
                           )
                           : Column(
@@ -174,38 +157,20 @@ class ContactSection extends StatelessWidget {
                               // Top row - 3 cards
                               Row(
                                 children: [
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[0],
-                                      context,
-                                    ),
-                                  ),
+                                  Expanded(child: _buildSocialCard(_platforms[0], context)),
                                   const SizedBox(width: 16),
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[1],
-                                      context,
-                                    ),
-                                  ),
+                                  Expanded(child: _buildSocialCard(_platforms[1], context)),
                                   const SizedBox(width: 16),
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[2],
-                                      context,
-                                    ),
-                                  ),
+                                  Expanded(child: _buildSocialCard(_platforms[2], context)),
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              // Bottom row - 2 cards
+                              // Bottom row - 3 cards + get in touch
                               Row(
                                 children: [
-                                  Expanded(
-                                    child: _buildSocialCard(
-                                      _platforms[3],
-                                      context,
-                                    ),
-                                  ),
+                                  Expanded(child: _buildSocialCard(_platforms[3], context)),
+                                  const SizedBox(width: 16),
+                                  Expanded(child: _buildSocialCard(_platforms[4], context)),
                                   const SizedBox(width: 16),
                                   Expanded(
                                     flex: 2,
@@ -279,11 +244,12 @@ class ContactSection extends StatelessWidget {
   }
 
   Widget _buildGetInTouchCard(BuildContext context) {
+    final controller = Get.find<PortfolioController>();
     return InkWell(
-      onTap: () {
-        final email = Uri(scheme: 'mailto', path: 'your-email@example.com');
-        launchUrl(email);
-      },
+      onTap: () => controller.launchEmail(
+        subject: 'Let\'s work together!',
+        body: 'Hi Gokul,\n\nI came across your portfolio and would love to discuss a project with you.\n\n',
+      ),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         height: 140,
