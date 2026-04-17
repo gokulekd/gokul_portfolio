@@ -54,6 +54,18 @@ dependencies:
   # Responsive Framework
   responsive_framework: ^1.4.0
 
+  # HTTP Client for API calls
+  http: ^1.2.1
+
+  # Local persistence for theme preference
+  shared_preferences: ^2.2.3
+
+  # Advanced animations
+  flutter_animate: ^4.5.0
+
+  # Image caching for network images
+  cached_network_image: ^3.3.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -22,6 +22,8 @@ class Project {
   final String? githubUrl;
   final String? liveUrl;
   final String category;
+  final int stars;
+  final int forks;
 
   Project({
     required this.title,
@@ -31,6 +33,8 @@ class Project {
     this.githubUrl,
     this.liveUrl,
     required this.category,
+    this.stars = 0,
+    this.forks = 0,
   });
 }
 
@@ -42,6 +46,9 @@ class BlogPost {
   final DateTime publishDate;
   final String author;
   final List<String> tags;
+  final int readingTimeMinutes;
+  final String? url;
+  final int reactions;
 
   BlogPost({
     required this.title,
@@ -51,6 +58,9 @@ class BlogPost {
     required this.publishDate,
     required this.author,
     required this.tags,
+    this.readingTimeMinutes = 5,
+    this.url,
+    this.reactions = 0,
   });
 }
 
@@ -79,5 +89,21 @@ class PersonalInfo {
     required this.bio,
     required this.profileImageUrl,
     required this.socialLinks,
+  });
+}
+
+class GitHubStats {
+  final int publicRepos;
+  final int followers;
+  final int following;
+  final String avatarUrl;
+  final String bio;
+
+  GitHubStats({
+    required this.publicRepos,
+    required this.followers,
+    required this.following,
+    required this.avatarUrl,
+    required this.bio,
   });
 }
