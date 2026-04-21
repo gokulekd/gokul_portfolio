@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "663147332063",
+    "project_id": "gokul-portfolio-dbdda",
+    "storage_bucket": "gokul-portfolio-dbdda.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:663147332063:android:ae9f6984cf3c574d19c46a",
+        "android_client_info": {
+          "package_name": "com.example.gokul_portfolio"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "663147332063-4sumk7p24oonsubigcb1at56bc4ot1f5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.gokul_portfolio",
+            "certificate_hash": "ac281206f967e65600afb4e7d564005e5bf25e36"
+          }
+        },
+        {
+          "client_id": "663147332063-p1p27f84itg5scn1knartej4t02rf9at.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.gokul_portfolio",
+            "certificate_hash": "da8f011d63c76a9547af669f1a75fcdebe4b6bc3"
+          }
+        },
+        {
+          "client_id": "663147332063-apu4gm1qap1t8kl3d8v7ggigde94cprk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJoGJ6Lzk9BKeG83aM6FIf9r3dldhCtMI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "663147332063-apu4gm1qap1t8kl3d8v7ggigde94cprk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "663147332063-2fn6lemf6d9def2t32iafc9ths3k42ad.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.gokulPortfolio"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
