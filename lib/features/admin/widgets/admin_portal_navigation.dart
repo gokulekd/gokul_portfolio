@@ -97,6 +97,30 @@ class AdminPortalNavigation extends StatelessWidget {
                               ),
                             ),
                         const SizedBox(height: 16),
+                        const _GroupLabel(title: 'Publishing'),
+                        ...controller.modules
+                            .where(
+                              (item) => const {
+                                AdminModule.createPost,
+                                AdminModule.managePages,
+                                AdminModule.resumeManagement,
+                              }.contains(item.module),
+                            )
+                            .map(
+                              (item) => _NavItem(
+                                item: item,
+                                selected:
+                                    controller.selectedModule.value ==
+                                    item.module,
+                                onTap: () {
+                                  controller.selectModule(item.module);
+                                  if (isDrawer) {
+                                    Navigator.of(context).pop();
+                                  }
+                                },
+                              ),
+                            ),
+                        const SizedBox(height: 16),
                         const _GroupLabel(title: 'Operations'),
                         ...controller.modules
                             .where(

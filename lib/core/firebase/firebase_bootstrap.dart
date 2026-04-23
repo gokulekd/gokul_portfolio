@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 
+import '../../firebase_options.dart';
 import 'firebase_options_env.dart';
 
 class FirebaseBootstrap {
@@ -8,14 +9,23 @@ class FirebaseBootstrap {
   static bool _isConfigured = false;
   static bool _isInitialized = false;
   static String _statusMessage =
-      'Firebase is not configured yet. Add Firebase dart-defines to enable live auth and Firestore.';
+      'Firebase is not configured yet.';
 
   static bool get isConfigured => _isConfigured;
   static bool get isReady => _isConfigured && _isInitialized;
   static String get statusMessage => _statusMessage;
 
   static Future<void> initialize() async {
-    final options = FirebaseOptionsEnv.currentPlatform;
+    // Prefer dart-define credentials; fall back to bundled firebase_options.dart
+    FirebaseOptions? options = FirebaseOptionsEnv.currentPlatform;
+    if (options == null) {
+      try {
+        options = DefaultFirebaseOptions.currentPlatform;
+      } catch (_) {
+        options = null;
+      }
+    }
+
     _isConfigured = options != null;
 
     if (!_isConfigured) {

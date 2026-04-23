@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
+import '../routes/app_routes.dart';
 
 class FooterSection extends StatelessWidget {
   const FooterSection({super.key});
@@ -16,20 +17,62 @@ class FooterSection extends StatelessWidget {
 
     return Container(
       color: const Color(0xFF0A0A0A), // Dark almost black background
-      child: Stack(
+      child: Column(
         children: [
-          // Background decorative elements
-          Positioned.fill(child: CustomPaint(painter: _BackgroundPainter())),
-          // Main content
-          Padding(
+          Stack(
+            children: [
+              // Background decorative elements
+              Positioned.fill(child: CustomPaint(painter: _BackgroundPainter())),
+              // Main content
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: isNarrow ? 100 : 140,
+                  horizontal: isNarrow ? 32 : 120,
+                ),
+                child:
+                    isNarrow
+                        ? _buildMobileLayout(context, controller)
+                        : _buildDesktopLayout(context, controller),
+              ),
+            ],
+          ),
+          // Copyright bar with hidden admin navigation
+          Container(
+            width: double.infinity,
             padding: EdgeInsets.symmetric(
-              vertical: isNarrow ? 100 : 140,
+              vertical: 16,
               horizontal: isNarrow ? 32 : 120,
             ),
-            child:
-                isNarrow
-                    ? _buildMobileLayout(context, controller)
-                    : _buildDesktopLayout(context, controller),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Colors.white.withOpacity(0.06),
+                ),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () => Get.toNamed(AppRoutes.admin),
+                  child: Text(
+                    '© ${DateTime.now().year} Gokul K S. All rights reserved.',
+                    style: GoogleFonts.manrope(
+                      color: Colors.white.withOpacity(0.35),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Text(
+                  'Made with Flutter',
+                  style: GoogleFonts.manrope(
+                    color: Colors.white.withOpacity(0.25),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
