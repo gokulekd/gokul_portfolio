@@ -13,18 +13,17 @@ class AdminAuthGatePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      if (!controller.isFirebaseReady) {
-        return _AdminSetupState(
-          message: controller.firebaseStatusMessage,
-          allowedEmail: controller.allowedEmail,
-        );
-      }
+    if (!controller.isFirebaseReady) {
+      return _AdminSetupState(
+        message: controller.firebaseStatusMessage,
+        allowedEmail: controller.allowedEmail,
+      );
+    }
 
+    return Obx(() {
       if (controller.hasAccess) {
         return AdminPortalPage();
       }
-
       return _AdminLoginState(controller: controller);
     });
   }

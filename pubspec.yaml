@@ -72,6 +72,9 @@ dependencies:
   # Image caching for network images
   cached_network_image: ^3.3.1
 
+  # File picker for resume/image uploads
+  file_picker: ^8.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

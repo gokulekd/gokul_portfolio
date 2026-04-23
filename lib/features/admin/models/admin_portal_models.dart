@@ -17,6 +17,9 @@ enum AdminModule {
   submissions,
   mediaLibrary,
   settings,
+  createPost,
+  managePages,
+  resumeManagement,
 }
 
 enum AdminItemState { live, draft, hidden, warning }

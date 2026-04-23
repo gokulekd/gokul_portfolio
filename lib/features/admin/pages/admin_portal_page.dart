@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -80,6 +83,15 @@ class AdminPortalPage extends StatelessWidget {
                                 controller: controller,
                                 isCompact: isCompact,
                               ),
+                            ] else if (controller.selectedModule.value ==
+                                AdminModule.createPost) ...[
+                              _CreatePostWorkspace(isCompact: isCompact),
+                            ] else if (controller.selectedModule.value ==
+                                AdminModule.managePages) ...[
+                              _ManagePagesWorkspace(isCompact: isCompact),
+                            ] else if (controller.selectedModule.value ==
+                                AdminModule.resumeManagement) ...[
+                              _ResumeManagementWorkspace(isCompact: isCompact),
                             ] else ...[
                               _ModuleWorkspace(
                                 controller: controller,
@@ -403,6 +415,8 @@ class _DashboardBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        _MainActionGrid(controller: controller, isCompact: isCompact),
+        const SizedBox(height: 18),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -1693,6 +1707,1678 @@ class _SubmissionsWorkspace extends StatelessWidget {
         const SizedBox(width: 18),
         Expanded(flex: 5, child: detail),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN ACTION GRID
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _MainActionGrid extends StatelessWidget {
+  const _MainActionGrid({
+    required this.controller,
+    required this.isCompact,
+  });
+
+  final AdminPortalController controller;
+  final bool isCompact;
+
+  @override
+  Widget build(BuildContext context) {
+    final tiles = [
+      _ActionTile(
+        icon: Icons.add_circle_rounded,
+        label: 'Create a Post',
+        description: 'Write & publish content to your portfolio feed',
+        accentColor: AppColors.primaryGreen,
+        onTap: () => controller.selectModule(AdminModule.createPost),
+        showPlus: true,
+      ),
+      _ActionTile(
+        icon: Icons.web_rounded,
+        label: 'Manage Pages',
+        description: 'View and control all pages across your portfolio',
+        accentColor: const Color(0xFF5CD6FF),
+        onTap: () => controller.selectModule(AdminModule.managePages),
+      ),
+      _ActionTile(
+        icon: Icons.description_rounded,
+        label: 'Resume',
+        description: 'Upload, replace, and manage your resume versions',
+        accentColor: const Color(0xFFFFB44C),
+        onTap: () => controller.selectModule(AdminModule.resumeManagement),
+      ),
+    ];
+
+    if (isCompact) {
+      return Column(
+        children: tiles
+            .map((tile) => Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: tile,
+                ))
+            .toList(),
+      );
+    }
+
+    return Row(
+      children: tiles
+          .expand(
+            (tile) => [Expanded(child: tile), const SizedBox(width: 14)],
+          )
+          .toList()
+        ..removeLast(),
+    );
+  }
+}
+
+class _ActionTile extends StatefulWidget {
+  const _ActionTile({
+    required this.icon,
+    required this.label,
+    required this.description,
+    required this.accentColor,
+    required this.onTap,
+    this.showPlus = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final String description;
+  final Color accentColor;
+  final VoidCallback onTap;
+  final bool showPlus;
+
+  @override
+  State<_ActionTile> createState() => _ActionTileState();
+}
+
+class _ActionTileState extends State<_ActionTile> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: _hovered
+                ? widget.accentColor.withValues(alpha: 0.10)
+                : const Color(0xFF15171A),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: _hovered
+                  ? widget.accentColor.withValues(alpha: 0.35)
+                  : Colors.white.withValues(alpha: 0.06),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: _hovered
+                    ? widget.accentColor.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.14),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: widget.accentColor.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(widget.icon, color: widget.accentColor, size: 26),
+                  ),
+                  const Spacer(),
+                  if (widget.showPlus)
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: widget.accentColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        color: Colors.black,
+                        size: 22,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Text(
+                widget.label,
+                style: GoogleFonts.manrope(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.description,
+                style: GoogleFonts.manrope(
+                  color: Colors.white60,
+                  fontSize: 13,
+                  height: 1.55,
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Text(
+                    'Open',
+                    style: GoogleFonts.manrope(
+                      color: widget.accentColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    color: widget.accentColor,
+                    size: 16,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CREATE POST WORKSPACE
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _CreatePostWorkspace extends StatefulWidget {
+  const _CreatePostWorkspace({required this.isCompact});
+
+  final bool isCompact;
+
+  @override
+  State<_CreatePostWorkspace> createState() => _CreatePostWorkspaceState();
+}
+
+class _CreatePostWorkspaceState extends State<_CreatePostWorkspace> {
+  final _textController = TextEditingController();
+  final _hashtagController = TextEditingController();
+  String _visibility = 'Public';
+  final List<String> _hashtags = [];
+  final List<Uint8List> _selectedImages = [];
+  bool _isPosting = false;
+
+  static const int _maxChars = 3000;
+
+  final _visibilityOptions = ['Public', 'Portfolio Only', 'Draft'];
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    _hashtagController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImages() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: true,
+      withData: true,
+    );
+    if (result != null) {
+      setState(() {
+        for (final file in result.files) {
+          if (file.bytes != null && _selectedImages.length < 4) {
+            _selectedImages.add(file.bytes!);
+          }
+        }
+      });
+    }
+  }
+
+  void _addHashtag() {
+    final tag = _hashtagController.text.trim().replaceAll('#', '');
+    if (tag.isNotEmpty && !_hashtags.contains(tag) && _hashtags.length < 10) {
+      setState(() {
+        _hashtags.add(tag);
+        _hashtagController.clear();
+      });
+    }
+  }
+
+  Future<void> _submitPost() async {
+    if (_textController.text.trim().isEmpty && _selectedImages.isEmpty) return;
+    setState(() => _isPosting = true);
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() {
+      _isPosting = false;
+      _textController.clear();
+      _selectedImages.clear();
+      _hashtags.clear();
+      _visibility = 'Public';
+    });
+    Get.snackbar(
+      'Post published',
+      'Your post is now live.',
+      backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.16),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
+
+  bool get _canPost =>
+      (_textController.text.trim().isNotEmpty || _selectedImages.isNotEmpty) &&
+      !_isPosting;
+
+  @override
+  Widget build(BuildContext context) {
+    final editor = AdminSurfaceCard(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Author row
+          Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [AppColors.primaryGreen, Color(0xFF57D4FF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'GK',
+                  style: GoogleFonts.manrope(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Gokul K S',
+                      style: GoogleFonts.manrope(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.10),
+                        ),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _visibility,
+                          isDense: true,
+                          dropdownColor: const Color(0xFF1C1F23),
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: Colors.white70,
+                            size: 16,
+                          ),
+                          style: GoogleFonts.manrope(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          items: _visibilityOptions
+                              .map(
+                                (opt) => DropdownMenuItem(
+                                  value: opt,
+                                  child: Text(opt),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) setState(() => _visibility = val);
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Text area
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _textController,
+            builder: (context, value, _) {
+              final remaining = _maxChars - value.text.length;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  TextField(
+                    controller: _textController,
+                    maxLines: 7,
+                    maxLength: _maxChars,
+                    style: GoogleFonts.manrope(
+                      color: Colors.white,
+                      fontSize: 15,
+                      height: 1.65,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: "What's on your mind?",
+                      hintStyle: GoogleFonts.manrope(
+                        color: Colors.white38,
+                        fontSize: 15,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.03),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(18),
+                        borderSide: BorderSide.none,
+                      ),
+                      counterText: '',
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '$remaining characters remaining',
+                    style: GoogleFonts.manrope(
+                      color: remaining < 100 ? const Color(0xFFFFB44C) : Colors.white38,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          // Image previews
+          if (_selectedImages.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 110,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _selectedImages.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: Image.memory(
+                            _selectedImages[index],
+                            width: 110,
+                            height: 110,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: GestureDetector(
+                            onTap: () => setState(
+                              () => _selectedImages.removeAt(index),
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.7),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.close_rounded,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          // Action bar
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.03),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+            ),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                _PostActionButton(
+                  icon: Icons.image_rounded,
+                  label: 'Photo',
+                  color: AppColors.primaryGreen,
+                  onTap: _pickImages,
+                  badge: _selectedImages.isNotEmpty
+                      ? '${_selectedImages.length}'
+                      : null,
+                ),
+                _PostActionButton(
+                  icon: Icons.videocam_rounded,
+                  label: 'Video',
+                  color: const Color(0xFF5CD6FF),
+                  onTap: () {},
+                ),
+                _PostActionButton(
+                  icon: Icons.attach_file_rounded,
+                  label: 'Document',
+                  color: const Color(0xFFFFB44C),
+                  onTap: () async {
+                    await FilePicker.platform.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['pdf', 'doc', 'docx'],
+                    );
+                  },
+                ),
+                _PostActionButton(
+                  icon: Icons.tag_rounded,
+                  label: 'Hashtag',
+                  color: const Color(0xFFFF7C7C),
+                  onTap: () {
+                    showDialog<void>(
+                      context: context,
+                      builder: (_) => _HashtagDialog(
+                        controller: _hashtagController,
+                        onAdd: _addHashtag,
+                      ),
+                    );
+                  },
+                ),
+                _PostActionButton(
+                  icon: Icons.emoji_emotions_rounded,
+                  label: 'Emoji',
+                  color: const Color(0xFFFFD700),
+                  onTap: () {},
+                ),
+                _PostActionButton(
+                  icon: Icons.alternate_email_rounded,
+                  label: 'Mention',
+                  color: const Color(0xFFB57AFF),
+                  onTap: () {},
+                ),
+              ],
+            ),
+          ),
+          // Hashtag chips
+          if (_hashtags.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _hashtags
+                  .map(
+                    (tag) => Chip(
+                      label: Text(
+                        '#$tag',
+                        style: GoogleFonts.manrope(
+                          color: AppColors.primaryGreen,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                      backgroundColor:
+                          AppColors.primaryGreen.withValues(alpha: 0.12),
+                      deleteIconColor: AppColors.primaryGreen.withValues(alpha: 0.6),
+                      side: BorderSide(
+                        color: AppColors.primaryGreen.withValues(alpha: 0.22),
+                      ),
+                      onDeleted: () =>
+                          setState(() => _hashtags.remove(tag)),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+          const SizedBox(height: 24),
+          // Bottom buttons
+          Row(
+            children: [
+              Expanded(
+                child: AdminGhostButton(
+                  label: 'Save Draft',
+                  icon: Icons.save_rounded,
+                  onPressed: () {
+                    Get.snackbar(
+                      'Draft saved',
+                      'Your draft has been saved.',
+                      backgroundColor: Colors.white.withValues(alpha: 0.08),
+                      colorText: Colors.white,
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _isPosting
+                    ? Container(
+                        height: 48,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryGreen.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.primaryGreen,
+                            ),
+                          ),
+                        ),
+                      )
+                    : AdminPrimaryButton(
+                        label: 'Post',
+                        icon: Icons.send_rounded,
+                        onPressed: _canPost ? _submitPost : null,
+                      ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    final previewPanel = AdminSurfaceCard(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AdminSectionHeader(
+            eyebrow: 'POST PREVIEW',
+            title: 'How it will look',
+            description:
+                'A live preview of your post card as it appears on the portfolio feed.',
+          ),
+          const SizedBox(height: 18),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _textController,
+            builder: (context, value, _) {
+              return Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.03),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [AppColors.primaryGreen, Color(0xFF57D4FF)],
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'GK',
+                            style: GoogleFonts.manrope(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Gokul K S',
+                              style: GoogleFonts.manrope(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                              ),
+                            ),
+                            Text(
+                              _visibility,
+                              style: GoogleFonts.manrope(
+                                color: Colors.white54,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      value.text.isEmpty
+                          ? 'Your post text will appear here...'
+                          : value.text,
+                      style: GoogleFonts.manrope(
+                        color:
+                            value.text.isEmpty ? Colors.white38 : Colors.white,
+                        fontSize: 13,
+                        height: 1.6,
+                      ),
+                      maxLines: 8,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (_selectedImages.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.memory(
+                          _selectedImages.first,
+                          height: 140,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      if (_selectedImages.length > 1)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            '+${_selectedImages.length - 1} more image(s)',
+                            style: GoogleFonts.manrope(
+                              color: Colors.white54,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ),
+                    ],
+                    if (_hashtags.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 6,
+                        children: _hashtags
+                            .map(
+                              (tag) => Text(
+                                '#$tag',
+                                style: GoogleFonts.manrope(
+                                  color: AppColors.primaryGreen,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    if (widget.isCompact) {
+      return Column(children: [editor, const SizedBox(height: 18), previewPanel]);
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(flex: 7, child: editor),
+        const SizedBox(width: 18),
+        Expanded(flex: 5, child: previewPanel),
+      ],
+    );
+  }
+}
+
+class _PostActionButton extends StatelessWidget {
+  const _PostActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+    this.badge,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  final String? badge;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.20)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 17),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.manrope(
+                color: color,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+            if (badge != null) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  badge!,
+                  style: GoogleFonts.manrope(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HashtagDialog extends StatelessWidget {
+  const _HashtagDialog({required this.controller, required this.onAdd});
+
+  final TextEditingController controller;
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: const Color(0xFF14171A),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Add Hashtag',
+              style: GoogleFonts.manrope(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              style: GoogleFonts.manrope(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'e.g. flutter',
+                hintStyle: GoogleFonts.manrope(color: Colors.white38),
+                prefixText: '# ',
+                prefixStyle: GoogleFonts.manrope(
+                  color: AppColors.primaryGreen,
+                  fontWeight: FontWeight.w700,
+                ),
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.04),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onSubmitted: (_) {
+                onAdd();
+                Navigator.of(context).pop();
+              },
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: AdminGhostButton(
+                    label: 'Cancel',
+                    icon: Icons.close_rounded,
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AdminPrimaryButton(
+                    label: 'Add',
+                    icon: Icons.add_rounded,
+                    onPressed: () {
+                      onAdd();
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MANAGE PAGES WORKSPACE
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ManagePagesWorkspace extends StatelessWidget {
+  const _ManagePagesWorkspace({required this.isCompact});
+
+  final bool isCompact;
+
+  static const _pages = [
+    _PageEntry(
+      icon: Icons.home_rounded,
+      name: 'Home Page',
+      route: '/',
+      description: 'Hero section, intro, and CTA',
+      isLive: true,
+      color: AppColors.primaryGreen,
+    ),
+    _PageEntry(
+      icon: Icons.person_rounded,
+      name: 'About / Skills',
+      route: '/#about',
+      description: 'Skills, experience timeline, and stack',
+      isLive: true,
+      color: Color(0xFF5CD6FF),
+    ),
+    _PageEntry(
+      icon: Icons.workspaces_rounded,
+      name: 'Projects',
+      route: '/#projects',
+      description: 'Featured work and portfolio items',
+      isLive: true,
+      color: Color(0xFFFFB44C),
+    ),
+    _PageEntry(
+      icon: Icons.workspace_premium_rounded,
+      name: 'Achievements',
+      route: '/#achievements',
+      description: 'Milestones, metrics, and proof points',
+      isLive: true,
+      color: Color(0xFFFF7C7C),
+    ),
+    _PageEntry(
+      icon: Icons.auto_awesome_rounded,
+      name: 'Guiding Principles',
+      route: '/#principles',
+      description: 'Values and creative operating philosophy',
+      isLive: true,
+      color: Color(0xFFB57AFF),
+    ),
+    _PageEntry(
+      icon: Icons.route_rounded,
+      name: 'Freelance Process',
+      route: '/#process',
+      description: 'Client journey and collaboration flow',
+      isLive: true,
+      color: Color(0xFF57D4FF),
+    ),
+    _PageEntry(
+      icon: Icons.record_voice_over_rounded,
+      name: 'Testimonials',
+      route: '/#testimonials',
+      description: 'Client feedback and social proof',
+      isLive: false,
+      color: Color(0xFFFFD700),
+    ),
+    _PageEntry(
+      icon: Icons.quiz_rounded,
+      name: 'FAQ',
+      route: '/#faq',
+      description: 'Frequently asked questions',
+      isLive: false,
+      color: Color(0xFF5CD6FF),
+    ),
+    _PageEntry(
+      icon: Icons.mail_rounded,
+      name: 'Contact Us',
+      route: '/#contact',
+      description: 'Contact form and social links',
+      isLive: true,
+      color: AppColors.primaryGreen,
+    ),
+    _PageEntry(
+      icon: Icons.edit_note_rounded,
+      name: 'Blog',
+      route: '/blog',
+      description: 'Editorial posts and articles',
+      isLive: false,
+      color: Color(0xFFFFB44C),
+    ),
+    _PageEntry(
+      icon: Icons.admin_panel_settings_rounded,
+      name: 'Admin Portal',
+      route: '/admin',
+      description: 'Backend management workspace',
+      isLive: true,
+      color: Color(0xFFFF7C7C),
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final liveCount = _pages.where((p) => p.isLive).length;
+
+    final pageList = AdminSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AdminSectionHeader(
+            eyebrow: 'PORTFOLIO PAGES',
+            title: 'All pages across your site',
+            description:
+                '$liveCount of ${_pages.length} pages are currently live. Toggle visibility or edit content directly from here.',
+          ),
+          const SizedBox(height: 18),
+          ..._pages.map(
+            (page) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _PageRow(page: page),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final statsPanel = AdminSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AdminSectionHeader(
+            eyebrow: 'PAGE STATS',
+            title: 'Site overview',
+            description: 'Summary of all pages and their current publish status.',
+          ),
+          const SizedBox(height: 18),
+          _PreviewTile(
+            title: 'Total pages',
+            value: '${_pages.length} pages configured',
+            icon: Icons.web_rounded,
+            color: AppColors.primaryGreen,
+          ),
+          const SizedBox(height: 12),
+          _PreviewTile(
+            title: 'Live pages',
+            value: '$liveCount pages published',
+            icon: Icons.visibility_rounded,
+            color: const Color(0xFF5CD6FF),
+          ),
+          const SizedBox(height: 12),
+          _PreviewTile(
+            title: 'Draft pages',
+            value: '${_pages.length - liveCount} hidden from public',
+            icon: Icons.visibility_off_rounded,
+            color: const Color(0xFFFF7C7C),
+          ),
+        ],
+      ),
+    );
+
+    if (isCompact) {
+      return Column(
+        children: [pageList, const SizedBox(height: 18), statsPanel],
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(flex: 8, child: pageList),
+        const SizedBox(width: 18),
+        Expanded(flex: 4, child: statsPanel),
+      ],
+    );
+  }
+}
+
+class _PageEntry {
+  const _PageEntry({
+    required this.icon,
+    required this.name,
+    required this.route,
+    required this.description,
+    required this.isLive,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String name;
+  final String route;
+  final String description;
+  final bool isLive;
+  final Color color;
+}
+
+class _PageRow extends StatefulWidget {
+  const _PageRow({required this.page});
+
+  final _PageEntry page;
+
+  @override
+  State<_PageRow> createState() => _PageRowState();
+}
+
+class _PageRowState extends State<_PageRow> {
+  late bool _isLive;
+
+  @override
+  void initState() {
+    super.initState();
+    _isLive = widget.page.isLive;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: widget.page.color.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(widget.page.icon, color: widget.page.color, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      widget.page.name,
+                      style: GoogleFonts.manrope(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        widget.page.route,
+                        style: GoogleFonts.manrope(
+                          color: Colors.white54,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.page.description,
+                  style: GoogleFonts.manrope(
+                    color: Colors.white60,
+                    fontSize: 12.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AdminStateChip(
+                state: _isLive ? AdminItemState.live : AdminItemState.hidden,
+              ),
+              const SizedBox(width: 8),
+              Switch(
+                value: _isLive,
+                onChanged: (val) => setState(() => _isLive = val),
+                activeThumbColor: AppColors.primaryGreen,
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.open_in_new_rounded,
+                  color: Colors.white54,
+                  size: 18,
+                ),
+                tooltip: 'Preview',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RESUME MANAGEMENT WORKSPACE
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ResumeManagementWorkspace extends StatefulWidget {
+  const _ResumeManagementWorkspace({required this.isCompact});
+
+  final bool isCompact;
+
+  @override
+  State<_ResumeManagementWorkspace> createState() =>
+      _ResumeManagementWorkspaceState();
+}
+
+class _ResumeManagementWorkspaceState
+    extends State<_ResumeManagementWorkspace> {
+  bool _isDragTarget = false;
+  String? _uploadedFileName;
+  String? _uploadedFileSize;
+  String? _uploadedDate;
+  bool _isUploading = false;
+
+  final _versions = <_ResumeVersion>[
+    _ResumeVersion(
+      name: 'gokul_resume_v2.pdf',
+      date: 'Mar 2025',
+      size: '1.8 MB',
+      isCurrent: false,
+    ),
+    _ResumeVersion(
+      name: 'gokul_resume_v1.pdf',
+      date: 'Jan 2025',
+      size: '1.5 MB',
+      isCurrent: false,
+    ),
+  ];
+
+  Future<void> _pickResume() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'doc', 'docx'],
+      withData: false,
+    );
+    if (result != null && result.files.isNotEmpty) {
+      final file = result.files.first;
+      setState(() => _isUploading = true);
+      await Future.delayed(const Duration(seconds: 2));
+      setState(() {
+        _isUploading = false;
+        if (_uploadedFileName != null) {
+          _versions.insert(
+            0,
+            _ResumeVersion(
+              name: _uploadedFileName!,
+              date: 'Previous',
+              size: _uploadedFileSize ?? '--',
+              isCurrent: false,
+            ),
+          );
+        }
+        _uploadedFileName = file.name;
+        _uploadedFileSize = file.size != 0
+            ? '${(file.size / 1024 / 1024).toStringAsFixed(1)} MB'
+            : 'Unknown size';
+        _uploadedDate = 'Just now';
+      });
+      Get.snackbar(
+        'Resume uploaded',
+        '${file.name} is now your active resume.',
+        backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.16),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final uploadPanel = AdminSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AdminSectionHeader(
+            eyebrow: 'RESUME MANAGEMENT',
+            title: 'Upload & manage your CV',
+            description:
+                'Keep your resume up to date. The latest version will be linked across your portfolio.',
+            action: _uploadedFileName != null
+                ? AdminGhostButton(
+                    label: 'Replace',
+                    icon: Icons.swap_horiz_rounded,
+                    onPressed: _pickResume,
+                  )
+                : null,
+          ),
+          const SizedBox(height: 20),
+          if (_uploadedFileName != null) ...[
+            _ActiveResumeCard(
+              fileName: _uploadedFileName!,
+              fileSize: _uploadedFileSize ?? '--',
+              uploadedDate: _uploadedDate ?? '--',
+              onReplace: _pickResume,
+              onDelete: () {
+                setState(() {
+                  _uploadedFileName = null;
+                  _uploadedFileSize = null;
+                  _uploadedDate = null;
+                });
+              },
+            ),
+            const SizedBox(height: 20),
+          ],
+          // Drop zone
+          DragTarget<Object>(
+            onWillAcceptWithDetails: (_) {
+              setState(() => _isDragTarget = true);
+              return true;
+            },
+            onLeave: (_) => setState(() => _isDragTarget = false),
+            onAcceptWithDetails: (_) {
+              setState(() => _isDragTarget = false);
+              _pickResume();
+            },
+            builder: (context, candidates, rejected) {
+              return GestureDetector(
+                onTap: _pickResume,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  decoration: BoxDecoration(
+                    color: _isDragTarget
+                        ? AppColors.primaryGreen.withValues(alpha: 0.10)
+                        : Colors.white.withValues(alpha: 0.02),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: _isDragTarget
+                          ? AppColors.primaryGreen.withValues(alpha: 0.45)
+                          : Colors.white.withValues(alpha: 0.08),
+                      style: BorderStyle.solid,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: _isUploading
+                      ? Column(
+                          children: [
+                            const CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.primaryGreen,
+                              ),
+                              strokeWidth: 2.5,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Uploading...',
+                              style: GoogleFonts.manrope(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryGreen.withValues(
+                                  alpha: 0.12,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.upload_rounded,
+                                color: AppColors.primaryGreen,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Click to upload or drag & drop',
+                              style: GoogleFonts.manrope(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Supported formats: PDF, DOC, DOCX · Max 10 MB',
+                              style: GoogleFonts.manrope(
+                                color: Colors.white54,
+                                fontSize: 12.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    final historyPanel = AdminSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AdminSectionHeader(
+            eyebrow: 'VERSION HISTORY',
+            title: 'Previous resume versions',
+            description:
+                'Older versions are kept for reference. You can restore any previous version.',
+          ),
+          const SizedBox(height: 18),
+          if (_versions.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'No previous versions yet.',
+                  style: GoogleFonts.manrope(
+                    color: Colors.white38,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            )
+          else
+            ..._versions.map(
+              (v) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _VersionRow(version: v),
+              ),
+            ),
+        ],
+      ),
+    );
+
+    if (widget.isCompact) {
+      return Column(
+        children: [uploadPanel, const SizedBox(height: 18), historyPanel],
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(flex: 7, child: uploadPanel),
+        const SizedBox(width: 18),
+        Expanded(flex: 5, child: historyPanel),
+      ],
+    );
+  }
+}
+
+class _ActiveResumeCard extends StatelessWidget {
+  const _ActiveResumeCard({
+    required this.fileName,
+    required this.fileSize,
+    required this.uploadedDate,
+    required this.onReplace,
+    required this.onDelete,
+  });
+
+  final String fileName;
+  final String fileSize;
+  final String uploadedDate;
+  final VoidCallback onReplace;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.primaryGreen.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: AppColors.primaryGreen.withValues(alpha: 0.22),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryGreen.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.picture_as_pdf_rounded,
+                  color: AppColors.primaryGreen,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            fileName,
+                            style: GoogleFonts.manrope(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryGreen,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            'ACTIVE',
+                            style: GoogleFonts.manrope(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$fileSize · Uploaded $uploadedDate',
+                      style: GoogleFonts.manrope(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              AdminPrimaryButton(
+                label: 'Download',
+                icon: Icons.download_rounded,
+                onPressed: () {},
+              ),
+              AdminGhostButton(
+                label: 'Replace',
+                icon: Icons.swap_horiz_rounded,
+                onPressed: onReplace,
+              ),
+              AdminGhostButton(
+                label: 'Delete',
+                icon: Icons.delete_outline_rounded,
+                onPressed: onDelete,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ResumeVersion {
+  _ResumeVersion({
+    required this.name,
+    required this.date,
+    required this.size,
+    required this.isCurrent,
+  });
+
+  final String name;
+  final String date;
+  final String size;
+  final bool isCurrent;
+}
+
+class _VersionRow extends StatelessWidget {
+  const _VersionRow({required this.version});
+
+  final _ResumeVersion version;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.history_rounded, color: Colors.white38, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  version.name,
+                  style: GoogleFonts.manrope(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '${version.date} · ${version.size}',
+                  style: GoogleFonts.manrope(
+                    color: Colors.white54,
+                    fontSize: 11.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () {},
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              foregroundColor: AppColors.primaryGreen,
+            ),
+            child: Text(
+              'Restore',
+              style: GoogleFonts.manrope(
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

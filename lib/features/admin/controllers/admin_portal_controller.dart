@@ -120,6 +120,24 @@ class AdminPortalController extends GetxController {
       subtitle: 'Auth and config',
       icon: Icons.settings_rounded,
     ),
+    AdminModuleItem(
+      module: AdminModule.createPost,
+      title: 'Create Post',
+      subtitle: 'Write & publish content',
+      icon: Icons.add_circle_outline_rounded,
+    ),
+    AdminModuleItem(
+      module: AdminModule.managePages,
+      title: 'Manage Pages',
+      subtitle: 'All portfolio pages',
+      icon: Icons.web_rounded,
+    ),
+    AdminModuleItem(
+      module: AdminModule.resumeManagement,
+      title: 'Resume',
+      subtitle: 'Upload & manage CV',
+      icon: Icons.description_rounded,
+    ),
   ];
 
   final fallbackCollections = const <AdminCollectionItem>[
@@ -293,6 +311,9 @@ class AdminPortalController extends GetxController {
     AdminModule.submissions => 'Visitor Submissions',
     AdminModule.mediaLibrary => 'Media Library',
     AdminModule.settings => 'Settings',
+    AdminModule.createPost => 'Create a Post',
+    AdminModule.managePages => 'Manage Pages',
+    AdminModule.resumeManagement => 'Resume Management',
   };
 
   String get pageDescription => switch (selectedModule.value) {
@@ -328,6 +349,12 @@ class AdminPortalController extends GetxController {
       'Prepare reusable imagery, covers, and section assets for later CMS wiring.',
     AdminModule.settings =>
       'Control admin access, notification readiness, and platform-level settings.',
+    AdminModule.createPost =>
+      'Write rich posts with images, hashtags, and visibility controls. Publish directly to your portfolio feed.',
+    AdminModule.managePages =>
+      'View and manage every page in your portfolio. Toggle visibility, preview live, and control routing.',
+    AdminModule.resumeManagement =>
+      'Upload your latest resume, manage versions, and control where it appears across the portfolio.',
   };
 
   List<AdminCollectionItem> get activeCollections {
