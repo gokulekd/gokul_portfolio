@@ -425,7 +425,8 @@ class _DashboardBody extends StatelessWidget {
             crossAxisCount: isCompact ? 1 : 2,
             mainAxisSpacing: 18,
             crossAxisSpacing: 18,
-            childAspectRatio: isCompact ? 2.1 : 1.85,
+            mainAxisExtent: isCompact ? 200 : null,
+            childAspectRatio: isCompact ? 1 : 1.85,
           ),
           itemBuilder: (context, index) {
             return AdminMetricCard(item: controller.dashboardMetrics[index]);
@@ -2837,36 +2838,39 @@ class _PageRowState extends State<_PageRow> {
         border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: widget.page.color.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(widget.page.icon, color: widget.page.color, size: 22),
+            child: Icon(widget.page.icon, color: widget.page.color, size: 20),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Name wraps freely; route badge on its own line if needed
+                Text(
+                  widget.page.name,
+                  style: GoogleFonts.manrope(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 3),
                 Row(
                   children: [
-                    Text(
-                      widget.page.name,
-                      style: GoogleFonts.manrope(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
+                        horizontal: 7,
+                        vertical: 2,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.06),
@@ -2876,48 +2880,53 @@ class _PageRowState extends State<_PageRow> {
                         widget.page.route,
                         style: GoogleFonts.manrope(
                           color: Colors.white54,
-                          fontSize: 10.5,
+                          fontSize: 10,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  widget.page.description,
-                  style: GoogleFonts.manrope(
-                    color: Colors.white60,
-                    fontSize: 12.5,
-                  ),
-                ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Row(
+          const SizedBox(width: 8),
+          // Compact controls column for mobile
+          Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               AdminStateChip(
                 state: _isLive ? AdminItemState.live : AdminItemState.hidden,
               ),
-              const SizedBox(width: 8),
-              Switch(
-                value: _isLive,
-                onChanged: (val) => setState(() => _isLive = val),
-                activeThumbColor: AppColors.primaryGreen,
-              ),
-              const SizedBox(width: 4),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.open_in_new_rounded,
-                  color: Colors.white54,
-                  size: 18,
-                ),
-                tooltip: 'Preview',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Transform.scale(
+                    scale: 0.82,
+                    child: Switch(
+                      value: _isLive,
+                      onChanged: (val) => setState(() => _isLive = val),
+                      activeThumbColor: AppColors.primaryGreen,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.open_in_new_rounded,
+                      color: Colors.white54,
+                      size: 16,
+                    ),
+                    tooltip: 'Preview',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 28,
+                      minHeight: 28,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

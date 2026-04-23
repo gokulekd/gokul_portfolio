@@ -40,39 +40,70 @@ class FooterSection extends StatelessWidget {
           Container(
             width: double.infinity,
             padding: EdgeInsets.symmetric(
-              vertical: 16,
+              vertical: isNarrow ? 20 : 16,
               horizontal: isNarrow ? 32 : 120,
             ),
             decoration: BoxDecoration(
               border: Border(
-                top: BorderSide(
-                  color: Colors.white.withOpacity(0.06),
-                ),
+                top: BorderSide(color: Colors.white.withOpacity(0.06)),
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GestureDetector(
-                  onTap: () => Get.toNamed(AppRoutes.admin),
-                  child: Text(
-                    '© ${DateTime.now().year} Gokul K S. All rights reserved.',
-                    style: GoogleFonts.manrope(
-                      color: Colors.white.withOpacity(0.35),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+            child: isNarrow
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Get.toNamed(AppRoutes.admin),
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            '© ${DateTime.now().year} Gokul K S. All rights reserved.',
+                            style: GoogleFonts.manrope(
+                              color: Colors.white.withOpacity(0.35),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Made with Flutter',
+                        style: GoogleFonts.manrope(
+                          color: Colors.white.withOpacity(0.25),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Get.toNamed(AppRoutes.admin),
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Text(
+                            '© ${DateTime.now().year} Gokul K S. All rights reserved.',
+                            style: GoogleFonts.manrope(
+                              color: Colors.white.withOpacity(0.35),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        'Made with Flutter',
+                        style: GoogleFonts.manrope(
+                          color: Colors.white.withOpacity(0.25),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Text(
-                  'Made with Flutter',
-                  style: GoogleFonts.manrope(
-                    color: Colors.white.withOpacity(0.25),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
