@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/firebase/firebase_bootstrap.dart';
+import '../features/admin/models/admin_portal_models.dart';
 import '../models/firebase_content_models.dart';
 import '../models/portfolio_models.dart';
 
@@ -73,6 +74,21 @@ class FirebasePortfolioService {
         );
   }
 
+  Future<void> saveSocialLink(ManagedSocialLink link) async {
+    if (!isEnabled) return;
+    final ref = _firestore.collection('social_links');
+    final docRef = link.id.isEmpty ? ref.doc() : ref.doc(link.id);
+    await docRef.set(
+      link.copyWith().toFirestore(),
+      SetOptions(merge: true),
+    );
+  }
+
+  Future<void> deleteSocialLink(String linkId) async {
+    if (!isEnabled || linkId.isEmpty) return;
+    await _firestore.collection('social_links').doc(linkId).delete();
+  }
+
   Future<void> saveProject(Project project) async {
     if (!isEnabled) {
       return;
@@ -94,6 +110,38 @@ class FirebasePortfolioService {
     }
 
     await _firestore.collection('projects').doc(projectId).delete();
+  }
+
+  Stream<List<VisitorSubmission>> streamSubmissions() {
+    if (!isEnabled) return Stream.value(const []);
+
+    return _firestore
+        .collection('submissions')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map((d) => VisitorSubmission.fromFirestore(d.data(), d.id))
+              .toList(growable: false),
+        );
+  }
+
+  Future<void> updateSubmissionStatus(
+    String id,
+    SubmissionStatus status,
+  ) async {
+    if (!isEnabled || id.isEmpty) return;
+    await _firestore
+        .collection('submissions')
+        .doc(id)
+        .update({'status': status.name});
+  }
+
+  Future<void> addSubmissionNote(String id, String note) async {
+    if (!isEnabled || id.isEmpty || note.trim().isEmpty) return;
+    await _firestore.collection('submissions').doc(id).update({
+      'notes': FieldValue.arrayUnion([note.trim()]),
+    });
   }
 
   Future<void> ensureSeedData({required String ownerEmail}) async {

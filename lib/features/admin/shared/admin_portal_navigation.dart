@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../constants/colors.dart';
+import '../controllers/admin_auth_controller.dart';
 import '../controllers/admin_portal_controller.dart';
 import '../models/admin_portal_models.dart';
 
@@ -40,110 +41,33 @@ class AdminPortalNavigation extends StatelessWidget {
                   child: Obx(
                     () => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const _GroupLabel(title: 'Control'),
-                        ...controller.modules
-                            .where(
-                              (item) => const {
-                                AdminModule.dashboard,
-                                AdminModule.siteStructure,
-                                AdminModule.settings,
-                              }.contains(item.module),
-                            )
-                            .map(
-                              (item) => _NavItem(
-                                item: item,
-                                selected:
-                                    controller.selectedModule.value ==
-                                    item.module,
-                                onTap: () {
-                                  controller.selectModule(item.module);
-                                  if (isDrawer) {
-                                    Navigator.of(context).pop();
-                                  }
-                                },
+                      children: controller.navigationGroups.indexed
+                          .expand((entry) {
+                            final (index, group) = entry;
+                            final items = controller.modulesForGroup(group);
+
+                            return [
+                              _GroupLabel(title: group.label),
+                              ...items.map(
+                                (item) => _NavItem(
+                                  item: item,
+                                  selected:
+                                      controller.selectedModule.value ==
+                                      item.module,
+                                  onTap: () {
+                                    controller.selectModule(item.module);
+                                    if (isDrawer) {
+                                      Navigator.of(context).pop();
+                                    }
+                                  },
+                                ),
                               ),
-                            ),
-                        const SizedBox(height: 16),
-                        const _GroupLabel(title: 'Content'),
-                        ...controller.modules
-                            .where(
-                              (item) => const {
-                                AdminModule.homeContent,
-                                AdminModule.projects,
-                                AdminModule.skillsExperience,
-                                AdminModule.developmentAreas,
-                                AdminModule.achievements,
-                                AdminModule.guidingPrinciples,
-                                AdminModule.freelanceProcess,
-                                AdminModule.testimonials,
-                                AdminModule.faq,
-                                AdminModule.socialContact,
-                                AdminModule.blog,
-                              }.contains(item.module),
-                            )
-                            .map(
-                              (item) => _NavItem(
-                                item: item,
-                                selected:
-                                    controller.selectedModule.value ==
-                                    item.module,
-                                onTap: () {
-                                  controller.selectModule(item.module);
-                                  if (isDrawer) {
-                                    Navigator.of(context).pop();
-                                  }
-                                },
-                              ),
-                            ),
-                        const SizedBox(height: 16),
-                        const _GroupLabel(title: 'Publishing'),
-                        ...controller.modules
-                            .where(
-                              (item) => const {
-                                AdminModule.createPost,
-                                AdminModule.managePages,
-                                AdminModule.resumeManagement,
-                              }.contains(item.module),
-                            )
-                            .map(
-                              (item) => _NavItem(
-                                item: item,
-                                selected:
-                                    controller.selectedModule.value ==
-                                    item.module,
-                                onTap: () {
-                                  controller.selectModule(item.module);
-                                  if (isDrawer) {
-                                    Navigator.of(context).pop();
-                                  }
-                                },
-                              ),
-                            ),
-                        const SizedBox(height: 16),
-                        const _GroupLabel(title: 'Operations'),
-                        ...controller.modules
-                            .where(
-                              (item) => const {
-                                AdminModule.submissions,
-                                AdminModule.mediaLibrary,
-                              }.contains(item.module),
-                            )
-                            .map(
-                              (item) => _NavItem(
-                                item: item,
-                                selected:
-                                    controller.selectedModule.value ==
-                                    item.module,
-                                onTap: () {
-                                  controller.selectModule(item.module);
-                                  if (isDrawer) {
-                                    Navigator.of(context).pop();
-                                  }
-                                },
-                              ),
-                            ),
-                      ],
+                              if (index !=
+                                  controller.navigationGroups.length - 1)
+                                const SizedBox(height: 16),
+                            ];
+                          })
+                          .toList(growable: false),
                     ),
                   ),
                 ),
@@ -401,7 +325,7 @@ class _ProfileBlock extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () => Get.find<AdminAuthController>().signOut(),
             icon: const Icon(Icons.logout_rounded, color: Colors.white54),
             tooltip: 'Logout',
           ),

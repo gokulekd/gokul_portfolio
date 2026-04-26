@@ -231,6 +231,23 @@ class ManagedSocialLink {
     );
   }
 
+  ManagedSocialLink copyWith({
+    String? platform,
+    String? value,
+    String? type,
+    int? displayOrder,
+    bool? isVisible,
+  }) {
+    return ManagedSocialLink(
+      id: id,
+      platform: platform ?? this.platform,
+      value: value ?? this.value,
+      type: type ?? this.type,
+      displayOrder: displayOrder ?? this.displayOrder,
+      isVisible: isVisible ?? this.isVisible,
+    );
+  }
+
   Map<String, dynamic> toFirestore() {
     return {
       'platform': platform,

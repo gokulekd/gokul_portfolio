@@ -311,10 +311,28 @@ class _TestimonialsSectionNewState extends State<TestimonialsSectionNew>
           // Author info
           Row(
             children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundImage: NetworkImage(testimonial.avatarUrl),
-                backgroundColor: Colors.grey[800],
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey[800],
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Image.network(
+                  testimonial.avatarUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder:
+                      (context, error, stackTrace) => Center(
+                        child: Text(
+                          _initialsFor(testimonial.authorName),
+                          style: GoogleFonts.manrope(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                ),
               ),
               const SizedBox(width: 16),
               Column(
@@ -343,6 +361,20 @@ class _TestimonialsSectionNewState extends State<TestimonialsSectionNew>
       ),
     );
   }
+
+  String _initialsFor(String name) {
+    final parts = name
+        .split(' ')
+        .where((part) => part.trim().isNotEmpty)
+        .take(2)
+        .toList(growable: false);
+
+    if (parts.isEmpty) {
+      return '?';
+    }
+
+    return parts.map((part) => part[0].toUpperCase()).join();
+  }
 }
 
 // Custom painter for background decorative elements - Adapted for Dark Background
@@ -366,8 +398,8 @@ class _BackgroundPainter extends CustomPainter {
 
     paint.shader = LinearGradient(
       colors: [
-        AppColors.primaryGreen.withOpacity(0.1),
-        AppColors.primaryGreen.withOpacity(0.3),
+        AppColors.primaryGreen.withValues(alpha: 0.1),
+        AppColors.primaryGreen.withValues(alpha: 0.3),
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -376,7 +408,7 @@ class _BackgroundPainter extends CustomPainter {
 
     // Added Shape: Small Circle near triangle
     paint.shader = null;
-    paint.color = AppColors.primaryGreen.withOpacity(0.15);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.15);
     canvas.drawCircle(Offset(size.width * 0.92, size.height * 0.12), 4, paint);
 
     // Added Shape: Cross near triangle
@@ -384,7 +416,7 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.8, size.height * 0.18),
       8,
-      AppColors.primaryGreen.withOpacity(0.2),
+      AppColors.primaryGreen.withValues(alpha: 0.2),
     );
 
     // 2. Hollow Hexagon (Bottom Left)
@@ -400,7 +432,7 @@ class _BackgroundPainter extends CustomPainter {
     hexPath.lineTo(center2.dx + 20, center2.dy - 35);
     hexPath.close();
 
-    strokePaint.color = AppColors.primaryGreen.withOpacity(0.2);
+    strokePaint.color = AppColors.primaryGreen.withValues(alpha: 0.2);
     canvas.drawPath(hexPath, strokePaint);
 
     // 3. Scattered Shapes (Increased Count)
@@ -410,53 +442,53 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.15, size.height * 0.2),
       15,
-      AppColors.primaryGreen.withOpacity(0.25),
+      AppColors.primaryGreen.withValues(alpha: 0.25),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.9, size.height * 0.6),
       10,
-      AppColors.primaryGreen.withOpacity(0.2),
+      AppColors.primaryGreen.withValues(alpha: 0.2),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.5, size.height * 0.85),
       12,
-      AppColors.primaryGreen.withOpacity(0.2),
+      AppColors.primaryGreen.withValues(alpha: 0.2),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.35, size.height * 0.45),
       8,
-      AppColors.primaryGreen.withOpacity(0.22),
+      AppColors.primaryGreen.withValues(alpha: 0.22),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.75, size.height * 0.15),
       14,
-      AppColors.primaryGreen.withOpacity(0.18),
+      AppColors.primaryGreen.withValues(alpha: 0.18),
     );
 
     // Filled Circles
     paint.shader = null;
-    paint.color = AppColors.primaryGreen.withOpacity(0.2);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.2);
     canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.15), 6, paint);
 
-    paint.color = AppColors.primaryGreen.withOpacity(0.15);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.15);
     canvas.drawCircle(Offset(size.width * 0.05, size.height * 0.5), 18, paint);
 
-    paint.color = AppColors.primaryGreen.withOpacity(0.18);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.18);
     canvas.drawCircle(Offset(size.width * 0.45, size.height * 0.65), 4, paint);
 
     // Hollow Circles
-    strokePaint.color = AppColors.primaryGreen.withOpacity(0.25);
+    strokePaint.color = AppColors.primaryGreen.withValues(alpha: 0.25);
     canvas.drawCircle(
       Offset(size.width * 0.8, size.height * 0.8),
       25,
       strokePaint,
     );
 
-    strokePaint.color = AppColors.primaryGreen.withOpacity(0.2);
+    strokePaint.color = AppColors.primaryGreen.withValues(alpha: 0.2);
     canvas.drawCircle(
       Offset(size.width * 0.25, size.height * 0.3),
       15,
@@ -468,14 +500,14 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.5, size.height * 0.9),
       15,
-      AppColors.primaryGreen.withOpacity(0.25),
+      AppColors.primaryGreen.withValues(alpha: 0.25),
       true,
     );
 
     // 5. Connecting Lines
     final linePaint =
         Paint()
-          ..color = AppColors.primaryGreen.withOpacity(0.15)
+          ..color = AppColors.primaryGreen.withValues(alpha: 0.15)
           ..strokeWidth = 1.0;
 
     canvas.drawLine(
@@ -495,19 +527,19 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.1, size.height * 0.4),
       15,
-      AppColors.primaryGreen.withOpacity(0.15),
+      AppColors.primaryGreen.withValues(alpha: 0.15),
     );
     _drawTriangle(
       canvas,
       Offset(size.width * 0.7, size.height * 0.9),
       10,
-      AppColors.primaryGreen.withOpacity(0.18),
+      AppColors.primaryGreen.withValues(alpha: 0.18),
     );
     _drawTriangle(
       canvas,
       Offset(size.width * 0.3, size.height * 0.1),
       8,
-      AppColors.primaryGreen.withOpacity(0.16),
+      AppColors.primaryGreen.withValues(alpha: 0.16),
     );
 
     // More Crosses
@@ -515,29 +547,29 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.65, size.height * 0.4),
       10,
-      AppColors.primaryGreen.withOpacity(0.2),
+      AppColors.primaryGreen.withValues(alpha: 0.2),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.25, size.height * 0.85),
       12,
-      AppColors.primaryGreen.withOpacity(0.15),
+      AppColors.primaryGreen.withValues(alpha: 0.15),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.05, size.height * 0.25),
       8,
-      AppColors.primaryGreen.withOpacity(0.2),
+      AppColors.primaryGreen.withValues(alpha: 0.2),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.95, size.height * 0.5),
       14,
-      AppColors.primaryGreen.withOpacity(0.18),
+      AppColors.primaryGreen.withValues(alpha: 0.18),
     );
 
     // More Dots
-    paint.color = AppColors.primaryGreen.withOpacity(0.15);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.15);
     canvas.drawCircle(Offset(size.width * 0.55, size.height * 0.35), 5, paint);
     canvas.drawCircle(Offset(size.width * 0.85, size.height * 0.65), 7, paint);
     canvas.drawCircle(Offset(size.width * 0.35, size.height * 0.95), 4, paint);
@@ -548,21 +580,21 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.9, size.height * 0.15),
       12,
-      AppColors.primaryGreen.withOpacity(0.18),
+      AppColors.primaryGreen.withValues(alpha: 0.18),
       true,
     );
     _drawDiamond(
       canvas,
       Offset(size.width * 0.2, size.height * 0.55),
       10,
-      AppColors.primaryGreen.withOpacity(0.16),
+      AppColors.primaryGreen.withValues(alpha: 0.16),
       false,
     );
     _drawDiamond(
       canvas,
       Offset(size.width * 0.6, size.height * 0.8),
       15,
-      AppColors.primaryGreen.withOpacity(0.17),
+      AppColors.primaryGreen.withValues(alpha: 0.17),
       true,
     );
 

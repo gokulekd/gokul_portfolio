@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -8,6 +9,7 @@ import '../../../models/firebase_content_models.dart';
 import '../../../models/portfolio_models.dart';
 import '../../../services/firebase_portfolio_service.dart';
 import '../models/admin_portal_models.dart';
+import 'admin_auth_controller.dart';
 
 class AdminPortalController extends GetxController {
   final FirebasePortfolioService _portfolioService =
@@ -17,92 +19,110 @@ class AdminPortalController extends GetxController {
   final liveSections = <SiteSectionConfig>[].obs;
   final liveSocialLinks = <ManagedSocialLink>[].obs;
   final liveProjects = <Project>[].obs;
+  final liveSubmissions = <VisitorSubmission>[].obs;
+  final selectedSubmission = Rxn<VisitorSubmission>();
+  final firestoreErrorMessage = RxnString();
 
   StreamSubscription<List<SiteSectionConfig>>? _sectionsSubscription;
   StreamSubscription<List<ManagedSocialLink>>? _socialLinksSubscription;
   StreamSubscription<List<Project>>? _projectsSubscription;
+  StreamSubscription<List<VisitorSubmission>>? _submissionsSubscription;
 
   final modules = const <AdminModuleItem>[
     AdminModuleItem(
       module: AdminModule.dashboard,
+      group: AdminModuleGroup.control,
       title: 'Dashboard',
       subtitle: 'Command center',
       icon: Icons.space_dashboard_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.siteStructure,
+      group: AdminModuleGroup.control,
       title: 'Site Structure',
       subtitle: 'Visibility and order',
       icon: Icons.view_sidebar_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.homeContent,
+      group: AdminModuleGroup.content,
       title: 'Home Content',
       subtitle: 'Hero and headlines',
       icon: Icons.home_work_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.projects,
+      group: AdminModuleGroup.content,
       title: 'Projects',
       subtitle: 'Featured portfolio',
       icon: Icons.workspaces_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.skillsExperience,
+      group: AdminModuleGroup.content,
       title: 'Skills & Experience',
       subtitle: 'Skills and timeline',
       icon: Icons.stacked_line_chart_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.developmentAreas,
+      group: AdminModuleGroup.content,
       title: 'Development Areas',
       subtitle: 'Scrolling specialities',
       icon: Icons.apps_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.achievements,
+      group: AdminModuleGroup.content,
       title: 'Achievements',
       subtitle: 'Proof and metrics',
       icon: Icons.workspace_premium_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.guidingPrinciples,
+      group: AdminModuleGroup.content,
       title: 'Guiding Principles',
       subtitle: 'Core operating values',
       icon: Icons.auto_awesome_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.freelanceProcess,
+      group: AdminModuleGroup.content,
       title: 'Freelance Process',
       subtitle: 'Client journey',
       icon: Icons.route_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.testimonials,
+      group: AdminModuleGroup.content,
       title: 'Testimonials',
       subtitle: 'Client trust',
       icon: Icons.record_voice_over_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.faq,
+      group: AdminModuleGroup.content,
       title: 'FAQ',
       subtitle: 'Common questions',
       icon: Icons.quiz_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.socialContact,
+      group: AdminModuleGroup.content,
       title: 'Social & Contact',
       subtitle: 'Channels and links',
       icon: Icons.alternate_email_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.blog,
+      group: AdminModuleGroup.content,
       title: 'Blog',
       subtitle: 'Editorial content',
       icon: Icons.edit_note_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.submissions,
+      group: AdminModuleGroup.operations,
       title: 'Visitor Submissions',
       subtitle: 'Leads inbox',
       icon: Icons.inbox_rounded,
@@ -110,30 +130,35 @@ class AdminPortalController extends GetxController {
     ),
     AdminModuleItem(
       module: AdminModule.mediaLibrary,
+      group: AdminModuleGroup.operations,
       title: 'Media Library',
       subtitle: 'Images and assets',
       icon: Icons.perm_media_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.settings,
+      group: AdminModuleGroup.control,
       title: 'Settings',
       subtitle: 'Auth and config',
       icon: Icons.settings_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.createPost,
+      group: AdminModuleGroup.publishing,
       title: 'Create Post',
       subtitle: 'Write & publish content',
       icon: Icons.add_circle_outline_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.managePages,
+      group: AdminModuleGroup.publishing,
       title: 'Manage Pages',
       subtitle: 'All portfolio pages',
       icon: Icons.web_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.resumeManagement,
+      group: AdminModuleGroup.publishing,
       title: 'Resume',
       subtitle: 'Upload & manage CV',
       icon: Icons.description_rounded,
@@ -191,6 +216,7 @@ class AdminPortalController extends GetxController {
   ];
 
   bool get isFirebaseConnected => _portfolioService.isEnabled;
+  bool get hasFirestoreAccess => firestoreErrorMessage.value == null;
 
   @override
   void onInit() {
@@ -206,26 +232,83 @@ class AdminPortalController extends GetxController {
     _sectionsSubscription = _portfolioService.streamSiteSections().listen((
       sections,
     ) {
+      _clearFirestoreError();
       if (sections.isNotEmpty) {
         liveSections.assignAll(sections);
       }
-    });
+    }, onError: _handleFirestoreError);
 
     _socialLinksSubscription = _portfolioService.streamSocialLinks().listen((
       links,
     ) {
+      _clearFirestoreError();
       if (links.isNotEmpty) {
         liveSocialLinks.assignAll(links);
       }
-    });
+    }, onError: _handleFirestoreError);
 
     _projectsSubscription = _portfolioService.streamProjects().listen((
       projects,
     ) {
+      _clearFirestoreError();
       if (projects.isNotEmpty) {
         liveProjects.assignAll(projects);
       }
-    });
+    }, onError: _handleFirestoreError);
+
+    _submissionsSubscription = _portfolioService.streamSubmissions().listen((
+      submissions,
+    ) {
+      _clearFirestoreError();
+      liveSubmissions.assignAll(submissions);
+      // keep selectedSubmission in sync after a status/note update
+      final sel = selectedSubmission.value;
+      if (sel != null) {
+        final updated = submissions.firstWhereOrNull((s) => s.id == sel.id);
+        if (updated != null) selectedSubmission.value = updated;
+      }
+    }, onError: _handleFirestoreError);
+  }
+
+  void selectSubmission(VisitorSubmission submission) {
+    selectedSubmission.value = submission;
+  }
+
+  Future<void> markSubmissionInProgress() async {
+    final sub = selectedSubmission.value;
+    if (sub == null) return;
+    try {
+      await _portfolioService.updateSubmissionStatus(
+        sub.id,
+        SubmissionStatus.inProgress,
+      );
+      _clearFirestoreError();
+    } catch (error) {
+      _handleFirestoreError(error);
+    }
+  }
+
+  Future<void> addSubmissionNote(String note) async {
+    final sub = selectedSubmission.value;
+    if (sub == null) return;
+    try {
+      await _portfolioService.addSubmissionNote(sub.id, note);
+      _clearFirestoreError();
+    } catch (error) {
+      _handleFirestoreError(error);
+    }
+  }
+
+  Future<void> reseedFirestore() async {
+    final authController = Get.find<AdminAuthController>();
+    final email =
+        authController.currentUser.value?.email ?? _portfolioService.toString();
+    try {
+      await _portfolioService.ensureSeedData(ownerEmail: email);
+      _clearFirestoreError();
+    } catch (error) {
+      _handleFirestoreError(error);
+    }
   }
 
   void selectModule(AdminModule module) {
@@ -235,16 +318,25 @@ class AdminPortalController extends GetxController {
   AdminModuleItem get activeModule =>
       modules.firstWhere((item) => item.module == selectedModule.value);
 
+  List<AdminModuleGroup> get navigationGroups => AdminModuleGroup.values;
+
+  List<AdminModuleItem> modulesForGroup(AdminModuleGroup group) =>
+      modules.where((item) => item.group == group).toList(growable: false);
+
   List<AdminMetricItem> get dashboardMetrics {
-    final visibleSectionsCount =
+    final visiblePagesCount =
         sectionConfigs.where((section) => section.isVisible).length;
     final featuredProjectCount =
         projects.where((project) => project.isFeatured).length;
+    final newLeadsCount =
+        liveSubmissions.isNotEmpty
+            ? liveSubmissions.where((submission) => submission.isUnread).length
+            : recentLeads.where((lead) => lead.unread).length;
 
     return [
       AdminMetricItem(
-        label: 'Live Sections',
-        value: visibleSectionsCount.toString().padLeft(2, '0'),
+        label: 'Live Pages',
+        value: visiblePagesCount.toString().padLeft(2, '0'),
         change:
             isFirebaseConnected
                 ? 'Synced from Firestore'
@@ -269,12 +361,15 @@ class AdminPortalController extends GetxController {
         icon: Icons.library_books_rounded,
         color: Color(0xFFFFB44C),
       ),
-      const AdminMetricItem(
+      AdminMetricItem(
         label: 'New Leads',
-        value: '03',
-        change: 'Inbox layout ready for Firestore',
+        value: newLeadsCount.toString().padLeft(2, '0'),
+        change:
+            liveSubmissions.isNotEmpty
+                ? 'Unread submissions in inbox'
+                : 'Using dashboard fallback inbox',
         icon: Icons.campaign_rounded,
-        color: Color(0xFFFF7C7C),
+        color: const Color(0xFFFF7C7C),
       ),
     ];
   }
@@ -416,6 +511,33 @@ class AdminPortalController extends GetxController {
     }
   }
 
+  Future<void> saveSocialLink(ManagedSocialLink link) async {
+    final index = liveSocialLinks.indexWhere((item) => item.id == link.id);
+    if (index != -1) {
+      liveSocialLinks[index] = link;
+    } else {
+      liveSocialLinks.add(link);
+    }
+    liveSocialLinks.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+    liveSocialLinks.refresh();
+    try {
+      await _portfolioService.saveSocialLink(link);
+      _clearFirestoreError();
+    } catch (error) {
+      _handleFirestoreError(error);
+    }
+  }
+
+  Future<void> deleteSocialLink(ManagedSocialLink link) async {
+    liveSocialLinks.removeWhere((item) => item.id == link.id);
+    try {
+      await _portfolioService.deleteSocialLink(link.id);
+      _clearFirestoreError();
+    } catch (error) {
+      _handleFirestoreError(error);
+    }
+  }
+
   Future<void> saveProject(Project project) async {
     final index = liveProjects.indexWhere((item) => item.id == project.id);
     if (index != -1) {
@@ -426,12 +548,22 @@ class AdminPortalController extends GetxController {
     liveProjects.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
     liveProjects.refresh();
 
-    await _portfolioService.saveProject(project);
+    try {
+      await _portfolioService.saveProject(project);
+      _clearFirestoreError();
+    } catch (error) {
+      _handleFirestoreError(error);
+    }
   }
 
   Future<void> deleteProject(Project project) async {
     liveProjects.removeWhere((item) => item.id == project.id);
-    await _portfolioService.deleteProject(project.id);
+    try {
+      await _portfolioService.deleteProject(project.id);
+      _clearFirestoreError();
+    } catch (error) {
+      _handleFirestoreError(error);
+    }
   }
 
   Future<void> toggleProjectFeatured(Project project, bool isFeatured) async {
@@ -452,7 +584,29 @@ class AdminPortalController extends GetxController {
       liveSections.refresh();
     }
 
-    await _portfolioService.updateSectionVisibility(section, isVisible);
+    try {
+      await _portfolioService.updateSectionVisibility(section, isVisible);
+      _clearFirestoreError();
+    } catch (error) {
+      _handleFirestoreError(error);
+    }
+  }
+
+  void _clearFirestoreError() {
+    if (firestoreErrorMessage.value != null) {
+      firestoreErrorMessage.value = null;
+    }
+  }
+
+  void _handleFirestoreError(Object error) {
+    if (error is FirebaseException && error.code == 'permission-denied') {
+      firestoreErrorMessage.value =
+          'Firestore access is currently blocked by security rules. '
+          'The admin portal is running with fallback data until read/write access is granted.';
+      return;
+    }
+
+    firestoreErrorMessage.value = 'Admin data sync failed: $error';
   }
 
   String _updatedLabel(SiteSectionConfig section) {
@@ -483,6 +637,7 @@ class AdminPortalController extends GetxController {
     _sectionsSubscription?.cancel();
     _socialLinksSubscription?.cancel();
     _projectsSubscription?.cancel();
+    _submissionsSubscription?.cancel();
     super.onClose();
   }
 }
