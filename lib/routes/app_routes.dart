@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 
+import '../features/admin/admin.dart';
 import '../pages/about_page.dart';
-import '../pages/admin_page.dart';
 import '../pages/blog_page.dart';
 import '../pages/contact_page.dart';
 import '../pages/experience_page.dart';
@@ -40,6 +40,6 @@ class AppRoutes {
     GetPage(name: blog, page: () => const BlogPage()),
     GetPage(name: contact, page: () => const ContactPage()),
     GetPage(name: skills, page: () => const SkillsPage()),
-    GetPage(name: admin, page: () => const AdminPage()),
+    GetPage(name: admin, page: () => AdminAuthGatePage()),
   ];
 }

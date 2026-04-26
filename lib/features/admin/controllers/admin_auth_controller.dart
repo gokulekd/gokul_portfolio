@@ -44,9 +44,21 @@ class AdminAuthController extends GetxController {
 
     errorMessage.value = null;
 
-    await _portfolioService.ensureSeedData(
-      ownerEmail: user.email ?? _authService.allowedEmail,
-    );
+    try {
+      await _portfolioService.ensureSeedData(
+        ownerEmail: user.email ?? _authService.allowedEmail,
+      );
+    } on FirebaseException catch (error) {
+      if (error.code == 'permission-denied') {
+        errorMessage.value =
+            'Signed in successfully, but Firestore rules are blocking admin data access.';
+        return;
+      }
+
+      errorMessage.value = 'Admin setup failed: ${error.message ?? error.code}';
+    } catch (error) {
+      errorMessage.value = 'Admin setup failed: $error';
+    }
   }
 
   Future<void> signIn() async {

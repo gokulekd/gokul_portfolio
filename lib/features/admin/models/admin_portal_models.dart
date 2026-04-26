@@ -22,11 +22,23 @@ enum AdminModule {
   resumeManagement,
 }
 
+enum AdminModuleGroup { control, content, publishing, operations }
+
+extension AdminModuleGroupX on AdminModuleGroup {
+  String get label => switch (this) {
+    AdminModuleGroup.control => 'Control',
+    AdminModuleGroup.content => 'Content',
+    AdminModuleGroup.publishing => 'Publishing',
+    AdminModuleGroup.operations => 'Operations',
+  };
+}
+
 enum AdminItemState { live, draft, hidden, warning }
 
 class AdminModuleItem {
   const AdminModuleItem({
     required this.module,
+    required this.group,
     required this.title,
     required this.subtitle,
     required this.icon,
@@ -34,6 +46,7 @@ class AdminModuleItem {
   });
 
   final AdminModule module;
+  final AdminModuleGroup group;
   final String title;
   final String subtitle;
   final IconData icon;
@@ -106,4 +119,80 @@ class AdminLeadItem {
   final String status;
   final String receivedAt;
   final bool unread;
+}
+
+enum SubmissionStatus { unread, reviewing, inProgress, replied }
+
+class VisitorSubmission {
+  const VisitorSubmission({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.company,
+    required this.message,
+    required this.status,
+    required this.createdAt,
+    this.notes = const [],
+  });
+
+  final String id;
+  final String name;
+  final String email;
+  final String company;
+  final String message;
+  final SubmissionStatus status;
+  final DateTime createdAt;
+  final List<String> notes;
+
+  bool get isUnread => status == SubmissionStatus.unread;
+
+  String get statusLabel {
+    return switch (status) {
+      SubmissionStatus.unread => 'Unread',
+      SubmissionStatus.reviewing => 'Reviewing',
+      SubmissionStatus.inProgress => 'In Progress',
+      SubmissionStatus.replied => 'Replied',
+    };
+  }
+
+  String get receivedAtFormatted {
+    final diff = DateTime.now().difference(createdAt);
+    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
+    if (diff.inHours < 24) return '${diff.inHours} hrs ago';
+    return '${diff.inDays}d ago';
+  }
+
+  factory VisitorSubmission.fromFirestore(
+    Map<String, dynamic> data,
+    String id,
+  ) {
+    final statusStr = data['status'] as String? ?? 'unread';
+    final status = SubmissionStatus.values.firstWhere(
+      (s) => s.name == statusStr,
+      orElse: () => SubmissionStatus.unread,
+    );
+    return VisitorSubmission(
+      id: id,
+      name: data['name'] as String? ?? '',
+      email: data['email'] as String? ?? '',
+      company: data['company'] as String? ?? '',
+      message: data['message'] as String? ?? '',
+      status: status,
+      createdAt: (data['createdAt'] as dynamic)?.toDate() ?? DateTime.now(),
+      notes: List<String>.from(data['notes'] as List? ?? const []),
+    );
+  }
+
+  VisitorSubmission copyWith({SubmissionStatus? status, List<String>? notes}) {
+    return VisitorSubmission(
+      id: id,
+      name: name,
+      email: email,
+      company: company,
+      message: message,
+      status: status ?? this.status,
+      createdAt: createdAt,
+      notes: notes ?? this.notes,
+    );
+  }
 }
