@@ -21,6 +21,11 @@ void _navigateToPage(
   }
 }
 
+void _handleHomeNav(PortfolioController controller) {
+  controller.changePage(0);
+  Get.offNamed(AppRoutes.home);
+}
+
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({super.key});
 
@@ -30,11 +35,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final isMobileOrTablet = ResponsiveHelper.isMobileOrTablet(context);
 
     final menuItems = [
-      {'title': 'About', 'index': 1},
-      {'title': 'Projects', 'index': 3},
+      {'title': 'Home', 'index': 0},
+      {'title': 'About me', 'index': 1},
       {'title': 'Resume', 'action': 'resume'},
-      {'title': 'Skills', 'index': 6},
-      {'title': 'Blogs', 'index': 4},
+      {'title': 'Skill', 'index': 6},
+      {'title': 'Blog', 'index': 4},
       {'title': 'Experience', 'index': 2},
       {'title': 'Contact me', 'index': 5},
     ];
@@ -121,6 +126,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 const SizedBox(width: 8),
                 ...menuItems.map((item) {
                   final isContactMe = item['title'] == 'Contact me';
+                  final isHome = item['title'] == 'Home';
                   return Align(
                     alignment: Alignment.center,
                     child: Padding(
@@ -156,7 +162,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                               )
                               : TextButton(
                                 onPressed: () {
-                                  if (item['action'] == 'resume') {
+                                  if (isHome) {
+                                    _handleHomeNav(controller);
+                                  } else if (item['action'] == 'resume') {
                                     controller.launchResume();
                                   } else {
                                     _navigateToPage(controller, item);
@@ -218,13 +226,13 @@ class CustomDrawer extends StatelessWidget {
     final controller = Get.find<PortfolioController>();
 
     final menuItems = [
-      {'title': 'About', 'index': 1, 'icon': Icons.person},
-      {'title': 'Experience', 'index': 2, 'icon': Icons.work},
-      {'title': 'Projects', 'index': 3, 'icon': Icons.folder},
-      {'title': 'Blogs', 'index': 4, 'icon': Icons.article},
-      {'title': 'Contact me', 'index': 5, 'icon': Icons.contact_mail},
-      {'title': 'Skills', 'index': 6, 'icon': Icons.code},
+      {'title': 'Home', 'index': 0, 'icon': Icons.home},
+      {'title': 'About me', 'index': 1, 'icon': Icons.person},
       {'title': 'Resume', 'action': 'resume', 'icon': Icons.description},
+      {'title': 'Skill', 'index': 6, 'icon': Icons.code},
+      {'title': 'Blog', 'index': 4, 'icon': Icons.article},
+      {'title': 'Experience', 'index': 2, 'icon': Icons.work},
+      {'title': 'Contact me', 'index': 5, 'icon': Icons.contact_mail},
     ];
 
     return Drawer(
@@ -315,6 +323,8 @@ class CustomDrawer extends StatelessWidget {
                       Navigator.pop(context);
                       if (item['action'] == 'resume') {
                         controller.launchResume();
+                      } else if (item['title'] == 'Home') {
+                        _handleHomeNav(controller);
                       } else {
                         _navigateToPage(controller, item);
                       }

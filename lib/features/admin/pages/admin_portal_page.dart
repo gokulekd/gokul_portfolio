@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../utils/responsive_helper.dart';
 import '../controllers/admin_portal_controller.dart';
+import '../models/admin_portal_models.dart';
 import '../modules/admin_module_registry.dart';
 import '../shared/admin_portal_navigation.dart';
 import '../shared/portal_layout_widgets.dart';
@@ -62,8 +63,10 @@ class AdminPortalPage extends StatelessWidget {
                           controller: controller,
                           isCompact: isCompact,
                         ),
-                        const SizedBox(height: 24),
-                        HeroHeader(controller: controller),
+                        if (module == AdminModule.dashboard) ...[
+                          const SizedBox(height: 24),
+                          HeroHeader(controller: controller),
+                        ],
                         const SizedBox(height: 24),
                         AdminModuleRegistry.buildWorkspace(
                           module: module,

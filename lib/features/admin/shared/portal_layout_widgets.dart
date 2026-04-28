@@ -47,6 +47,9 @@ class PortalTopBar extends StatelessWidget {
         ],
       );
 
+      final isOnDashboard =
+          controller.selectedModule.value == AdminModule.dashboard;
+
       if (isCompact) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,7 +66,12 @@ class PortalTopBar extends StatelessWidget {
                         ),
                       ),
                 ),
-                const SizedBox(width: 8),
+                if (!isOnDashboard) ...[
+                  const SizedBox(width: 4),
+                  _BackToDashboardButton(controller: controller),
+                  const SizedBox(width: 4),
+                ] else
+                  const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     controller.activeModule.title,
@@ -84,6 +92,10 @@ class PortalTopBar extends StatelessWidget {
 
       return Row(
         children: [
+          if (!isOnDashboard) ...[
+            _BackToDashboardButton(controller: controller),
+            const SizedBox(width: 16),
+          ],
           Expanded(
             child: Text(
               'Admin Workspace',
@@ -98,6 +110,36 @@ class PortalTopBar extends StatelessWidget {
         ],
       );
     });
+  }
+}
+
+class _BackToDashboardButton extends StatelessWidget {
+  const _BackToDashboardButton({required this.controller});
+
+  final AdminPortalController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: () => controller.selectModule(AdminModule.dashboard),
+      style: TextButton.styleFrom(
+        foregroundColor: Colors.white70,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.10)),
+        ),
+        backgroundColor: Colors.white.withValues(alpha: 0.04),
+      ),
+      icon: const Icon(Icons.arrow_back_rounded, size: 16),
+      label: Text(
+        'Dashboard',
+        style: GoogleFonts.manrope(
+          fontWeight: FontWeight.w700,
+          fontSize: 12.5,
+        ),
+      ),
+    );
   }
 }
 
