@@ -15,7 +15,6 @@ class BlogPage extends StatelessWidget {
     final controller = Get.find<PortfolioController>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
       body: SingleChildScrollView(
@@ -32,16 +31,12 @@ class BlogPage extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 32,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Sharing knowledge and insights about Flutter development',
-                    style: GoogleFonts.manrope(
-                      fontSize: 18,
-                      color: Colors.grey[600],
-                    ),
+                    style: GoogleFonts.manrope(fontSize: 18),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -152,7 +147,6 @@ class BlogPage extends StatelessWidget {
               style: GoogleFonts.manrope(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
               ),
             ),
             const SizedBox(height: 16),
@@ -174,7 +168,7 @@ class BlogPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -198,17 +192,12 @@ class BlogPage extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     "Subscribe to get notified about new blog posts and Flutter development tips.",
-                    style: GoogleFonts.manrope(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      height: 1.6,
-                    ),
+                    style: GoogleFonts.manrope(fontSize: 16, height: 1.6),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),

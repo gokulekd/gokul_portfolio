@@ -17,7 +17,6 @@ class AboutPage extends StatelessWidget {
     final isDesktop = ResponsiveHelper.isDesktop(context);
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
       body: SingleChildScrollView(
@@ -34,7 +33,7 @@ class AboutPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -53,7 +52,6 @@ class AboutPage extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -61,7 +59,6 @@ class AboutPage extends StatelessWidget {
                     controller.personalInfo.value.bio,
                     style: GoogleFonts.manrope(
                       fontSize: 16,
-                      color: Colors.grey[600],
                       height: 1.6,
                     ),
                   ),
@@ -70,7 +67,6 @@ class AboutPage extends StatelessWidget {
                     "I'm passionate about creating beautiful, functional mobile applications that provide exceptional user experiences. With expertise in Flutter development, I specialize in building cross-platform apps that work seamlessly on both iOS and Android.",
                     style: GoogleFonts.manrope(
                       fontSize: 16,
-                      color: Colors.grey[600],
                       height: 1.6,
                     ),
                   ),
@@ -79,7 +75,6 @@ class AboutPage extends StatelessWidget {
                     "When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or sharing my knowledge through blog posts and tutorials.",
                     style: GoogleFonts.manrope(
                       fontSize: 16,
-                      color: Colors.grey[600],
                       height: 1.6,
                     ),
                   ),
@@ -93,7 +88,7 @@ class AboutPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -112,7 +107,6 @@ class AboutPage extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -173,7 +167,7 @@ class AboutPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -192,7 +186,6 @@ class AboutPage extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -200,7 +193,6 @@ class AboutPage extends StatelessWidget {
                     "I'm always interested in new opportunities and exciting projects. Feel free to reach out if you'd like to work together!",
                     style: GoogleFonts.manrope(
                       fontSize: 16,
-                      color: Colors.grey[600],
                       height: 1.6,
                     ),
                   ),
@@ -220,7 +212,6 @@ class AboutPage extends StatelessWidget {
                           controller.personalInfo.value.email,
                           style: GoogleFonts.manrope(
                             fontSize: 16,
-                            color: Colors.black87,
                           ),
                         ),
                       ),
@@ -239,7 +230,6 @@ class AboutPage extends StatelessWidget {
                         controller.personalInfo.value.location,
                         style: GoogleFonts.manrope(
                           fontSize: 16,
-                          color: Colors.black87,
                         ),
                       ),
                     ],
@@ -367,7 +357,6 @@ class _AboutHeroSection extends StatelessWidget {
               'Available for freelance work',
               style: GoogleFonts.manrope(
                 fontSize: 14,
-                color: Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -380,7 +369,6 @@ class _AboutHeroSection extends StatelessWidget {
           style: GoogleFonts.manrope(
             fontSize: 36,
             fontWeight: FontWeight.w700,
-            color: Colors.black87,
           ),
         ),
         const SizedBox(height: 24),
@@ -439,7 +427,6 @@ class _AboutHeroSection extends StatelessWidget {
           "I'm Gokul, a passionate mobile app developer with a love for creating visually stunning and user-friendly digital experiences.",
           style: GoogleFonts.manrope(
             fontSize: 16,
-            color: Colors.grey[600],
             height: 1.6,
           ),
         ),
@@ -464,15 +451,10 @@ class _AboutHeroSection extends StatelessWidget {
                   style: GoogleFonts.manrope(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Icon(
-                  Icons.arrow_outward,
-                  size: 18,
-                  color: Colors.black87,
-                ),
+                const Icon(Icons.arrow_outward, size: 18),
               ],
             ),
           ),
@@ -489,7 +471,6 @@ class _AboutHeroSection extends StatelessWidget {
           "Hi, I'm Gokul, a passionate mobile app developer and designer with a love for creating visually stunning experiences. With a strong background in design and front-end development, I specialize in crafting responsive mobile apps that not only look great but also provide seamless interactions across all devices.",
           style: GoogleFonts.manrope(
             fontSize: 16,
-            color: Colors.grey[600],
             height: 1.6,
           ),
         ),
@@ -498,7 +479,6 @@ class _AboutHeroSection extends StatelessWidget {
           "Over the years, I've had the opportunity to work with a diverse range of clients, from startups to established brands, helping them bring their visions to life online.",
           style: GoogleFonts.manrope(
             fontSize: 16,
-            color: Colors.grey[600],
             height: 1.6,
           ),
         ),
@@ -508,7 +488,6 @@ class _AboutHeroSection extends StatelessWidget {
           style: GoogleFonts.manrope(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
           ),
         ),
       ],

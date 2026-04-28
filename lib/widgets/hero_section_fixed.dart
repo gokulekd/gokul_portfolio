@@ -130,26 +130,31 @@ class _HeroSectionState extends State<HeroSection>
 
     // Then name and title
     Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
       _textController.forward();
     });
 
     // Then content section
     Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
       _contentController.forward();
     });
 
     // Then tagline
     Future.delayed(const Duration(milliseconds: 700), () {
+      if (!mounted) return;
       _taglineController.forward();
     });
 
     // Then social icons
     Future.delayed(const Duration(milliseconds: 900), () {
+      if (!mounted) return;
       _socialController.forward();
     });
 
     // Start subtle animations after everything is loaded
     Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!mounted) return;
       _pulseController.repeat(reverse: true);
     });
   }
@@ -173,19 +178,29 @@ class _HeroSectionState extends State<HeroSection>
   Widget _buildLargePill(String text, Color backgroundColor, Color textColor, BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
-    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // In dark mode: white pills become dark surface, black pills become white
+    final Color actualBg = isDark
+        ? (backgroundColor == Colors.white ? const Color(0xFF1E1E1E) : Colors.white)
+        : backgroundColor;
+    final Color actualText = isDark
+        ? (textColor == Colors.black87 ? Colors.white : Colors.black)
+        : textColor;
+    final bool isSubtlePill = isDark
+        ? actualBg == const Color(0xFF1E1E1E)
+        : backgroundColor == Colors.white;
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 16 : isTablet ? 20 : 24,
         vertical: isMobile ? 8 : 12,
       ),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: actualBg,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: backgroundColor == Colors.white
-              ? Colors.grey[300]!
-              : Colors.transparent,
+          color: isSubtlePill ? Colors.grey[600]! : Colors.transparent,
           width: 1,
         ),
       ),
@@ -194,7 +209,7 @@ class _HeroSectionState extends State<HeroSection>
         style: GoogleFonts.manrope(
           fontSize: isMobile ? 14 : isTablet ? 16 : 18,
           fontWeight: FontWeight.w500,
-          color: textColor,
+          color: actualText,
         ),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
@@ -286,6 +301,8 @@ class _HeroSectionState extends State<HeroSection>
     final socialIconScale = isMobile ? 1.2 : isTablet ? 1.35 : 1.5;
     final spacingBetweenSections = isMobile ? 24.0 : isTablet ? 40.0 : 80.0;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return Container(
@@ -294,7 +311,9 @@ class _HeroSectionState extends State<HeroSection>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Colors.grey[50]!, Colors.grey[100]!, Colors.grey[50]!],
+              colors: isDark
+                  ? [const Color(0xFF0A0A0A), const Color(0xFF111111), const Color(0xFF0A0A0A)]
+                  : [Colors.grey[50]!, Colors.grey[100]!, Colors.grey[50]!],
             ),
           ),
           child: SingleChildScrollView(
@@ -405,7 +424,7 @@ class _HeroSectionState extends State<HeroSection>
                     style: GoogleFonts.inter(
                       fontSize: nameFontSize,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black87,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -414,7 +433,7 @@ class _HeroSectionState extends State<HeroSection>
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: titleFontSize,
-                      color: Colors.grey[600],
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -487,7 +506,7 @@ class _HeroSectionState extends State<HeroSection>
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Text(
@@ -495,7 +514,7 @@ class _HeroSectionState extends State<HeroSection>
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey[700],
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -572,7 +591,7 @@ class _HeroSectionState extends State<HeroSection>
                 style: GoogleFonts.inter(
                   fontSize: taglineFontSize,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                  color: Theme.of(context).colorScheme.onSurface,
                   height: 1.2,
                 ),
               ),
@@ -592,7 +611,7 @@ class _HeroSectionState extends State<HeroSection>
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: bioFontSize,
-                  color: Colors.grey[600],
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   height: 1.6,
                 ),
               ),
@@ -703,7 +722,7 @@ class _HeroSectionState extends State<HeroSection>
                             style: GoogleFonts.inter(
                               fontSize: nameFontSize,
                               fontWeight: FontWeight.w700,
-                              color: Colors.black87,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -711,7 +730,7 @@ class _HeroSectionState extends State<HeroSection>
                             _displayedTitle,
                             style: GoogleFonts.inter(
                               fontSize: titleFontSize,
-                              color: Colors.grey[600],
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -788,7 +807,7 @@ class _HeroSectionState extends State<HeroSection>
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(24),
                         ),
                         child: Text(
@@ -796,7 +815,7 @@ class _HeroSectionState extends State<HeroSection>
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey[700],
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                       ),
@@ -891,7 +910,7 @@ class _HeroSectionState extends State<HeroSection>
                         style: GoogleFonts.inter(
                           fontSize: taglineFontSize,
                           fontWeight: FontWeight.w700,
-                          color: Colors.black87,
+                          color: Theme.of(context).colorScheme.onSurface,
                           height: 1.2,
                         ),
                         maxLines: 3,
@@ -912,7 +931,7 @@ class _HeroSectionState extends State<HeroSection>
                         controller.personalInfo.value.bio,
                         style: GoogleFonts.inter(
                           fontSize: bioFontSize,
-                          color: Colors.grey[600],
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                           height: 1.6,
                         ),
                         maxLines: 4,

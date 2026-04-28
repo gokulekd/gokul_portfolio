@@ -15,7 +15,6 @@ class ContactPage extends StatelessWidget {
     final controller = Get.find<PortfolioController>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
       body: SingleChildScrollView(
@@ -32,16 +31,12 @@ class ContactPage extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 32,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Ready to bring your ideas to life? Let\'s discuss your project!',
-                    style: GoogleFonts.manrope(
-                      fontSize: 18,
-                      color: Colors.grey[600],
-                    ),
+                    style: GoogleFonts.manrope(fontSize: 18),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -55,6 +50,7 @@ class ContactPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: _buildContactCard(
+                    context: context,
                     icon: FontAwesomeIcons.envelope,
                     title: 'Email',
                     subtitle: controller.personalInfo.value.email,
@@ -75,6 +71,7 @@ class ContactPage extends StatelessWidget {
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildContactCard(
+                    context: context,
                     icon: FontAwesomeIcons.mapMarkerAlt,
                     title: 'Location',
                     subtitle: controller.personalInfo.value.location,
@@ -97,7 +94,7 @@ class ContactPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -116,17 +113,12 @@ class ContactPage extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Follow me on social media for updates on my latest projects and insights.',
-                    style: GoogleFonts.manrope(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      height: 1.6,
-                    ),
+                    style: GoogleFonts.manrope(fontSize: 16, height: 1.6),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -168,7 +160,7 @@ class ContactPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -187,17 +179,12 @@ class ContactPage extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Have a project in mind? Send me a message and let\'s discuss how we can work together.',
-                    style: GoogleFonts.manrope(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      height: 1.6,
-                    ),
+                    style: GoogleFonts.manrope(fontSize: 16, height: 1.6),
                   ),
                   const SizedBox(height: 24),
 
@@ -306,6 +293,7 @@ class ContactPage extends StatelessWidget {
   }
 
   Widget _buildContactCard({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -316,7 +304,7 @@ class ContactPage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -336,13 +324,12 @@ class ContactPage extends StatelessWidget {
               style: GoogleFonts.manrope(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: GoogleFonts.manrope(fontSize: 14, color: Colors.grey[600]),
+              style: GoogleFonts.manrope(fontSize: 14),
               textAlign: TextAlign.center,
             ),
           ],
@@ -370,10 +357,7 @@ class ContactPage extends StatelessWidget {
             child: Icon(icon, color: AppColors.darkGreen, size: 24),
           ),
           const SizedBox(height: 8),
-          Text(
-            label,
-            style: GoogleFonts.manrope(fontSize: 12, color: Colors.grey[600]),
-          ),
+          Text(label, style: GoogleFonts.manrope(fontSize: 12)),
         ],
       ),
     );
