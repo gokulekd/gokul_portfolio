@@ -14,7 +14,6 @@ class ProjectsPage extends StatelessWidget {
     final controller = Get.find<PortfolioController>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
       body: SingleChildScrollView(
@@ -31,16 +30,12 @@ class ProjectsPage extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 32,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'A showcase of my recent projects and contributions',
-                    style: GoogleFonts.manrope(
-                      fontSize: 18,
-                      color: Colors.grey[600],
-                    ),
+                    style: GoogleFonts.manrope(fontSize: 18),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -53,7 +48,7 @@ class ProjectsPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -100,7 +95,7 @@ class ProjectsPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -119,7 +114,6 @@ class ProjectsPage extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -230,7 +224,7 @@ class ProjectsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -242,14 +236,10 @@ class ProjectsPage extends StatelessWidget {
             style: GoogleFonts.manrope(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            title,
-            style: GoogleFonts.manrope(fontSize: 12, color: Colors.grey[600]),
-          ),
+          Text(title, style: GoogleFonts.manrope(fontSize: 12)),
         ],
       ),
     );

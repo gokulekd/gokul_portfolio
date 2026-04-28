@@ -27,18 +27,16 @@ class MyApp extends StatelessWidget {
 
     final textTheme = GoogleFonts.manropeTextTheme();
 
-    return Obx(
-      () => GetMaterialApp(
-        title: 'Gokul K S — Flutter Developer & Designer',
-        debugShowCheckedModeBanner: false,
-        defaultTransition: Transition.fade,
-        transitionDuration: const Duration(milliseconds: 300),
-        theme: buildLightTheme(textTheme),
-        darkTheme: buildDarkTheme(textTheme),
-        themeMode: themeController.themeMode,
-        initialRoute: AppRoutes.splash,
-        getPages: AppRoutes.routes,
-      ),
+    return GetMaterialApp(
+      title: 'Gokul K S — Flutter Developer & Designer',
+      debugShowCheckedModeBanner: false,
+      defaultTransition: Transition.fade,
+      transitionDuration: const Duration(milliseconds: 300),
+      theme: buildLightTheme(textTheme),
+      darkTheme: buildDarkTheme(textTheme),
+      themeMode: themeController.themeMode,
+      initialRoute: AppRoutes.splash,
+      getPages: AppRoutes.routes,
     );
   }
 }

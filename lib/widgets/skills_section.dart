@@ -191,7 +191,9 @@ class _SkillsSectionState extends State<SkillsSection>
             child: Container(
               key: _skillsSectionKey,
               width: double.infinity,
-              decoration: BoxDecoration(color: Colors.grey[50]),
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+              ),
               child: Stack(
                 children: [
                   Positioned.fill(
@@ -236,7 +238,7 @@ class _SkillsSectionState extends State<SkillsSection>
                                             "{01} - My Skills",
                                             style: GoogleFonts.manrope(
                                               fontSize: 18,
-                                              color: Colors.black,
+                                              color: Theme.of(context).colorScheme.onSurface,
                                             ),
                                           ),
                                           const SizedBox(width: 8),
@@ -257,7 +259,7 @@ class _SkillsSectionState extends State<SkillsSection>
                                         style: GoogleFonts.manrope(
                                           fontSize: isNarrow ? 40 : 64,
                                           fontWeight: FontWeight.w800,
-                                          color: Colors.black87,
+                                          color: Theme.of(context).colorScheme.onSurface,
                                           letterSpacing: -1.5,
                                           height: 1.1,
                                         ),
@@ -269,7 +271,7 @@ class _SkillsSectionState extends State<SkillsSection>
                                         textAlign: TextAlign.center,
                                         style: GoogleFonts.manrope(
                                           fontSize: isNarrow ? 16 : 20,
-                                          color: Colors.grey[600],
+                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                           fontWeight: FontWeight.w400,
                                           height: 1.5,
                                         ),
@@ -420,7 +422,7 @@ class _SkillsSectionState extends State<SkillsSection>
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -440,7 +442,7 @@ class _SkillsSectionState extends State<SkillsSection>
                         width: 64,
                         height: 64,
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -460,7 +462,7 @@ class _SkillsSectionState extends State<SkillsSection>
                               style: GoogleFonts.manrope(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.black87,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -468,7 +470,7 @@ class _SkillsSectionState extends State<SkillsSection>
                               skill['description'] as String,
                               style: GoogleFonts.manrope(
                                 fontSize: 14,
-                                color: Colors.grey[600],
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -491,7 +493,7 @@ class _SkillsSectionState extends State<SkillsSection>
                             width: double.infinity,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: Colors.grey[200],
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),

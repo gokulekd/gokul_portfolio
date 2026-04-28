@@ -14,7 +14,6 @@ class ExperiencePage extends StatelessWidget {
     final controller = Get.find<PortfolioController>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
       body: SingleChildScrollView(
@@ -31,16 +30,12 @@ class ExperiencePage extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 32,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Building amazing mobile experiences with passion and expertise',
-                    style: GoogleFonts.manrope(
-                      fontSize: 18,
-                      color: Colors.grey[600],
-                    ),
+                    style: GoogleFonts.manrope(fontSize: 18),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -66,7 +61,7 @@ class ExperiencePage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -85,7 +80,6 @@ class ExperiencePage extends StatelessWidget {
                     style: GoogleFonts.manrope(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -188,17 +182,12 @@ class ExperiencePage extends StatelessWidget {
                   style: GoogleFonts.manrope(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: GoogleFonts.manrope(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                    height: 1.5,
-                  ),
+                  style: GoogleFonts.manrope(fontSize: 14, height: 1.5),
                 ),
               ],
             ),

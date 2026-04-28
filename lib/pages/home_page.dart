@@ -44,7 +44,6 @@ class _HomePageState extends State<HomePage> {
     final controller = Get.find<PortfolioController>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
       body: Stack(
