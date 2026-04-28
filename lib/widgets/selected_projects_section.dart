@@ -17,12 +17,14 @@ class SelectedProjectsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<PortfolioController>();
     final isMobile = ResponsiveHelper.isMobile(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Obx(() {
       final featuredProjects = controller.featuredProjects;
 
       return Container(
         width: double.infinity,
-        color: Colors.white,
+        color: theme.scaffoldBackgroundColor,
         child: Stack(
           children: [
             // Background Painting - Now guaranteed to cover full width
@@ -48,7 +50,7 @@ class SelectedProjectsSection extends StatelessWidget {
                             "{02} - Selected Work",
                             style: GoogleFonts.manrope(
                               fontSize: 18,
-                              color: Colors.black,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -70,7 +72,7 @@ class SelectedProjectsSection extends StatelessWidget {
                         style: GoogleFonts.manrope(
                           fontSize: isMobile ? 40 : 60,
                           fontWeight: FontWeight.w800,
-                          color: Colors.black,
+                          color: colorScheme.onSurface,
                           height: 1.1,
                         ),
                         textAlign: TextAlign.center,
@@ -85,7 +87,9 @@ class SelectedProjectsSection extends StatelessWidget {
                             'Featured projects will appear here once they are published from the admin portal.',
                             style: GoogleFonts.manrope(
                               fontSize: 16,
-                              color: Colors.grey[600],
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -104,7 +108,8 @@ class SelectedProjectsSection extends StatelessWidget {
                                   children: [
                                     Expanded(
                                       child: Divider(
-                                        color: Colors.grey[200],
+                                        color:
+                                            colorScheme.surfaceContainerHighest,
                                         thickness: 1,
                                       ),
                                     ),
@@ -116,7 +121,7 @@ class SelectedProjectsSection extends StatelessWidget {
                                         width: 12,
                                         height: 12,
                                         decoration: BoxDecoration(
-                                          color: Colors.white,
+                                          color: colorScheme.surface,
                                           border: Border.all(
                                             color: AppColors.primaryGreen,
                                             width: 2,
@@ -127,7 +132,8 @@ class SelectedProjectsSection extends StatelessWidget {
                                     ),
                                     Expanded(
                                       child: Divider(
-                                        color: Colors.grey[200],
+                                        color:
+                                            colorScheme.surfaceContainerHighest,
                                         thickness: 1,
                                       ),
                                     ),
@@ -228,6 +234,7 @@ class _FeaturedProjectCard extends StatelessWidget {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final bool useVerticalLayout = isMobile || isTablet;
+    final colorScheme = Theme.of(context).colorScheme;
 
     // Content Widget
     final content = Column(
@@ -239,7 +246,7 @@ class _FeaturedProjectCard extends StatelessWidget {
           style: GoogleFonts.manrope(
             fontSize: isMobile ? 24 : 32,
             fontWeight: FontWeight.w800,
-            color: Colors.black, // Black text
+            color: colorScheme.onSurface,
             height: 1.2,
           ),
         ),
@@ -247,9 +254,9 @@ class _FeaturedProjectCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey[200]!),
+            border: Border.all(color: colorScheme.surfaceContainerHighest),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.03),
@@ -262,7 +269,7 @@ class _FeaturedProjectCard extends StatelessWidget {
             description,
             style: GoogleFonts.manrope(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
               height: 1.8,
               fontWeight: FontWeight.w500,
             ),
@@ -281,15 +288,17 @@ class _FeaturedProjectCard extends StatelessWidget {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.grey[50],
+                        color: colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: Colors.grey[300]!),
+                        border: Border.all(
+                          color: colorScheme.surfaceContainerHighest,
+                        ),
                       ),
                       child: Text(
                         tech,
                         style: GoogleFonts.manrope(
                           fontSize: 13,
-                          color: Colors.black87,
+                          color: colorScheme.onSurface,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
                         ),
@@ -336,8 +345,12 @@ class _FeaturedProjectCard extends StatelessWidget {
             errorBuilder:
                 (context, error, stackTrace) => Container(
                   color: const Color(0xFF1F2937),
-                  child: const Center(
-                    child: Icon(Icons.image, color: Colors.grey, size: 50),
+                  child: Center(
+                    child: Icon(
+                      Icons.image,
+                      color: colorScheme.onSurface.withValues(alpha: 0.45),
+                      size: 50,
+                    ),
                   ),
                 ),
           ),
@@ -380,6 +393,7 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(30),
@@ -388,22 +402,20 @@ class _ActionButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: Colors.black.withValues(alpha: 0.2)),
+          border: Border.all(
+            color: colorScheme.onSurface.withValues(alpha: 0.2),
+          ),
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 16,
-              color: Colors.black, // Always black
-            ),
+            Icon(icon, size: 16, color: colorScheme.onSurface),
             const SizedBox(width: 8),
             Text(
               label,
               style: GoogleFonts.manrope(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.black, // Always black
+                color: colorScheme.onSurface,
               ),
             ),
           ],

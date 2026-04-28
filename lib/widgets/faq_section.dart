@@ -61,9 +61,11 @@ class _FAQSectionState extends State<FAQSection> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Container(
-      decoration: const BoxDecoration(color: Colors.white),
+      decoration: BoxDecoration(color: theme.scaffoldBackgroundColor),
       child: Stack(
         children: [
           // Background decorative elements
@@ -90,7 +92,7 @@ class _FAQSectionState extends State<FAQSection> {
                             "{06} – FAQ",
                             style: GoogleFonts.manrope(
                               fontSize: 18,
-                              color: Colors.black,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -111,7 +113,7 @@ class _FAQSectionState extends State<FAQSection> {
                         style: GoogleFonts.manrope(
                           fontSize: isMobile ? 40 : 60,
                           fontWeight: FontWeight.w800,
-                          color: Colors.grey[900],
+                          color: colorScheme.onSurface,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -141,12 +143,16 @@ class _FAQSectionState extends State<FAQSection> {
 
   Widget _buildFAQItem(FAQItem item, int index, bool isMobile) {
     final isExpanded = _expandedIndex == index;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!, width: 1),
+        border: Border.all(
+          color: colorScheme.surfaceContainerHighest,
+          width: 1,
+        ),
       ),
       child: Column(
         children: [
@@ -166,7 +172,9 @@ class _FAQSectionState extends State<FAQSection> {
                           "${item.number}/",
                           style: GoogleFonts.manrope(
                             fontSize: 18,
-                            color: Colors.grey[400],
+                            color: colorScheme.onSurface.withValues(
+                              alpha: 0.45,
+                            ),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -177,7 +185,7 @@ class _FAQSectionState extends State<FAQSection> {
                             style: GoogleFonts.manrope(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
-                              color: Colors.grey[900],
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -190,13 +198,17 @@ class _FAQSectionState extends State<FAQSection> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: Colors.black,
+                      color: colorScheme.onSurface,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: AnimatedRotation(
                       turns: isExpanded ? 0.125 : 0, // 45 degrees when expanded
                       duration: const Duration(milliseconds: 200),
-                      child: Icon(Icons.add, color: Colors.white, size: 20),
+                      child: Icon(
+                        Icons.add,
+                        color: colorScheme.surface,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ],
@@ -212,7 +224,7 @@ class _FAQSectionState extends State<FAQSection> {
                 item.answer,
                 style: GoogleFonts.manrope(
                   fontSize: 16,
-                  color: Colors.grey[600],
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                   height: 1.6,
                 ),
               ),
@@ -251,8 +263,8 @@ class _BackgroundPainter extends CustomPainter {
 
     paint.shader = LinearGradient(
       colors: [
-        AppColors.primaryGreen.withOpacity(0.25),
-        AppColors.primaryGreen.withOpacity(0.8),
+        AppColors.primaryGreen.withValues(alpha: 0.25),
+        AppColors.primaryGreen.withValues(alpha: 0.8),
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -261,7 +273,7 @@ class _BackgroundPainter extends CustomPainter {
 
     // Added Shape: Small Circle near triangle
     paint.shader = null;
-    paint.color = AppColors.primaryGreen.withOpacity(0.3);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.3);
     canvas.drawCircle(Offset(size.width * 0.92, size.height * 0.12), 4, paint);
 
     // Added Shape: Cross near triangle
@@ -269,7 +281,7 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.8, size.height * 0.18),
       8,
-      AppColors.primaryGreen.withOpacity(0.4),
+      AppColors.primaryGreen.withValues(alpha: 0.4),
     );
 
     // 2. Hollow Hexagon (Bottom Left)
@@ -285,7 +297,7 @@ class _BackgroundPainter extends CustomPainter {
     hexPath.lineTo(center2.dx + 20, center2.dy - 35);
     hexPath.close();
 
-    strokePaint.color = AppColors.primaryGreen.withOpacity(0.35);
+    strokePaint.color = AppColors.primaryGreen.withValues(alpha: 0.35);
     canvas.drawPath(hexPath, strokePaint);
 
     // 3. Scattered Shapes (Increased Count)
@@ -295,53 +307,53 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.15, size.height * 0.2),
       15,
-      AppColors.primaryGreen.withOpacity(0.6),
+      AppColors.primaryGreen.withValues(alpha: 0.6),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.9, size.height * 0.6),
       10,
-      AppColors.primaryGreen.withOpacity(0.5),
+      AppColors.primaryGreen.withValues(alpha: 0.5),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.5, size.height * 0.85),
       12,
-      AppColors.primaryGreen.withOpacity(0.5),
+      AppColors.primaryGreen.withValues(alpha: 0.5),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.35, size.height * 0.45),
       8,
-      AppColors.primaryGreen.withOpacity(0.55),
+      AppColors.primaryGreen.withValues(alpha: 0.55),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.75, size.height * 0.15),
       14,
-      AppColors.primaryGreen.withOpacity(0.45),
+      AppColors.primaryGreen.withValues(alpha: 0.45),
     );
 
     // Filled Circles
     paint.shader = null;
-    paint.color = AppColors.primaryGreen.withOpacity(0.4);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.4);
     canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.15), 6, paint);
 
-    paint.color = AppColors.primaryGreen.withOpacity(0.38);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.38);
     canvas.drawCircle(Offset(size.width * 0.05, size.height * 0.5), 18, paint);
 
-    paint.color = AppColors.primaryGreen.withOpacity(0.42);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.42);
     canvas.drawCircle(Offset(size.width * 0.45, size.height * 0.65), 4, paint);
 
     // Hollow Circles
-    strokePaint.color = AppColors.primaryGreen.withOpacity(0.45);
+    strokePaint.color = AppColors.primaryGreen.withValues(alpha: 0.45);
     canvas.drawCircle(
       Offset(size.width * 0.8, size.height * 0.8),
       25,
       strokePaint,
     );
 
-    strokePaint.color = AppColors.primaryGreen.withOpacity(0.4);
+    strokePaint.color = AppColors.primaryGreen.withValues(alpha: 0.4);
     canvas.drawCircle(
       Offset(size.width * 0.25, size.height * 0.3),
       15,
@@ -353,14 +365,14 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.5, size.height * 0.9),
       15,
-      AppColors.primaryGreen.withOpacity(0.5),
+      AppColors.primaryGreen.withValues(alpha: 0.5),
       true,
     );
 
     // 5. Connecting Lines
     final linePaint =
         Paint()
-          ..color = AppColors.primaryGreen.withOpacity(0.3)
+          ..color = AppColors.primaryGreen.withValues(alpha: 0.3)
           ..strokeWidth = 1.5;
 
     canvas.drawLine(
@@ -380,19 +392,19 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.1, size.height * 0.4),
       15,
-      AppColors.primaryGreen.withOpacity(0.4),
+      AppColors.primaryGreen.withValues(alpha: 0.4),
     );
     _drawTriangle(
       canvas,
       Offset(size.width * 0.7, size.height * 0.9),
       10,
-      AppColors.primaryGreen.withOpacity(0.45),
+      AppColors.primaryGreen.withValues(alpha: 0.45),
     );
     _drawTriangle(
       canvas,
       Offset(size.width * 0.3, size.height * 0.1),
       8,
-      AppColors.primaryGreen.withOpacity(0.42),
+      AppColors.primaryGreen.withValues(alpha: 0.42),
     );
 
     // More Crosses
@@ -400,29 +412,29 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.65, size.height * 0.4),
       10,
-      AppColors.primaryGreen.withOpacity(0.48),
+      AppColors.primaryGreen.withValues(alpha: 0.48),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.25, size.height * 0.85),
       12,
-      AppColors.primaryGreen.withOpacity(0.4),
+      AppColors.primaryGreen.withValues(alpha: 0.4),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.05, size.height * 0.25),
       8,
-      AppColors.primaryGreen.withOpacity(0.5),
+      AppColors.primaryGreen.withValues(alpha: 0.5),
     );
     _drawCross(
       canvas,
       Offset(size.width * 0.95, size.height * 0.5),
       14,
-      AppColors.primaryGreen.withOpacity(0.45),
+      AppColors.primaryGreen.withValues(alpha: 0.45),
     );
 
     // More Dots
-    paint.color = AppColors.primaryGreen.withOpacity(0.38);
+    paint.color = AppColors.primaryGreen.withValues(alpha: 0.38);
     canvas.drawCircle(Offset(size.width * 0.55, size.height * 0.35), 5, paint);
     canvas.drawCircle(Offset(size.width * 0.85, size.height * 0.65), 7, paint);
     canvas.drawCircle(Offset(size.width * 0.35, size.height * 0.95), 4, paint);
@@ -433,21 +445,21 @@ class _BackgroundPainter extends CustomPainter {
       canvas,
       Offset(size.width * 0.9, size.height * 0.15),
       12,
-      AppColors.primaryGreen.withOpacity(0.45),
+      AppColors.primaryGreen.withValues(alpha: 0.45),
       true,
     );
     _drawDiamond(
       canvas,
       Offset(size.width * 0.2, size.height * 0.55),
       10,
-      AppColors.primaryGreen.withOpacity(0.4),
+      AppColors.primaryGreen.withValues(alpha: 0.4),
       false,
     );
     _drawDiamond(
       canvas,
       Offset(size.width * 0.6, size.height * 0.8),
       15,
-      AppColors.primaryGreen.withOpacity(0.42),
+      AppColors.primaryGreen.withValues(alpha: 0.42),
       true,
     );
 

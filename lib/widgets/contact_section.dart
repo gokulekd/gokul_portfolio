@@ -86,14 +86,14 @@ class ContactSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<PortfolioController>();
     final isMobile = MediaQuery.of(context).size.width < 768;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Obx(() {
       final platforms = _buildPlatforms(controller);
 
       return Container(
-        decoration: const BoxDecoration(
-          color: Colors.white, // Dark almost black background
-        ),
+        decoration: BoxDecoration(color: theme.scaffoldBackgroundColor),
         child: Stack(
           children: [
             // Background decorative elements
@@ -122,7 +122,7 @@ class ContactSection extends StatelessWidget {
                               "{07} – Contact me",
                               style: GoogleFonts.manrope(
                                 fontSize: 18,
-                                color: Colors.black,
+                                color: colorScheme.onSurface,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -143,7 +143,7 @@ class ContactSection extends StatelessWidget {
                           style: GoogleFonts.manrope(
                             fontSize: isMobile ? 40 : 60,
                             fontWeight: FontWeight.w800,
-                            color: Colors.black,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 60),
@@ -267,6 +267,10 @@ class ContactSection extends StatelessWidget {
   }
 
   Widget _buildSocialCard(SocialPlatform platform, BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return InkWell(
       onTap: () => _launchURL(platform.url),
       borderRadius: BorderRadius.circular(16),
@@ -274,12 +278,17 @@ class ContactSection extends StatelessWidget {
         height: 140,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFF171717),
+          color: isDark ? colorScheme.surface : const Color(0xFF171717),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          border: Border.all(
+            color:
+                isDark
+                    ? colorScheme.surfaceContainerHighest
+                    : Colors.white.withValues(alpha: 0.1),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
+              color: Colors.black.withValues(alpha: isDark ? 0.12 : 0.2),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -295,7 +304,7 @@ class ContactSection extends StatelessWidget {
                 style: GoogleFonts.manrope(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: isDark ? colorScheme.onSurface : Colors.white,
                 ),
               ),
             ),
@@ -320,6 +329,10 @@ class ContactSection extends StatelessWidget {
 
   Widget _buildGetInTouchCard(BuildContext context) {
     final controller = Get.find<PortfolioController>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return InkWell(
       onTap:
           () => controller.launchEmail(
@@ -331,12 +344,19 @@ class ContactSection extends StatelessWidget {
       child: Container(
         height: 140,
         decoration: BoxDecoration(
-          color: const Color(0xFF171717),
+          color: isDark ? colorScheme.surface : const Color(0xFF171717),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          border: Border.all(
+            color:
+                isDark
+                    ? colorScheme.surfaceContainerHighest
+                    : Colors.white.withValues(alpha: 0.1),
+          ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.skillsGreen.withValues(alpha: 0.5),
+              color: AppColors.skillsGreen.withValues(
+                alpha: isDark ? 0.35 : 0.5,
+              ),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -363,7 +383,7 @@ class ContactSection extends StatelessWidget {
                         style: GoogleFonts.manrope(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: isDark ? colorScheme.onSurface : Colors.white,
                         ),
                       ),
                     ),
@@ -373,15 +393,23 @@ class ContactSection extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color:
+                              isDark
+                                  ? colorScheme.surfaceContainerHighest
+                                  : Colors.white.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color:
+                                isDark
+                                    ? colorScheme.onSurface.withValues(
+                                      alpha: 0.12,
+                                    )
+                                    : Colors.white.withValues(alpha: 0.2),
                           ),
                         ),
-                        child: const FaIcon(
+                        child: FaIcon(
                           FontAwesomeIcons.arrowRight,
-                          color: Colors.white,
+                          color: isDark ? colorScheme.onSurface : Colors.white,
                           size: 20,
                         ),
                       ),
