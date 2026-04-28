@@ -43,10 +43,17 @@ class _SkillsSectionState extends State<SkillsSection>
     // Set up scroll listener if scrollController is provided
     if (widget.scrollController != null) {
       widget.scrollController!.addListener(_onScroll);
+      // Start checking visibility periodically only when scroll-driven
+      _startVisibilityCheck();
+    } else {
+      // No scroll controller — show cards immediately after mount
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) {
+          setState(() => _isSectionVisible = true);
+          _animateCardsSequentially();
+        }
+      });
     }
-
-    // Start checking visibility periodically
-    _startVisibilityCheck();
   }
 
   void _startVisibilityCheck() {
