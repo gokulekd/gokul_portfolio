@@ -86,17 +86,19 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
     _imageScale = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(parent: _imageController, curve: Curves.easeOutCubic),
     );
-    _imageOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _imageController, curve: Curves.easeOut),
-    );
+    _imageOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _imageController, curve: Curves.easeOut));
 
     _textController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    _textOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeOut),
-    );
+    _textOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeOut));
 
     _socialController = AnimationController(
       duration: const Duration(milliseconds: 600),
@@ -203,11 +205,12 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
               child: CircleAvatar(
                 radius: imageRadius,
                 backgroundColor: Colors.grey[300],
-                backgroundImage: profileImageUrl.startsWith('http')
-                    ? NetworkImage(profileImageUrl) as ImageProvider
-                    : const AssetImage(
-                        'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
-                      ),
+                backgroundImage:
+                    profileImageUrl.startsWith('http')
+                        ? NetworkImage(profileImageUrl) as ImageProvider
+                        : const AssetImage(
+                          'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
+                        ),
                 onBackgroundImageError: (_, __) {},
               ),
             ),
@@ -239,98 +242,105 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
         Center(
           child: AnimatedBuilder(
             animation: _textController,
-            builder: (context, child) => Opacity(
-              opacity: _textOpacity.value,
-              child: Column(
-                children: [
-                  Text(
-                    controller.personalInfo.value.name,
-                    style: GoogleFonts.inter(
-                      fontSize: nameFontSize,
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
+            builder:
+                (context, child) => Opacity(
+                  opacity: _textOpacity.value,
+                  child: Column(
+                    children: [
+                      Text(
+                        controller.personalInfo.value.name,
+                        style: GoogleFonts.inter(
+                          fontSize: nameFontSize,
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        controller.personalInfo.value.title,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: titleFontSize,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    controller.personalInfo.value.title,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: titleFontSize,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                ),
           ),
         ),
         const SizedBox(height: 32),
         Center(
           child: AnimatedBuilder(
             animation: _socialController,
-            builder: (context, child) => Opacity(
-              opacity: _socialOpacity.value,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: controller.personalInfo.value.socialLinks
-                    .take(3)
-                    .toList()
-                    .asMap()
-                    .entries
-                    .map((entry) {
-                      final index = entry.key;
-                      final link = entry.value;
-                      return Padding(
-                        padding: EdgeInsets.only(right: index < 2 ? 24 : 0),
-                        child: Transform.scale(
-                          scale: socialIconScale,
-                          child: _buildAnimatedSocialIcon(
-                            SocialIconButton(
-                              platform: link.platform,
-                              url: link.url,
-                              icon: _iconForPlatform(link.platform),
-                            ),
-                            index,
-                          ),
-                        ),
-                      );
-                    })
-                    .toList(),
-              ),
-            ),
+            builder:
+                (context, child) => Opacity(
+                  opacity: _socialOpacity.value,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children:
+                        controller.personalInfo.value.socialLinks
+                            .take(3)
+                            .toList()
+                            .asMap()
+                            .entries
+                            .map((entry) {
+                              final index = entry.key;
+                              final link = entry.value;
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  right: index < 2 ? 24 : 0,
+                                ),
+                                child: Transform.scale(
+                                  scale: socialIconScale,
+                                  child: _buildAnimatedSocialIcon(
+                                    SocialIconButton(
+                                      platform: link.platform,
+                                      url: link.url,
+                                      icon: _iconForPlatform(link.platform),
+                                    ),
+                                    index,
+                                  ),
+                                ),
+                              );
+                            })
+                            .toList(),
+                  ),
+                ),
           ),
         ),
         const SizedBox(height: 32),
         AnimatedBuilder(
           animation: _socialController,
-          builder: (context, child) => Opacity(
-            opacity: _socialOpacity.value,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Text(
-                  '(2024 - PRESENT)',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.7),
+          builder:
+              (context, child) => Opacity(
+                opacity: _socialOpacity.value,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Text(
+                      '(2024 - PRESENT)',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
         ),
       ],
     );
@@ -345,53 +355,120 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Heading
+        AnimatedBuilder(
+          animation: _textController,
+          builder: (context, child) => Opacity(
+            opacity: _textOpacity.value,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryGreen,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Portfolio / About',
+                      style: GoogleFonts.manrope(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: isMobile ? 12 : 16),
+                Text(
+                  'About me',
+                  style: GoogleFonts.inter(
+                    fontSize: isMobile ? 52 : isTablet ? 72 : 88,
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 0.95,
+                    letterSpacing: isMobile ? -2.0 : -3.5,
+                  ),
+                ),
+                SizedBox(height: isMobile ? 32 : 40),
+              ],
+            ),
+          ),
+        ),
         AnimatedBuilder(
           animation: _contentController,
-          builder: (context, child) => Opacity(
-            opacity: _contentOpacity.value,
-            child: Text(
-              "Hi, I'm Gokul, a passionate mobile app developer and designer with a love for creating visually stunning experiences. With a strong background in design and front-end development, I specialize in crafting responsive mobile apps that not only look great but also provide seamless interactions across all devices.",
-              style: GoogleFonts.manrope(
-                fontSize: isMobile ? 18 : isTablet ? 22 : 24,
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.onSurface,
-                height: 1.5,
-                letterSpacing: -0.4,
+          builder:
+              (context, child) => Opacity(
+                opacity: _contentOpacity.value,
+                child: Text(
+                  "Hi, I'm Gokul, a passionate mobile app developer and designer with a love for creating visually stunning experiences. With a strong background in design and front-end development, I specialize in crafting responsive mobile apps that not only look great but also provide seamless interactions across all devices.",
+                  style: GoogleFonts.manrope(
+                    fontSize:
+                        isMobile
+                            ? 18
+                            : isTablet
+                            ? 22
+                            : 24,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.5,
+                    letterSpacing: -0.4,
+                  ),
+                ),
               ),
-            ),
-          ),
         ),
         const SizedBox(height: 28),
         AnimatedBuilder(
           animation: _taglineController,
-          builder: (context, child) => Opacity(
-            opacity: _taglineOpacity.value,
-            child: Text(
-              "Over the years, I've had the opportunity to work with a diverse range of clients, from startups to established brands, helping them bring their visions to life online.",
-              style: GoogleFonts.manrope(
-                fontSize: isMobile ? 16 : isTablet ? 18 : 20,
-                fontWeight: FontWeight.w400,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                height: 1.6,
+          builder:
+              (context, child) => Opacity(
+                opacity: _taglineOpacity.value,
+                child: Text(
+                  "Over the years, I've had the opportunity to work with a diverse range of clients, from startups to established brands, helping them bring their visions to life online.",
+                  style: GoogleFonts.manrope(
+                    fontSize:
+                        isMobile
+                            ? 16
+                            : isTablet
+                            ? 18
+                            : 20,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.5),
+                    height: 1.6,
+                  ),
+                ),
               ),
-            ),
-          ),
         ),
         const SizedBox(height: 28),
         AnimatedBuilder(
           animation: _taglineController,
-          builder: (context, child) => Opacity(
-            opacity: _taglineOpacity.value,
-            child: Text(
-              "Let's create something amazing together!",
-              style: GoogleFonts.manrope(
-                fontSize: isMobile ? 16 : isTablet ? 18 : 20,
-                fontWeight: FontWeight.w700,
-                color: Theme.of(context).colorScheme.onSurface,
-                height: 1.4,
+          builder:
+              (context, child) => Opacity(
+                opacity: _taglineOpacity.value,
+                child: Text(
+                  "Let's create something amazing together!",
+                  style: GoogleFonts.manrope(
+                    fontSize:
+                        isMobile
+                            ? 16
+                            : isTablet
+                            ? 18
+                            : 20,
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.4,
+                  ),
+                ),
               ),
-            ),
-          ),
         ),
       ],
     );
@@ -403,16 +480,66 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
     final isTablet = ResponsiveHelper.isTablet(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final horizontalPadding = isMobile ? 16.0 : isTablet ? 40.0 : 80.0;
-    final verticalPadding = isMobile ? 32.0 : isTablet ? 48.0 : 64.0;
-    final imageRadius = isMobile ? 80.0 : isTablet ? 100.0 : 120.0;
-    final nameFontSize = isMobile ? 28.0 : isTablet ? 36.0 : 42.0;
-    final titleFontSize = isMobile ? 16.0 : isTablet ? 18.0 : 20.0;
-    final greetingFontSize = isMobile ? 36.0 : isTablet ? 48.0 : 72.0;
-    final taglineFontSize = isMobile ? 28.0 : isTablet ? 40.0 : 58.0;
-    final bioFontSize = isMobile ? 16.0 : isTablet ? 18.0 : 20.0;
-    final socialIconScale = isMobile ? 1.2 : isTablet ? 1.35 : 1.5;
-    final spacingBetweenSections = isMobile ? 24.0 : isTablet ? 40.0 : 80.0;
+    final horizontalPadding =
+        isMobile
+            ? 16.0
+            : isTablet
+            ? 40.0
+            : 80.0;
+    final verticalPadding =
+        isMobile
+            ? 32.0
+            : isTablet
+            ? 48.0
+            : 64.0;
+    final imageRadius =
+        isMobile
+            ? 80.0
+            : isTablet
+            ? 100.0
+            : 120.0;
+    final nameFontSize =
+        isMobile
+            ? 28.0
+            : isTablet
+            ? 36.0
+            : 42.0;
+    final titleFontSize =
+        isMobile
+            ? 16.0
+            : isTablet
+            ? 18.0
+            : 20.0;
+    final greetingFontSize =
+        isMobile
+            ? 36.0
+            : isTablet
+            ? 48.0
+            : 72.0;
+    final taglineFontSize =
+        isMobile
+            ? 28.0
+            : isTablet
+            ? 40.0
+            : 58.0;
+    final bioFontSize =
+        isMobile
+            ? 16.0
+            : isTablet
+            ? 18.0
+            : 20.0;
+    final socialIconScale =
+        isMobile
+            ? 1.2
+            : isTablet
+            ? 1.35
+            : 1.5;
+    final spacingBetweenSections =
+        isMobile
+            ? 24.0
+            : isTablet
+            ? 40.0
+            : 80.0;
 
     final info = widget.controller.personalInfo.value;
     final githubStats = widget.controller.githubStats.value;
@@ -427,13 +554,14 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: isDark
-              ? [
-                  const Color(0xFF0A0A0A),
-                  const Color(0xFF111111),
-                  const Color(0xFF0A0A0A),
-                ]
-              : [Colors.grey[50]!, Colors.grey[100]!, Colors.grey[50]!],
+          colors:
+              isDark
+                  ? [
+                    const Color(0xFF0A0A0A),
+                    const Color(0xFF111111),
+                    const Color(0xFF0A0A0A),
+                  ]
+                  : [Colors.grey[50]!, Colors.grey[100]!, Colors.grey[50]!],
         ),
       ),
       child: Padding(
@@ -441,92 +569,37 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
           horizontal: horizontalPadding,
           vertical: verticalPadding,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Page heading
-            AnimatedBuilder(
-              animation: _textController,
-              builder: (context, child) => Opacity(
-                opacity: _textOpacity.value,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primaryGreen,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Portfolio / About',
-                          style: GoogleFonts.manrope(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                            letterSpacing: 0.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: isMobile ? 12 : 16),
-                    Text(
-                      'About me',
-                      style: GoogleFonts.inter(
-                        fontSize: isMobile ? 52 : isTablet ? 80 : 96,
-                        fontWeight: FontWeight.w700,
-                        color: Theme.of(context).colorScheme.onSurface,
-                        height: 0.95,
-                        letterSpacing: isMobile ? -2.0 : -4.0,
-                      ),
-                    ),
-                    SizedBox(height: isMobile ? 32 : 48),
-                  ],
-                ),
-              ),
-            ),
-            // Left / right body
+        child:
             isMobile
                 ? _buildMobileLayout(
-                    context,
-                    imageRadius,
-                    nameFontSize,
-                    titleFontSize,
-                    greetingFontSize,
-                    taglineFontSize,
-                    bioFontSize,
-                    socialIconScale,
-                    profileImageUrl,
-                  )
+                  context,
+                  imageRadius,
+                  nameFontSize,
+                  titleFontSize,
+                  greetingFontSize,
+                  taglineFontSize,
+                  bioFontSize,
+                  socialIconScale,
+                  profileImageUrl,
+                )
                 : Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: _buildLeftColumn(
-                          context,
-                          imageRadius,
-                          nameFontSize,
-                          titleFontSize,
-                          socialIconScale,
-                          profileImageUrl,
-                        ),
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: _buildLeftColumn(
+                        context,
+                        imageRadius,
+                        nameFontSize,
+                        titleFontSize,
+                        socialIconScale,
+                        profileImageUrl,
                       ),
-                      SizedBox(width: spacingBetweenSections),
-                      Expanded(
-                        flex: 3,
-                        child: _buildRightColumn(context),
-                      ),
-                    ],
-                  ),
-          ],
-        ),
+                    ),
+                    SizedBox(width: spacingBetweenSections),
+                    Expanded(flex: 3, child: _buildRightColumn(context)),
+                  ],
+                ),
       ),
     );
   }
@@ -553,146 +626,158 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
         const SizedBox(height: 16),
         AnimatedBuilder(
           animation: _textController,
-          builder: (context, child) => Opacity(
-            opacity: _textOpacity.value,
-            child: Column(
-              children: [
-                Text(
-                  controller.personalInfo.value.name,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: nameFontSize,
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
+          builder:
+              (context, child) => Opacity(
+                opacity: _textOpacity.value,
+                child: Column(
+                  children: [
+                    Text(
+                      controller.personalInfo.value.name,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: nameFontSize,
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      controller.personalInfo.value.title,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: titleFontSize,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  controller.personalInfo.value.title,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: titleFontSize,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
         ),
         const SizedBox(height: 32),
         AnimatedBuilder(
           animation: _socialController,
-          builder: (context, child) => Opacity(
-            opacity: _socialOpacity.value,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: controller.personalInfo.value.socialLinks
-                  .take(3)
-                  .toList()
-                  .asMap()
-                  .entries
-                  .map((entry) {
-                    final index = entry.key;
-                    final link = entry.value;
-                    return Padding(
-                      padding: EdgeInsets.only(right: index < 2 ? 16 : 0),
-                      child: Transform.scale(
-                        scale: socialIconScale,
-                        child: _buildAnimatedSocialIcon(
-                          SocialIconButton(
-                            platform: link.platform,
-                            url: link.url,
-                            icon: _iconForPlatform(link.platform),
-                          ),
-                          index,
-                        ),
-                      ),
-                    );
-                  })
-                  .toList(),
-            ),
-          ),
+          builder:
+              (context, child) => Opacity(
+                opacity: _socialOpacity.value,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children:
+                      controller.personalInfo.value.socialLinks
+                          .take(3)
+                          .toList()
+                          .asMap()
+                          .entries
+                          .map((entry) {
+                            final index = entry.key;
+                            final link = entry.value;
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                right: index < 2 ? 16 : 0,
+                              ),
+                              child: Transform.scale(
+                                scale: socialIconScale,
+                                child: _buildAnimatedSocialIcon(
+                                  SocialIconButton(
+                                    platform: link.platform,
+                                    url: link.url,
+                                    icon: _iconForPlatform(link.platform),
+                                  ),
+                                  index,
+                                ),
+                              ),
+                            );
+                          })
+                          .toList(),
+                ),
+              ),
         ),
         const SizedBox(height: 24),
         AnimatedBuilder(
           animation: _socialController,
-          builder: (context, child) => Opacity(
-            opacity: _socialOpacity.value,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 10,
-              ),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Text(
-                '(2024 - PRESENT)',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.7),
+          builder:
+              (context, child) => Opacity(
+                opacity: _socialOpacity.value,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Text(
+                    '(2024 - PRESENT)',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
         ),
         const SizedBox(height: 40),
         AnimatedBuilder(
           animation: _contentController,
-          builder: (context, child) => Opacity(
-            opacity: _contentOpacity.value,
-            child: Text(
-              "Hi, I'm Gokul, a passionate mobile app developer and designer with a love for creating visually stunning experiences. With a strong background in design and front-end development, I specialize in crafting responsive mobile apps that not only look great but also provide seamless interactions across all devices.",
-              textAlign: TextAlign.center,
-              style: GoogleFonts.manrope(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.onSurface,
-                height: 1.5,
-                letterSpacing: -0.3,
+          builder:
+              (context, child) => Opacity(
+                opacity: _contentOpacity.value,
+                child: Text(
+                  "Hi, I'm Gokul, a passionate mobile app developer and designer with a love for creating visually stunning experiences. With a strong background in design and front-end development, I specialize in crafting responsive mobile apps that not only look great but also provide seamless interactions across all devices.",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.manrope(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.5,
+                    letterSpacing: -0.3,
+                  ),
+                ),
               ),
-            ),
-          ),
         ),
         const SizedBox(height: 24),
         AnimatedBuilder(
           animation: _taglineController,
-          builder: (context, child) => Opacity(
-            opacity: _taglineOpacity.value,
-            child: Text(
-              "Over the years, I've had the opportunity to work with a diverse range of clients, from startups to established brands, helping them bring their visions to life online.",
-              textAlign: TextAlign.center,
-              style: GoogleFonts.manrope(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                height: 1.6,
+          builder:
+              (context, child) => Opacity(
+                opacity: _taglineOpacity.value,
+                child: Text(
+                  "Over the years, I've had the opportunity to work with a diverse range of clients, from startups to established brands, helping them bring their visions to life online.",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.manrope(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.5),
+                    height: 1.6,
+                  ),
+                ),
               ),
-            ),
-          ),
         ),
         const SizedBox(height: 24),
         AnimatedBuilder(
           animation: _taglineController,
-          builder: (context, child) => Opacity(
-            opacity: _taglineOpacity.value,
-            child: Text(
-              "Let's create something amazing together!",
-              textAlign: TextAlign.center,
-              style: GoogleFonts.manrope(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Theme.of(context).colorScheme.onSurface,
-                height: 1.4,
+          builder:
+              (context, child) => Opacity(
+                opacity: _taglineOpacity.value,
+                child: Text(
+                  "Let's create something amazing together!",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.manrope(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.4,
+                  ),
+                ),
               ),
-            ),
-          ),
         ),
       ],
     );
