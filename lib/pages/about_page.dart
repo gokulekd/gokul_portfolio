@@ -7,7 +7,10 @@ import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
 import '../models/portfolio_models.dart';
 import '../utils/responsive_helper.dart';
+import '../widgets/available_badge.dart';
 import '../widgets/custom_widgets.dart';
+import '../widgets/footer_section.dart';
+import '../widgets/skills_section.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -15,452 +18,683 @@ class AboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<PortfolioController>();
-    final theme = Theme.of(context);
-    final sectionShadow = Colors.black.withValues(
-      alpha: theme.brightness == Brightness.dark ? 0.16 : 0.08,
-    );
 
     return Scaffold(
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
-      body: Obx(
-        () => SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _AboutHeroSection(controller: controller),
-              const SizedBox(height: 48),
-              _EducationExperienceSection(controller: controller),
-              const SizedBox(height: 32),
-              _AboutContactSection(controller: controller),
-              const SizedBox(height: 32),
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: sectionShadow,
-                      spreadRadius: 1,
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'About Me',
-                      style: GoogleFonts.manrope(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      controller.personalInfo.value.bio,
-                      style: GoogleFonts.manrope(fontSize: 16, height: 1.6),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      "I'm passionate about creating beautiful, functional mobile applications that provide exceptional user experiences. With expertise in Flutter development, I specialize in building cross-platform apps that work seamlessly on both iOS and Android.",
-                      style: GoogleFonts.manrope(fontSize: 16, height: 1.6),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      "When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or sharing my knowledge through blog posts and tutorials.",
-                      style: GoogleFonts.manrope(fontSize: 16, height: 1.6),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: sectionShadow,
-                      spreadRadius: 1,
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Skills & Technologies',
-                      style: GoogleFonts.manrope(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children:
-                          [
-                                'Flutter',
-                                'Dart',
-                                'Firebase',
-                                'REST APIs',
-                                'Git',
-                                'Material Design',
-                                'Provider',
-                                'GetX',
-                                'SQLite',
-                                'Android Studio',
-                                'VS Code',
-                                'Figma',
-                              ]
-                              .map(
-                                (skill) => Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFF10B981,
-                                    ).withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: const Color(
-                                        0xFF10B981,
-                                      ).withValues(alpha: 0.28),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    skill,
-                                    style: GoogleFonts.manrope(
-                                      fontSize: 14,
-                                      color: AppColors.darkGreen,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _AboutHeroSection(controller: controller),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 48, 24, 0),
+              child: _EducationExperienceSection(controller: controller),
+            ),
+            const SizedBox(height: 32),
+            const SkillsSection(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
+              child: _AboutContactSection(controller: controller),
+            ),
+            const FooterSection(),
+          ],
         ),
       ),
     );
   }
 }
 
-class _AboutHeroSection extends StatelessWidget {
+class _AboutHeroSection extends StatefulWidget {
   const _AboutHeroSection({required this.controller});
 
   final PortfolioController controller;
 
   @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isMobile = ResponsiveHelper.isMobile(context);
-    final isTablet = ResponsiveHelper.isTablet(context);
-    final isCompact = isMobile || isTablet;
-    final info = controller.personalInfo.value;
-    final githubStats = controller.githubStats.value;
-    final profileImage =
-        githubStats?.avatarUrl.isNotEmpty == true
-            ? githubStats!.avatarUrl
-            : info.profileImageUrl;
-    final socialLinks = info.socialLinks.take(3).toList(growable: false);
+  State<_AboutHeroSection> createState() => _AboutHeroSectionState();
+}
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(
-        isMobile ? 6 : 24,
-        isMobile ? 12 : 28,
-        isMobile ? 6 : 24,
-        isMobile ? 24 : 40,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryGreen,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                'Available for freelance work',
-                style: GoogleFonts.manrope(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: colorScheme.onSurface.withValues(alpha: 0.55),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: isMobile ? 18 : 24),
-          Text(
-            "About me",
-            style: GoogleFonts.manrope(
-              fontSize:
-                  isMobile
-                      ? 56
-                      : isTablet
-                      ? 84
-                      : 92,
-              fontWeight: FontWeight.w400,
-              color: colorScheme.onSurface,
-              height: 0.95,
-              letterSpacing: -3.2,
-            ),
-          ),
-          SizedBox(height: isMobile ? 36 : 54),
-          isCompact
-              ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildIdentityColumn(
-                    context,
-                    imageUrl: profileImage,
-                    socialLinks: socialLinks,
-                  ),
-                  const SizedBox(height: 32),
-                  _buildNarrativeColumn(context),
-                ],
-              )
-              : Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 5,
-                    child: _buildIdentityColumn(
-                      context,
-                      imageUrl: profileImage,
-                      socialLinks: socialLinks,
-                    ),
-                  ),
-                  const SizedBox(width: 72),
-                  Expanded(flex: 6, child: _buildNarrativeColumn(context)),
-                ],
-              ),
-        ],
-      ),
+class _AboutHeroSectionState extends State<_AboutHeroSection>
+    with TickerProviderStateMixin {
+  late AnimationController _imageController;
+  late AnimationController _textController;
+  late AnimationController _socialController;
+  late AnimationController _taglineController;
+  late AnimationController _contentController;
+  late AnimationController _pulseController;
+
+  late Animation<double> _imageScale;
+  late Animation<double> _imageOpacity;
+  late Animation<double> _textOpacity;
+  late Animation<double> _socialOpacity;
+  late Animation<double> _taglineOpacity;
+  late Animation<double> _contentOpacity;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAnimations();
+    _startAnimations();
+  }
+
+  void _initializeAnimations() {
+    _imageController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    _imageScale = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _imageController, curve: Curves.easeOutCubic),
+    );
+    _imageOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _imageController, curve: Curves.easeOut),
+    );
+
+    _textController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _textOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _textController, curve: Curves.easeOut),
+    );
+
+    _socialController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _socialOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _socialController, curve: Curves.easeOut),
+    );
+
+    _taglineController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _taglineOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _taglineController, curve: Curves.easeOut),
+    );
+
+    _contentController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _contentOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _contentController, curve: Curves.easeOut),
+    );
+
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 3000),
+      vsync: this,
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
   }
 
-  Widget _buildIdentityColumn(
-    BuildContext context, {
-    required String imageUrl,
-    required List socialLinks,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isMobile = ResponsiveHelper.isMobile(context);
-    final info = controller.personalInfo.value;
-    final linkedIn = info.socialLinks.firstWhereOrNull(
-      (link) => link.platform.toLowerCase() == 'linkedin',
-    );
+  void _startAnimations() {
+    _imageController.forward();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      _textController.forward();
+    });
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      _contentController.forward();
+    });
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (!mounted) return;
+      _taglineController.forward();
+    });
+    Future.delayed(const Duration(milliseconds: 900), () {
+      if (!mounted) return;
+      _socialController.forward();
+    });
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!mounted) return;
+      _pulseController.repeat(reverse: true);
+    });
+  }
 
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 440),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: isMobile ? 64 : 78,
-                height: isMobile ? 64 : 78,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colorScheme.surfaceContainerHighest,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child:
-                    imageUrl.isEmpty
-                        ? Icon(
-                          Icons.person,
-                          size: 32,
-                          color: colorScheme.onSurface.withValues(alpha: 0.5),
-                        )
-                        : Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (context, error, stackTrace) => Icon(
-                                Icons.person,
-                                size: 32,
-                                color: colorScheme.onSurface.withValues(
-                                  alpha: 0.5,
-                                ),
-                              ),
-                        ),
+  @override
+  void dispose() {
+    _imageController.dispose();
+    _textController.dispose();
+    _socialController.dispose();
+    _taglineController.dispose();
+    _contentController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildAnimatedSocialIcon(Widget child, int index) {
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: 400 + (index * 100)),
+      tween: Tween(begin: 0.0, end: 1.0),
+      curve: Curves.easeOut,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: 0.8 + (value * 0.2),
+          child: Opacity(opacity: value, child: child),
+        );
+      },
+      child: child,
+    );
+  }
+
+  Widget _buildProfileImage(double imageRadius, String profileImageUrl) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([_imageController, _pulseController]),
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _imageScale.value * _pulseAnimation.value,
+          child: Opacity(
+            opacity: _imageOpacity.value,
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 24,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
               ),
-              const SizedBox(width: 18),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Wrap(
-                    spacing: 14,
-                    runSpacing: 12,
-                    children:
-                        socialLinks
-                            .map<Widget>(
-                              (link) => _buildInlineSocialIcon(
-                                context,
-                                icon: _iconForPlatform(link.platform),
-                                onTap:
-                                    () => controller.launchSocialLink(link.url),
-                              ),
-                            )
-                            .toList(),
+              child: CircleAvatar(
+                radius: imageRadius,
+                backgroundColor: Colors.grey[300],
+                backgroundImage: profileImageUrl.startsWith('http')
+                    ? NetworkImage(profileImageUrl) as ImageProvider
+                    : const AssetImage(
+                        'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
+                      ),
+                onBackgroundImageError: (_, __) {},
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLeftColumn(
+    BuildContext context,
+    double imageRadius,
+    double nameFontSize,
+    double titleFontSize,
+    double socialIconScale,
+    String profileImageUrl,
+  ) {
+    final controller = widget.controller;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Center(child: _buildProfileImage(imageRadius, profileImageUrl)),
+        const SizedBox(height: 16),
+        const Center(child: AvailableForWorkBadge()),
+        const SizedBox(height: 16),
+        Center(
+          child: AnimatedBuilder(
+            animation: _textController,
+            builder: (context, child) => Opacity(
+              opacity: _textOpacity.value,
+              child: Column(
+                children: [
+                  Text(
+                    controller.personalInfo.value.name,
+                    style: GoogleFonts.inter(
+                      fontSize: nameFontSize,
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    controller.personalInfo.value.title,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: titleFontSize,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 32),
+        Center(
+          child: AnimatedBuilder(
+            animation: _socialController,
+            builder: (context, child) => Opacity(
+              opacity: _socialOpacity.value,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: controller.personalInfo.value.socialLinks
+                    .take(3)
+                    .toList()
+                    .asMap()
+                    .entries
+                    .map((entry) {
+                      final index = entry.key;
+                      final link = entry.value;
+                      return Padding(
+                        padding: EdgeInsets.only(right: index < 2 ? 24 : 0),
+                        child: Transform.scale(
+                          scale: socialIconScale,
+                          child: _buildAnimatedSocialIcon(
+                            SocialIconButton(
+                              platform: link.platform,
+                              url: link.url,
+                              icon: _iconForPlatform(link.platform),
+                            ),
+                            index,
+                          ),
+                        ),
+                      );
+                    })
+                    .toList(),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 32),
+        AnimatedBuilder(
+          animation: _socialController,
+          builder: (context, child) => Opacity(
+            opacity: _socialOpacity.value,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Text(
+                  '(2024 - PRESENT)',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Text(
-            info.email,
-            style: GoogleFonts.manrope(
-              fontSize: isMobile ? 22 : 25,
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface,
-              height: 1.2,
             ),
           ),
-          const SizedBox(height: 14),
-          Text(
-            "I’m Gokul, a passionate mobile app developer with a love for creating visually stunning and user-friendly digital experiences.",
-            style: GoogleFonts.manrope(
-              fontSize: isMobile ? 16 : 17,
-              fontWeight: FontWeight.w400,
-              color: colorScheme.onSurface.withValues(alpha: 0.5),
-              height: 1.55,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRightColumn(BuildContext context) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+    final isTablet = ResponsiveHelper.isTablet(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedBuilder(
+          animation: _contentController,
+          builder: (context, child) => Opacity(
+            opacity: _contentOpacity.value,
+            child: Text(
+              "Hi, I'm Gokul, a passionate mobile app developer and designer with a love for creating visually stunning experiences. With a strong background in design and front-end development, I specialize in crafting responsive mobile apps that not only look great but also provide seamless interactions across all devices.",
+              style: GoogleFonts.manrope(
+                fontSize: isMobile ? 18 : isTablet ? 22 : 24,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).colorScheme.onSurface,
+                height: 1.5,
+                letterSpacing: -0.4,
+              ),
             ),
           ),
-          SizedBox(height: isMobile ? 28 : 38),
-          if (linkedIn != null)
-            InkWell(
-              onTap: () => controller.launchSocialLink(linkedIn.url),
-              borderRadius: BorderRadius.circular(999),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 24 : 28,
-                  vertical: isMobile ? 14 : 16,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryGreen,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+        ),
+        const SizedBox(height: 28),
+        AnimatedBuilder(
+          animation: _taglineController,
+          builder: (context, child) => Opacity(
+            opacity: _taglineOpacity.value,
+            child: Text(
+              "Over the years, I've had the opportunity to work with a diverse range of clients, from startups to established brands, helping them bring their visions to life online.",
+              style: GoogleFonts.manrope(
+                fontSize: isMobile ? 16 : isTablet ? 18 : 20,
+                fontWeight: FontWeight.w400,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                height: 1.6,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 28),
+        AnimatedBuilder(
+          animation: _taglineController,
+          builder: (context, child) => Opacity(
+            opacity: _taglineOpacity.value,
+            child: Text(
+              "Let's create something amazing together!",
+              style: GoogleFonts.manrope(
+                fontSize: isMobile ? 16 : isTablet ? 18 : 20,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+    final isTablet = ResponsiveHelper.isTablet(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final horizontalPadding = isMobile ? 16.0 : isTablet ? 40.0 : 80.0;
+    final verticalPadding = isMobile ? 32.0 : isTablet ? 48.0 : 64.0;
+    final imageRadius = isMobile ? 80.0 : isTablet ? 100.0 : 120.0;
+    final nameFontSize = isMobile ? 28.0 : isTablet ? 36.0 : 42.0;
+    final titleFontSize = isMobile ? 16.0 : isTablet ? 18.0 : 20.0;
+    final greetingFontSize = isMobile ? 36.0 : isTablet ? 48.0 : 72.0;
+    final taglineFontSize = isMobile ? 28.0 : isTablet ? 40.0 : 58.0;
+    final bioFontSize = isMobile ? 16.0 : isTablet ? 18.0 : 20.0;
+    final socialIconScale = isMobile ? 1.2 : isTablet ? 1.35 : 1.5;
+    final spacingBetweenSections = isMobile ? 24.0 : isTablet ? 40.0 : 80.0;
+
+    final info = widget.controller.personalInfo.value;
+    final githubStats = widget.controller.githubStats.value;
+    final profileImageUrl =
+        githubStats?.avatarUrl.isNotEmpty == true
+            ? githubStats!.avatarUrl
+            : info.profileImageUrl;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [
+                  const Color(0xFF0A0A0A),
+                  const Color(0xFF111111),
+                  const Color(0xFF0A0A0A),
+                ]
+              : [Colors.grey[50]!, Colors.grey[100]!, Colors.grey[50]!],
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: verticalPadding,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Page heading
+            AnimatedBuilder(
+              animation: _textController,
+              builder: (context, child) => Opacity(
+                opacity: _textOpacity.value,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryGreen,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Portfolio / About',
+                          style: GoogleFonts.manrope(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                            letterSpacing: 0.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: isMobile ? 12 : 16),
                     Text(
-                      "Linked In",
-                      style: GoogleFonts.manrope(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
+                      'About me',
+                      style: GoogleFonts.inter(
+                        fontSize: isMobile ? 52 : isTablet ? 80 : 96,
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        height: 0.95,
+                        letterSpacing: isMobile ? -2.0 : -4.0,
                       ),
                     ),
-                    const SizedBox(width: 18),
-                    Container(
-                      width: 34,
-                      height: 34,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.arrow_outward,
-                        size: 18,
-                        color: Colors.black,
-                      ),
-                    ),
+                    SizedBox(height: isMobile ? 32 : 48),
                   ],
                 ),
               ),
             ),
-        ],
+            // Left / right body
+            isMobile
+                ? _buildMobileLayout(
+                    context,
+                    imageRadius,
+                    nameFontSize,
+                    titleFontSize,
+                    greetingFontSize,
+                    taglineFontSize,
+                    bioFontSize,
+                    socialIconScale,
+                    profileImageUrl,
+                  )
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: _buildLeftColumn(
+                          context,
+                          imageRadius,
+                          nameFontSize,
+                          titleFontSize,
+                          socialIconScale,
+                          profileImageUrl,
+                        ),
+                      ),
+                      SizedBox(width: spacingBetweenSections),
+                      Expanded(
+                        flex: 3,
+                        child: _buildRightColumn(context),
+                      ),
+                    ],
+                  ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildNarrativeColumn(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isMobile = ResponsiveHelper.isMobile(context);
+  Widget _buildMobileLayout(
+    BuildContext context,
+    double imageRadius,
+    double nameFontSize,
+    double titleFontSize,
+    double greetingFontSize,
+    double taglineFontSize,
+    double bioFontSize,
+    double socialIconScale,
+    String profileImageUrl,
+  ) {
+    final controller = widget.controller;
 
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 760),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Hi, I’m Gokul, a passionate mobile app developer and designer with a love for creating visually stunning experiences. With a strong background in design and front-end development, I specialize in crafting responsive mobile app that not only look great but also provide interactions across all devices.",
-            style: GoogleFonts.manrope(
-              fontSize: isMobile ? 20 : 25,
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface,
-              height: 1.35,
-              letterSpacing: -0.6,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Center(child: _buildProfileImage(imageRadius, profileImageUrl)),
+        const SizedBox(height: 16),
+        const AvailableForWorkBadge(),
+        const SizedBox(height: 16),
+        AnimatedBuilder(
+          animation: _textController,
+          builder: (context, child) => Opacity(
+            opacity: _textOpacity.value,
+            child: Column(
+              children: [
+                Text(
+                  controller.personalInfo.value.name,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: nameFontSize,
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  controller.personalInfo.value.title,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: titleFontSize,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 28),
-          Text(
-            "Over the years, I’ve had the opportunity to work with a diverse range of clients, from startups to established brands, helping them bring their visions to life online.",
-            style: GoogleFonts.manrope(
-              fontSize: isMobile ? 18 : 21,
-              fontWeight: FontWeight.w400,
-              color: colorScheme.onSurface.withValues(alpha: 0.5),
-              height: 1.5,
+        ),
+        const SizedBox(height: 32),
+        AnimatedBuilder(
+          animation: _socialController,
+          builder: (context, child) => Opacity(
+            opacity: _socialOpacity.value,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: controller.personalInfo.value.socialLinks
+                  .take(3)
+                  .toList()
+                  .asMap()
+                  .entries
+                  .map((entry) {
+                    final index = entry.key;
+                    final link = entry.value;
+                    return Padding(
+                      padding: EdgeInsets.only(right: index < 2 ? 16 : 0),
+                      child: Transform.scale(
+                        scale: socialIconScale,
+                        child: _buildAnimatedSocialIcon(
+                          SocialIconButton(
+                            platform: link.platform,
+                            url: link.url,
+                            icon: _iconForPlatform(link.platform),
+                          ),
+                          index,
+                        ),
+                      ),
+                    );
+                  })
+                  .toList(),
             ),
           ),
-          const SizedBox(height: 28),
-          Text(
-            "Let’s create something amazing together!",
-            style: GoogleFonts.manrope(
-              fontSize: isMobile ? 18 : 21,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-              height: 1.35,
+        ),
+        const SizedBox(height: 24),
+        AnimatedBuilder(
+          animation: _socialController,
+          builder: (context, child) => Opacity(
+            opacity: _socialOpacity.value,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Text(
+                '(2024 - PRESENT)',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInlineSocialIcon(
-    BuildContext context, {
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Icon(
-        icon,
-        size: 22,
-        color: colorScheme.onSurface.withValues(alpha: 0.5),
-      ),
+        ),
+        const SizedBox(height: 40),
+        AnimatedBuilder(
+          animation: _contentController,
+          builder: (context, child) => Opacity(
+            opacity: _contentOpacity.value,
+            child: Text(
+              "Hi, I'm Gokul, a passionate mobile app developer and designer with a love for creating visually stunning experiences. With a strong background in design and front-end development, I specialize in crafting responsive mobile apps that not only look great but also provide seamless interactions across all devices.",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.manrope(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).colorScheme.onSurface,
+                height: 1.5,
+                letterSpacing: -0.3,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        AnimatedBuilder(
+          animation: _taglineController,
+          builder: (context, child) => Opacity(
+            opacity: _taglineOpacity.value,
+            child: Text(
+              "Over the years, I've had the opportunity to work with a diverse range of clients, from startups to established brands, helping them bring their visions to life online.",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.manrope(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                height: 1.6,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        AnimatedBuilder(
+          animation: _taglineController,
+          builder: (context, child) => Opacity(
+            opacity: _taglineOpacity.value,
+            child: Text(
+              "Let's create something amazing together!",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.manrope(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
