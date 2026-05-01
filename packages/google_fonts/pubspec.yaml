@@ -1,0 +1,11 @@
+name: google_fonts
+description: Local compatibility shim for typography helpers used by the app.
+version: 0.0.1
+publish_to: 'none'
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter

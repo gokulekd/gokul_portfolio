@@ -39,7 +39,8 @@ dependencies:
   get: ^4.6.6
   
   # UI Components
-  google_fonts: ^6.2.1
+  google_fonts:
+    path: packages/google_fonts
   flutter_svg: ^2.0.10+1
   
   # Icons
