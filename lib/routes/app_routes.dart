@@ -7,6 +7,7 @@ import '../pages/contact_page.dart';
 import '../pages/experience_page.dart';
 import '../pages/home_page.dart';
 import '../pages/projects_page.dart';
+import '../pages/resume_page.dart';
 import '../pages/skills_page.dart';
 import '../pages/splash_screen.dart';
 
@@ -16,6 +17,7 @@ class AppRoutes {
   static const String about = '/about';
   static const String experience = '/experience';
   static const String projects = '/projects';
+  static const String resume = '/resume';
   static const String blog = '/blog';
   static const String contact = '/contact';
   static const String skills = '/skills';
@@ -37,6 +39,7 @@ class AppRoutes {
     GetPage(name: about, page: () => const AboutPage()),
     GetPage(name: experience, page: () => const ExperiencePage()),
     GetPage(name: projects, page: () => const ProjectsPage()),
+    GetPage(name: resume, page: () => const ResumePage()),
     GetPage(name: blog, page: () => const BlogPage()),
     GetPage(name: contact, page: () => const ContactPage()),
     GetPage(name: skills, page: () => const SkillsPage()),

@@ -26,6 +26,10 @@ void _handleHomeNav(PortfolioController controller) {
   Get.offNamed(AppRoutes.home);
 }
 
+void _handleResumeNav(PortfolioController controller) {
+  Get.offNamed(AppRoutes.resume);
+}
+
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({super.key});
 
@@ -39,9 +43,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       {'title': 'About me', 'index': 1},
       {'title': 'My Work', 'index': 3},
       {'title': 'Resume', 'action': 'resume'},
-      {'title': 'Skill', 'index': 6},
       {'title': 'Blog', 'index': 4},
-      {'title': 'Experience', 'index': 2},
       {'title': 'Contact me', 'index': 5},
     ];
 
@@ -119,10 +121,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions:
           isMobileOrTablet
               ? [
-                  // Theme toggle on mobile
-                  _buildThemeToggle(),
-                  const SizedBox(width: 8),
-                ]
+                // Theme toggle on mobile
+                _buildThemeToggle(),
+                const SizedBox(width: 8),
+              ]
               : [
                 // Theme toggle
                 _buildThemeToggle(),
@@ -143,12 +145,16 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   _navigateToPage(controller, item);
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black87,
-                                  foregroundColor: Theme.of(context).brightness == Brightness.dark
-                                      ? Colors.black
-                                      : Colors.white,
+                                  backgroundColor:
+                                      Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : Colors.black87,
+                                  foregroundColor:
+                                      Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.black
+                                          : Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 20,
                                     vertical: 10,
@@ -163,9 +169,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   style: GoogleFonts.manrope(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
-                                    color: Theme.of(context).brightness == Brightness.dark
-                                        ? Colors.black
-                                        : Colors.white,
+                                    color:
+                                        Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.black
+                                            : Colors.white,
                                   ),
                                 ),
                               )
@@ -174,7 +182,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   if (isHome) {
                                     _handleHomeNav(controller);
                                   } else if (item['action'] == 'resume') {
-                                    controller.launchResume();
+                                    _handleResumeNav(controller);
                                   } else {
                                     _navigateToPage(controller, item);
                                   }
@@ -184,7 +192,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   style: GoogleFonts.manrope(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                               ),
@@ -200,9 +209,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final themeController = Get.find<ThemeController>();
     return Obx(
       () => Tooltip(
-        message: themeController.isDarkMode.value
-            ? 'Switch to Light Mode'
-            : 'Switch to Dark Mode',
+        message:
+            themeController.isDarkMode.value
+                ? 'Switch to Light Mode'
+                : 'Switch to Dark Mode',
         child: IconButton(
           onPressed: themeController.toggleTheme,
           icon: AnimatedSwitcher(
@@ -212,9 +222,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ? Icons.light_mode_rounded
                   : Icons.dark_mode_rounded,
               key: ValueKey(themeController.isDarkMode.value),
-              color: themeController.isDarkMode.value
-                  ? Colors.amber
-                  : Colors.black54,
+              color:
+                  themeController.isDarkMode.value
+                      ? Colors.amber
+                      : Colors.black54,
               size: 22,
             ),
           ),
@@ -239,9 +250,7 @@ class CustomDrawer extends StatelessWidget {
       {'title': 'About me', 'index': 1, 'icon': Icons.person},
       {'title': 'My Work', 'index': 3, 'icon': Icons.folder},
       {'title': 'Resume', 'action': 'resume', 'icon': Icons.description},
-      {'title': 'Skill', 'index': 6, 'icon': Icons.code},
       {'title': 'Blog', 'index': 4, 'icon': Icons.article},
-      {'title': 'Experience', 'index': 2, 'icon': Icons.work},
       {'title': 'Contact me', 'index': 5, 'icon': Icons.contact_mail},
     ];
 
@@ -297,7 +306,9 @@ class CustomDrawer extends StatelessWidget {
                       controller.personalInfo.value.title,
                       style: GoogleFonts.manrope(
                         fontSize: 13,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       textAlign: TextAlign.center,
                       maxLines: 2,
@@ -327,7 +338,7 @@ class CustomDrawer extends StatelessWidget {
                     onTap: () {
                       Navigator.pop(context);
                       if (item['action'] == 'resume') {
-                        controller.launchResume();
+                        _handleResumeNav(controller);
                       } else if (item['title'] == 'Home') {
                         _handleHomeNav(controller);
                       } else {
@@ -576,9 +587,7 @@ class ProjectCard extends StatelessWidget {
                               ),
                               child: Text(
                                 tech,
-                                style: GoogleFonts.manrope(
-                                  fontSize: 12,
-                                ),
+                                style: GoogleFonts.manrope(fontSize: 12),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -736,10 +745,7 @@ class ExperienceCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             description,
-            style: GoogleFonts.manrope(
-              fontSize: 14,
-              height: 1.5,
-            ),
+            style: GoogleFonts.manrope(fontSize: 14, height: 1.5),
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -834,10 +840,7 @@ class BlogCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   excerpt,
-                  style: GoogleFonts.manrope(
-                    fontSize: 14,
-                    height: 1.5,
-                  ),
+                  style: GoogleFonts.manrope(fontSize: 14, height: 1.5),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -867,9 +870,7 @@ class BlogCard extends StatelessWidget {
                                   ),
                                   child: Text(
                                     tag,
-                                    style: GoogleFonts.manrope(
-                                      fontSize: 12,
-                                    ),
+                                    style: GoogleFonts.manrope(fontSize: 12),
                                   ),
                                 ),
                               )
