@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 
 import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
 import '../models/portfolio_models.dart';
 import '../utils/responsive_helper.dart';
+import '../routes/app_routes.dart';
 import '../widgets/custom_widgets.dart';
 import '../widgets/footer_section.dart';
 
@@ -947,6 +949,8 @@ class _ContactFormSectionState extends State<_ContactFormSection> {
   late final TextEditingController _nameController;
   late final TextEditingController _emailController;
   late final TextEditingController _messageController;
+  bool _isSubmitting = false;
+  bool _hasError = false;
 
   @override
   void initState() {
@@ -1087,28 +1091,65 @@ class _ContactFormSectionState extends State<_ContactFormSection> {
             hintText: 'Leave me a message',
             maxLines: 6,
           ),
+          if (_hasError) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.red.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.error_outline_rounded, color: Colors.red.shade600, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Something went wrong. Please try again or email me directly.',
+                      style: GoogleFonts.manrope(
+                        fontSize: 14,
+                        color: Colors.red.shade700,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _submitInquiry,
+              onPressed: _isSubmitting ? null : _submitInquiry,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2F2F2F),
                 foregroundColor: Colors.white,
+                disabledBackgroundColor: const Color(0xFF2F2F2F).withValues(alpha: 0.6),
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
                 ),
                 elevation: 0,
               ),
-              child: Text(
-                'Send Message',
-                style: GoogleFonts.manrope(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'Send Message',
+                      style: GoogleFonts.manrope(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -1290,7 +1331,7 @@ class _ContactFormSectionState extends State<_ContactFormSection> {
     );
   }
 
-  void _submitInquiry() {
+  Future<void> _submitInquiry() async {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final message = _messageController.text.trim();
@@ -1305,9 +1346,192 @@ class _ContactFormSectionState extends State<_ContactFormSection> {
       return;
     }
 
-    widget.controller.launchEmail(
-      subject: 'Portfolio enquiry from $name',
-      body: 'Name: $name\nEmail: $email\n\nMessage:\n$message\n',
+    setState(() { _isSubmitting = true; _hasError = false; });
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://formspree.io/f/xpqbrwpw'),
+        headers: {'Accept': 'application/json'},
+        body: {'name': name, 'email': email, 'message': message},
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        _nameController.clear();
+        _emailController.clear();
+        _messageController.clear();
+        setState(() => _isSubmitting = false);
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          barrierColor: Colors.black.withValues(alpha: 0.6),
+          builder: (_) => _SuccessDialog(senderName: name),
+        );
+        Get.offNamed(AppRoutes.home);
+      } else {
+        setState(() { _isSubmitting = false; _hasError = true; });
+      }
+    } catch (_) {
+      if (mounted) setState(() { _isSubmitting = false; _hasError = true; });
+    }
+  }
+}
+
+class _SuccessDialog extends StatefulWidget {
+  const _SuccessDialog({required this.senderName});
+  final String senderName;
+
+  @override
+  State<_SuccessDialog> createState() => _SuccessDialogState();
+}
+
+class _SuccessDialogState extends State<_SuccessDialog>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnim;
+  late Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _scaleAnim = CurvedAnimation(parent: _controller, curve: Curves.easeOutBack);
+    _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+
+    return FadeTransition(
+      opacity: _fadeAnim,
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 24 : 80,
+          vertical: 40,
+        ),
+        child: ScaleTransition(
+          scale: _scaleAnim,
+          child: Container(
+            padding: EdgeInsets.all(isMobile ? 28 : 40),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111111),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 60,
+                  offset: const Offset(0, 24),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Green check ring around profile image
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: isMobile ? 100 : 120,
+                      height: isMobile ? 100 : 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.primaryGreen,
+                          width: 3,
+                        ),
+                      ),
+                    ),
+                    CircleAvatar(
+                      radius: isMobile ? 44 : 54,
+                      backgroundColor: Colors.grey[800],
+                      backgroundImage: const AssetImage(
+                        'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryGreen,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: isMobile ? 24 : 32),
+                Text(
+                  'Message received!',
+                  style: GoogleFonts.inter(
+                    fontSize: isMobile ? 26 : 32,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    height: 1.1,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'Hey ${widget.senderName}, thanks for reaching out.\nI\'ll get back to you as soon as possible!',
+                  style: GoogleFonts.manrope(
+                    fontSize: isMobile ? 15 : 17,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white.withValues(alpha: 0.68),
+                    height: 1.6,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: isMobile ? 28 : 36),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGreen,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Back to Home',
+                      style: GoogleFonts.manrope(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
