@@ -33,6 +33,7 @@ class AdminPortalController extends GetxController {
   StreamSubscription<List<SitePageConfig>>? _pagesSubscription;
 
   final modules = const <AdminModuleItem>[
+    // Control
     AdminModuleItem(
       module: AdminModule.dashboard,
       group: AdminModuleGroup.control,
@@ -55,18 +56,40 @@ class AdminPortalController extends GetxController {
       icon: Icons.view_sidebar_rounded,
     ),
     AdminModuleItem(
+      module: AdminModule.projects,
+      group: AdminModuleGroup.control,
+      title: 'Project Management',
+      subtitle: 'Featured portfolio',
+      icon: Icons.workspaces_rounded,
+    ),
+    AdminModuleItem(
+      module: AdminModule.blog,
+      group: AdminModuleGroup.control,
+      title: 'Blog Management',
+      subtitle: 'Editorial content',
+      icon: Icons.edit_note_rounded,
+    ),
+    AdminModuleItem(
+      module: AdminModule.resumeManagement,
+      group: AdminModuleGroup.control,
+      title: 'Resume Management',
+      subtitle: 'Upload & manage CV',
+      icon: Icons.description_rounded,
+    ),
+    AdminModuleItem(
+      module: AdminModule.settings,
+      group: AdminModuleGroup.control,
+      title: 'Settings',
+      subtitle: 'Auth and config',
+      icon: Icons.settings_rounded,
+    ),
+    // Content
+    AdminModuleItem(
       module: AdminModule.homeContent,
       group: AdminModuleGroup.content,
       title: 'Home Content',
       subtitle: 'Hero and headlines',
       icon: Icons.home_work_rounded,
-    ),
-    AdminModuleItem(
-      module: AdminModule.projects,
-      group: AdminModuleGroup.content,
-      title: 'Projects',
-      subtitle: 'Featured portfolio',
-      icon: Icons.workspaces_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.skillsExperience,
@@ -124,35 +147,7 @@ class AdminPortalController extends GetxController {
       subtitle: 'Channels and links',
       icon: Icons.alternate_email_rounded,
     ),
-    AdminModuleItem(
-      module: AdminModule.blog,
-      group: AdminModuleGroup.content,
-      title: 'Blog',
-      subtitle: 'Editorial content',
-      icon: Icons.edit_note_rounded,
-    ),
-    AdminModuleItem(
-      module: AdminModule.submissions,
-      group: AdminModuleGroup.operations,
-      title: 'Visitor Submissions',
-      subtitle: 'Leads inbox',
-      icon: Icons.inbox_rounded,
-      badgeCount: 3,
-    ),
-    AdminModuleItem(
-      module: AdminModule.mediaLibrary,
-      group: AdminModuleGroup.operations,
-      title: 'Media Library',
-      subtitle: 'Images and assets',
-      icon: Icons.perm_media_rounded,
-    ),
-    AdminModuleItem(
-      module: AdminModule.settings,
-      group: AdminModuleGroup.control,
-      title: 'Settings',
-      subtitle: 'Auth and config',
-      icon: Icons.settings_rounded,
-    ),
+    // Publishing
     AdminModuleItem(
       module: AdminModule.createPost,
       group: AdminModuleGroup.publishing,
@@ -167,12 +162,21 @@ class AdminPortalController extends GetxController {
       subtitle: 'All portfolio pages',
       icon: Icons.web_rounded,
     ),
+    // Operations
     AdminModuleItem(
-      module: AdminModule.resumeManagement,
-      group: AdminModuleGroup.publishing,
-      title: 'Resume',
-      subtitle: 'Upload & manage CV',
-      icon: Icons.description_rounded,
+      module: AdminModule.submissions,
+      group: AdminModuleGroup.operations,
+      title: 'Visitor Submissions',
+      subtitle: 'Leads inbox',
+      icon: Icons.inbox_rounded,
+      badgeCount: 3,
+    ),
+    AdminModuleItem(
+      module: AdminModule.mediaLibrary,
+      group: AdminModuleGroup.operations,
+      title: 'Media Library',
+      subtitle: 'Images and assets',
+      icon: Icons.perm_media_rounded,
     ),
   ];
 
@@ -462,7 +466,7 @@ class AdminPortalController extends GetxController {
     AdminModule.testimonials => 'Testimonials',
     AdminModule.faq => 'FAQ',
     AdminModule.socialContact => 'Social & Contact',
-    AdminModule.blog => 'Blog CMS',
+    AdminModule.blog => 'Blog Management',
     AdminModule.submissions => 'Visitor Submissions',
     AdminModule.mediaLibrary => 'Media Library',
     AdminModule.settings => 'Settings',
