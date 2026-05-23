@@ -20,6 +20,7 @@ class AdminPortalController extends GetxController {
   final liveSocialLinks = <ManagedSocialLink>[].obs;
   final liveProjects = <Project>[].obs;
   final liveSubmissions = <VisitorSubmission>[].obs;
+  final liveBasicDetails = Rxn<BasicDetails>();
   final selectedSubmission = Rxn<VisitorSubmission>();
   final firestoreErrorMessage = RxnString();
 
@@ -27,6 +28,7 @@ class AdminPortalController extends GetxController {
   StreamSubscription<List<ManagedSocialLink>>? _socialLinksSubscription;
   StreamSubscription<List<Project>>? _projectsSubscription;
   StreamSubscription<List<VisitorSubmission>>? _submissionsSubscription;
+  StreamSubscription<BasicDetails?>? _basicDetailsSubscription;
 
   final modules = const <AdminModuleItem>[
     AdminModuleItem(
@@ -35,6 +37,13 @@ class AdminPortalController extends GetxController {
       title: 'Dashboard',
       subtitle: 'Command center',
       icon: Icons.space_dashboard_rounded,
+    ),
+    AdminModuleItem(
+      module: AdminModule.basicDetails,
+      group: AdminModuleGroup.control,
+      title: 'Basic Details',
+      subtitle: 'Identity & profile links',
+      icon: Icons.person_rounded,
     ),
     AdminModuleItem(
       module: AdminModule.siteStructure,
@@ -268,6 +277,13 @@ class AdminPortalController extends GetxController {
         if (updated != null) selectedSubmission.value = updated;
       }
     }, onError: _handleFirestoreError);
+
+    _basicDetailsSubscription = _portfolioService
+        .streamBasicDetails()
+        .listen((details) {
+          _clearFirestoreError();
+          liveBasicDetails.value = details;
+        }, onError: _handleFirestoreError);
   }
 
   void selectSubmission(VisitorSubmission submission) {
@@ -389,8 +405,22 @@ class AdminPortalController extends GetxController {
           ? liveProjects.toList(growable: false)
           : Project.defaultPortfolioProjects();
 
+  BasicDetails get basicDetails =>
+      liveBasicDetails.value ?? BasicDetails.defaults();
+
+  Future<void> saveBasicDetails(BasicDetails details) async {
+    liveBasicDetails.value = details;
+    try {
+      await _portfolioService.saveBasicDetails(details);
+      _clearFirestoreError();
+    } catch (error) {
+      _handleFirestoreError(error);
+    }
+  }
+
   String get pageTitle => switch (selectedModule.value) {
     AdminModule.dashboard => 'Portfolio Control Center',
+    AdminModule.basicDetails => 'Basic Details',
     AdminModule.siteStructure => 'Site Structure',
     AdminModule.homeContent => 'Homepage Content',
     AdminModule.projects => 'Project Management',
@@ -414,6 +444,8 @@ class AdminPortalController extends GetxController {
   String get pageDescription => switch (selectedModule.value) {
     AdminModule.dashboard =>
       'A premium workspace to control what is live on your portfolio and what needs attention next.',
+    AdminModule.basicDetails =>
+      'Your name, designation, and social profile URLs. Update once and every page that uses this data updates automatically.',
     AdminModule.siteStructure =>
       'Toggle visibility, control order, and audit the sections that shape your homepage.',
     AdminModule.homeContent =>
@@ -638,6 +670,7 @@ class AdminPortalController extends GetxController {
     _socialLinksSubscription?.cancel();
     _projectsSubscription?.cancel();
     _submissionsSubscription?.cancel();
+    _basicDetailsSubscription?.cancel();
     super.onClose();
   }
 }

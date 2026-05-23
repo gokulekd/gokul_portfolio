@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../controllers/admin_portal_controller.dart';
 import '../models/admin_portal_models.dart';
 import '../shared/content_list_workspace.dart';
+import 'basic_details/basic_details_workspace.dart';
 import 'blog/blog_workspace.dart';
 import 'create_post/create_post_workspace.dart';
 import 'dashboard/dashboard_workspace.dart';
@@ -27,6 +28,10 @@ class AdminModuleRegistry {
   }) {
     return switch (module) {
       AdminModule.dashboard => DashboardWorkspace(
+        controller: controller,
+        isCompact: isCompact,
+      ),
+      AdminModule.basicDetails => BasicDetailsWorkspace(
         controller: controller,
         isCompact: isCompact,
       ),

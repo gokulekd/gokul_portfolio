@@ -27,7 +27,7 @@ class PortalTopBar extends StatelessWidget {
         runSpacing: 12,
         children: [
           SizedBox(
-            width: isCompact ? double.infinity : 280,
+            width: isCompact ? double.infinity : 220,
             child: const AdminSearchField(),
           ),
           const _TopBarPill(
@@ -91,6 +91,7 @@ class PortalTopBar extends StatelessWidget {
       }
 
       return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isOnDashboard) ...[
             _BackToDashboardButton(controller: controller),
@@ -106,7 +107,7 @@ class PortalTopBar extends StatelessWidget {
               ),
             ),
           ),
-          actions,
+          Flexible(child: actions),
         ],
       );
     });

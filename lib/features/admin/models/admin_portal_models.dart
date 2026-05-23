@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 enum AdminModule {
   dashboard,
+  basicDetails,
   siteStructure,
   homeContent,
   projects,

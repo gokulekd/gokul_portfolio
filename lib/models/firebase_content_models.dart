@@ -200,6 +200,96 @@ class SiteSectionConfig {
   }
 }
 
+class BasicDetails {
+  const BasicDetails({
+    required this.name,
+    required this.designation,
+    this.linkedinUrl = '',
+    this.twitterUrl = '',
+    this.githubUrl = '',
+    this.mediumUrl = '',
+    this.instagramUrl = '',
+    this.email = '',
+    this.updatedAt,
+  });
+
+  final String name;
+  final String designation;
+  final String linkedinUrl;
+  final String twitterUrl;
+  final String githubUrl;
+  final String mediumUrl;
+  final String instagramUrl;
+  final String email;
+  final DateTime? updatedAt;
+
+  factory BasicDetails.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final data = doc.data() ?? <String, dynamic>{};
+    return BasicDetails(
+      name: data['name'] as String? ?? 'Gokul K S',
+      designation: data['designation'] as String? ?? 'Flutter Developer',
+      linkedinUrl: data['linkedinUrl'] as String? ?? '',
+      twitterUrl: data['twitterUrl'] as String? ?? '',
+      githubUrl: data['githubUrl'] as String? ?? '',
+      mediumUrl: data['mediumUrl'] as String? ?? '',
+      instagramUrl: data['instagramUrl'] as String? ?? '',
+      email: data['email'] as String? ?? '',
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'name': name,
+      'designation': designation,
+      'linkedinUrl': linkedinUrl,
+      'twitterUrl': twitterUrl,
+      'githubUrl': githubUrl,
+      'mediumUrl': mediumUrl,
+      'instagramUrl': instagramUrl,
+      'email': email,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+  }
+
+  BasicDetails copyWith({
+    String? name,
+    String? designation,
+    String? linkedinUrl,
+    String? twitterUrl,
+    String? githubUrl,
+    String? mediumUrl,
+    String? instagramUrl,
+    String? email,
+  }) {
+    return BasicDetails(
+      name: name ?? this.name,
+      designation: designation ?? this.designation,
+      linkedinUrl: linkedinUrl ?? this.linkedinUrl,
+      twitterUrl: twitterUrl ?? this.twitterUrl,
+      githubUrl: githubUrl ?? this.githubUrl,
+      mediumUrl: mediumUrl ?? this.mediumUrl,
+      instagramUrl: instagramUrl ?? this.instagramUrl,
+      email: email ?? this.email,
+    );
+  }
+
+  static BasicDetails defaults() {
+    return const BasicDetails(
+      name: 'Gokul K S',
+      designation: 'Flutter Developer',
+      linkedinUrl: '',
+      twitterUrl: '',
+      githubUrl: '',
+      mediumUrl: '',
+      instagramUrl: '',
+      email: 'gokulofficialcommunication@gmail.com',
+    );
+  }
+}
+
 class ManagedSocialLink {
   const ManagedSocialLink({
     required this.id,

@@ -144,6 +144,23 @@ class FirebasePortfolioService {
     });
   }
 
+  Stream<BasicDetails?> streamBasicDetails() {
+    if (!isEnabled) return Stream.value(null);
+    return _firestore
+        .collection('site_config')
+        .doc('basic_details')
+        .snapshots()
+        .map((doc) => doc.exists ? BasicDetails.fromFirestore(doc) : null);
+  }
+
+  Future<void> saveBasicDetails(BasicDetails details) async {
+    if (!isEnabled) return;
+    await _firestore
+        .collection('site_config')
+        .doc('basic_details')
+        .set(details.toFirestore(), SetOptions(merge: true));
+  }
+
   Future<void> ensureSeedData({required String ownerEmail}) async {
     if (!isEnabled) {
       return;
