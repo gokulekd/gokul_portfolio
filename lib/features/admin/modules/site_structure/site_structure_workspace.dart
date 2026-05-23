@@ -7,7 +7,6 @@ import '../../../../models/firebase_content_models.dart';
 import '../../controllers/admin_portal_controller.dart';
 import '../../models/admin_portal_models.dart';
 import '../../shared/admin_portal_components.dart';
-import '../../shared/preview_tile.dart';
 
 class SiteStructureWorkspace extends StatelessWidget {
   const SiteStructureWorkspace({
@@ -19,29 +18,47 @@ class SiteStructureWorkspace extends StatelessWidget {
   final AdminPortalController controller;
   final bool isCompact;
 
+  static const _pageIcons = <String, IconData>{
+    SitePageKeys.home: Icons.home_rounded,
+    SitePageKeys.about: Icons.person_rounded,
+    SitePageKeys.myWork: Icons.workspaces_rounded,
+    SitePageKeys.resume: Icons.description_rounded,
+    SitePageKeys.blog: Icons.edit_note_rounded,
+  };
+
+  static const _pageColors = <String, Color>{
+    SitePageKeys.home: AppColors.primaryGreen,
+    SitePageKeys.about: Color(0xFF5CD6FF),
+    SitePageKeys.myWork: Color(0xFFFFB44C),
+    SitePageKeys.resume: Color(0xFFFF7C7C),
+    SitePageKeys.blog: Color(0xFFB57AFF),
+  };
+
   @override
   Widget build(BuildContext context) {
-    final sectionList = AdminSurfaceCard(
+    return AdminSurfaceCard(
       child: Obx(() {
-        final sections = controller.sectionConfigs;
-        final liveCount = sections.where((s) => s.isVisible).length;
+        final pages = controller.pageConfigs;
+        final liveCount = pages.where((p) => p.isVisible).length;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AdminSectionHeader(
               eyebrow: 'SITE STRUCTURE',
-              title: 'Section visibility',
+              title: 'Page visibility',
               description:
-                  '$liveCount of ${sections.length} sections are visible. Toggling updates Firestore immediately.',
+                  '$liveCount of ${pages.length} pages are visible. Toggling updates Firestore immediately.',
             ),
             const SizedBox(height: 18),
-            ...sections.map(
-              (section) => Padding(
+            ...pages.map(
+              (page) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: SectionRow(
-                  section: section,
-                  onChanged:
-                      (val) => controller.updateSectionVisibility(section, val),
+                child: _PageRow(
+                  page: page,
+                  icon: _pageIcons[page.key] ?? Icons.web_rounded,
+                  color: _pageColors[page.key] ?? AppColors.primaryGreen,
+                  onChanged: (val) =>
+                      controller.updatePageVisibility(page, val),
                 ),
               ),
             ),
@@ -49,76 +66,20 @@ class SiteStructureWorkspace extends StatelessWidget {
         );
       }),
     );
-
-    final statsPanel = AdminSurfaceCard(
-      child: Obx(() {
-        final sections = controller.sectionConfigs;
-        final liveCount = sections.where((s) => s.isVisible).length;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const AdminSectionHeader(
-              eyebrow: 'STRUCTURE STATS',
-              title: 'Section overview',
-              description:
-                  'Current visibility state of all portfolio sections.',
-            ),
-            const SizedBox(height: 18),
-            PreviewTile(
-              title: 'Total sections',
-              value: '${sections.length} sections configured',
-              icon: Icons.view_sidebar_rounded,
-              color: AppColors.primaryGreen,
-            ),
-            const SizedBox(height: 12),
-            PreviewTile(
-              title: 'Live sections',
-              value: '$liveCount sections visible',
-              icon: Icons.visibility_rounded,
-              color: const Color(0xFF5CD6FF),
-            ),
-            const SizedBox(height: 12),
-            PreviewTile(
-              title: 'Hidden sections',
-              value: '${sections.length - liveCount} sections hidden',
-              icon: Icons.visibility_off_rounded,
-              color: const Color(0xFFFF7C7C),
-            ),
-            const SizedBox(height: 12),
-            PreviewTile(
-              title: 'Data source',
-              value:
-                  controller.isFirebaseConnected
-                      ? 'Live Firestore sync'
-                      : 'Local fallback data',
-              icon: Icons.cloud_sync_rounded,
-              color: const Color(0xFFFFB44C),
-            ),
-          ],
-        );
-      }),
-    );
-
-    if (isCompact) {
-      return Column(
-        children: [sectionList, const SizedBox(height: 18), statsPanel],
-      );
-    }
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(flex: 8, child: sectionList),
-        const SizedBox(width: 18),
-        Expanded(flex: 4, child: statsPanel),
-      ],
-    );
   }
 }
 
-class SectionRow extends StatelessWidget {
-  const SectionRow({super.key, required this.section, required this.onChanged});
+class _PageRow extends StatelessWidget {
+  const _PageRow({
+    required this.page,
+    required this.icon,
+    required this.color,
+    required this.onChanged,
+  });
 
-  final SiteSectionConfig section;
+  final SitePageConfig page;
+  final IconData icon;
+  final Color color;
   final ValueChanged<bool> onChanged;
 
   @override
@@ -136,17 +97,11 @@ class SectionRow extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.06),
+              color: color.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(14),
             ),
             alignment: Alignment.center,
-            child: Text(
-              section.displayOrder.toString().padLeft(2, '0'),
-              style: GoogleFonts.manrope(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+            child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -154,7 +109,7 @@ class SectionRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  section.title,
+                  page.title,
                   style: GoogleFonts.manrope(
                     color: Colors.white,
                     fontSize: 14,
@@ -162,42 +117,38 @@ class SectionRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  section.description,
-                  style: GoogleFonts.manrope(
-                    color: Colors.white60,
-                    fontSize: 12.5,
-                    height: 1.5,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        page.route,
+                        style: GoogleFonts.manrope(
+                          color: Colors.white54,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              AdminStateChip(
-                state:
-                    section.isVisible
-                        ? AdminItemState.live
-                        : AdminItemState.hidden,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                section.updatedAt == null
-                    ? 'Synced document'
-                    : 'Firestore linked',
-                style: GoogleFonts.manrope(
-                  color: Colors.white54,
-                  fontSize: 11.5,
-                ),
-              ),
-            ],
+          AdminStateChip(
+            state: page.isVisible ? AdminItemState.live : AdminItemState.hidden,
           ),
           const SizedBox(width: 12),
           Switch(
-            value: section.isVisible,
+            value: page.isVisible,
             onChanged: onChanged,
             activeThumbColor: AppColors.primaryGreen,
           ),

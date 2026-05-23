@@ -144,6 +144,48 @@ class FirebasePortfolioService {
     });
   }
 
+  Stream<List<SitePageConfig>> streamPageConfigs() {
+    if (!isEnabled) {
+      return Stream.value(const <SitePageConfig>[]);
+    }
+
+    return _firestore
+        .collection('page_configs')
+        .orderBy('displayOrder')
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map(SitePageConfig.fromFirestore)
+              .toList(growable: false),
+        );
+  }
+
+  Future<void> updatePageVisibility(
+    SitePageConfig page,
+    bool isVisible,
+  ) async {
+    if (!isEnabled) return;
+    await _firestore
+        .collection('page_configs')
+        .doc(page.id)
+        .set(
+          page.copyWith(isVisible: isVisible).toFirestore(),
+          SetOptions(merge: true),
+        );
+  }
+
+  Future<void> ensurePageConfigSeedData() async {
+    if (!isEnabled) return;
+    final ref = _firestore.collection('page_configs');
+    final snapshot = await ref.limit(1).get();
+    if (snapshot.docs.isNotEmpty) return;
+    final batch = _firestore.batch();
+    for (final page in SitePageConfig.defaultPages()) {
+      batch.set(ref.doc(page.id), page.toFirestore());
+    }
+    await batch.commit();
+  }
+
   Stream<BasicDetails?> streamBasicDetails() {
     if (!isEnabled) return Stream.value(null);
     return _firestore

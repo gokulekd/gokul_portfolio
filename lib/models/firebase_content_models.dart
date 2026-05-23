@@ -200,6 +200,129 @@ class SiteSectionConfig {
   }
 }
 
+class SitePageKeys {
+  const SitePageKeys._();
+
+  static const String home = 'home';
+  static const String about = 'about';
+  static const String myWork = 'my_work';
+  static const String resume = 'resume';
+  static const String blog = 'blog';
+}
+
+class SitePageConfig {
+  const SitePageConfig({
+    required this.id,
+    required this.key,
+    required this.title,
+    required this.route,
+    required this.description,
+    required this.isVisible,
+    required this.displayOrder,
+    this.updatedAt,
+  });
+
+  final String id;
+  final String key;
+  final String title;
+  final String route;
+  final String description;
+  final bool isVisible;
+  final int displayOrder;
+  final DateTime? updatedAt;
+
+  factory SitePageConfig.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final data = doc.data() ?? <String, dynamic>{};
+    return SitePageConfig(
+      id: doc.id,
+      key: data['key'] as String? ?? doc.id,
+      title: data['title'] as String? ?? doc.id,
+      route: data['route'] as String? ?? '/',
+      description: data['description'] as String? ?? '',
+      isVisible: data['isVisible'] as bool? ?? true,
+      displayOrder: (data['displayOrder'] as num?)?.toInt() ?? 0,
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'key': key,
+      'title': title,
+      'route': route,
+      'description': description,
+      'isVisible': isVisible,
+      'displayOrder': displayOrder,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+  }
+
+  SitePageConfig copyWith({bool? isVisible}) {
+    return SitePageConfig(
+      id: id,
+      key: key,
+      title: title,
+      route: route,
+      description: description,
+      isVisible: isVisible ?? this.isVisible,
+      displayOrder: displayOrder,
+      updatedAt: updatedAt,
+    );
+  }
+
+  static List<SitePageConfig> defaultPages() {
+    return const [
+      SitePageConfig(
+        id: SitePageKeys.home,
+        key: SitePageKeys.home,
+        title: 'Home',
+        route: '/',
+        description: 'Hero section, intro, and main CTA.',
+        isVisible: true,
+        displayOrder: 1,
+      ),
+      SitePageConfig(
+        id: SitePageKeys.about,
+        key: SitePageKeys.about,
+        title: 'About Me',
+        route: '/about',
+        description: 'Personal story, skills, and experience timeline.',
+        isVisible: true,
+        displayOrder: 2,
+      ),
+      SitePageConfig(
+        id: SitePageKeys.myWork,
+        key: SitePageKeys.myWork,
+        title: 'My Work',
+        route: '/projects',
+        description: 'Featured projects and portfolio highlights.',
+        isVisible: true,
+        displayOrder: 3,
+      ),
+      SitePageConfig(
+        id: SitePageKeys.resume,
+        key: SitePageKeys.resume,
+        title: 'Resume',
+        route: '/resume',
+        description: 'Downloadable CV and career highlights.',
+        isVisible: true,
+        displayOrder: 4,
+      ),
+      SitePageConfig(
+        id: SitePageKeys.blog,
+        key: SitePageKeys.blog,
+        title: 'Blog',
+        route: '/blog',
+        description: 'Articles, thoughts, and editorial content.',
+        isVisible: true,
+        displayOrder: 5,
+      ),
+    ];
+  }
+}
+
 class BasicDetails {
   const BasicDetails({
     required this.name,

@@ -18,6 +18,7 @@ class PortfolioController extends GetxController {
   StreamSubscription<List<ManagedSocialLink>>? _socialLinksSubscription;
   StreamSubscription<List<Project>>? _projectsSubscription;
   StreamSubscription<BasicDetails?>? _basicDetailsSubscription;
+  StreamSubscription<List<SitePageConfig>>? _pagesSubscription;
   bool _hasFirestoreProjects = false;
   bool _hasBasicDetails = false;
 
@@ -31,6 +32,7 @@ class PortfolioController extends GetxController {
 
   // ─── Firebase-backed public site state ─────────────────────────────────────
   final sectionVisibility = <String, bool>{}.obs;
+  final pageVisibility = <String, bool>{}.obs;
 
   // ─── Personal Information ──────────────────────────────────────────────────
   final personalInfo =
@@ -215,6 +217,15 @@ class PortfolioController extends GetxController {
           if (details == null) return;
           _applyBasicDetails(details);
         });
+
+    _pagesSubscription = _firebasePortfolioService
+        .streamPageConfigs()
+        .listen((pages) {
+          if (pages.isEmpty) return;
+          pageVisibility.assignAll({
+            for (final page in pages) page.key: page.isVisible,
+          });
+        });
   }
 
   void _applyBasicDetails(BasicDetails details) {
@@ -337,6 +348,10 @@ class PortfolioController extends GetxController {
     return sectionVisibility[sectionKey] ?? fallback;
   }
 
+  bool isPageVisible(String pageKey) {
+    return pageVisibility[pageKey] ?? true;
+  }
+
   // ─── URL Launchers ─────────────────────────────────────────────────────────
   Future<void> launchEmail({String? subject, String? body}) async {
     final emailUri = Uri(
@@ -403,6 +418,7 @@ class PortfolioController extends GetxController {
     _socialLinksSubscription?.cancel();
     _projectsSubscription?.cancel();
     _basicDetailsSubscription?.cancel();
+    _pagesSubscription?.cancel();
     super.onClose();
   }
 }

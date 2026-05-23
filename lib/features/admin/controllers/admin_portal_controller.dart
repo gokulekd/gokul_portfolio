@@ -21,6 +21,7 @@ class AdminPortalController extends GetxController {
   final liveProjects = <Project>[].obs;
   final liveSubmissions = <VisitorSubmission>[].obs;
   final liveBasicDetails = Rxn<BasicDetails>();
+  final livePages = <SitePageConfig>[].obs;
   final selectedSubmission = Rxn<VisitorSubmission>();
   final firestoreErrorMessage = RxnString();
 
@@ -29,6 +30,7 @@ class AdminPortalController extends GetxController {
   StreamSubscription<List<Project>>? _projectsSubscription;
   StreamSubscription<List<VisitorSubmission>>? _submissionsSubscription;
   StreamSubscription<BasicDetails?>? _basicDetailsSubscription;
+  StreamSubscription<List<SitePageConfig>>? _pagesSubscription;
 
   final modules = const <AdminModuleItem>[
     AdminModuleItem(
@@ -284,6 +286,15 @@ class AdminPortalController extends GetxController {
           _clearFirestoreError();
           liveBasicDetails.value = details;
         }, onError: _handleFirestoreError);
+
+    _pagesSubscription = _portfolioService.streamPageConfigs().listen((pages) {
+      _clearFirestoreError();
+      if (pages.isNotEmpty) {
+        livePages.assignAll(pages);
+      }
+    }, onError: _handleFirestoreError);
+
+    _portfolioService.ensurePageConfigSeedData();
   }
 
   void selectSubmission(VisitorSubmission submission) {
@@ -388,6 +399,23 @@ class AdminPortalController extends GetxController {
         color: const Color(0xFFFF7C7C),
       ),
     ];
+  }
+
+  List<SitePageConfig> get pageConfigs =>
+      livePages.isNotEmpty ? livePages : SitePageConfig.defaultPages();
+
+  Future<void> updatePageVisibility(SitePageConfig page, bool isVisible) async {
+    final index = livePages.indexWhere((item) => item.id == page.id);
+    if (index != -1) {
+      livePages[index] = livePages[index].copyWith(isVisible: isVisible);
+      livePages.refresh();
+    }
+    try {
+      await _portfolioService.updatePageVisibility(page, isVisible);
+      _clearFirestoreError();
+    } catch (error) {
+      _handleFirestoreError(error);
+    }
   }
 
   List<SiteSectionConfig> get sectionConfigs =>
@@ -673,6 +701,7 @@ class AdminPortalController extends GetxController {
     _projectsSubscription?.cancel();
     _submissionsSubscription?.cancel();
     _basicDetailsSubscription?.cancel();
+    _pagesSubscription?.cancel();
     super.onClose();
   }
 }

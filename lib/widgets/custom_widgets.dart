@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../constants/colors.dart';
 import '../controllers/portfolio_controller.dart';
 import '../controllers/theme_controller.dart';
+import '../models/firebase_content_models.dart';
 import '../routes/app_routes.dart';
 import '../utils/responsive_helper.dart';
 
@@ -39,11 +40,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final isMobileOrTablet = ResponsiveHelper.isMobileOrTablet(context);
 
     final menuItems = [
-      {'title': 'Home', 'index': 0},
-      {'title': 'About me', 'index': 1},
-      {'title': 'My Work', 'index': 3},
-      {'title': 'Resume', 'action': 'resume'},
-      {'title': 'Blog', 'index': 4},
+      {'title': 'Home', 'index': 0, 'pageKey': SitePageKeys.home},
+      {'title': 'About me', 'index': 1, 'pageKey': SitePageKeys.about},
+      {'title': 'My Work', 'index': 3, 'pageKey': SitePageKeys.myWork},
+      {'title': 'Resume', 'action': 'resume', 'pageKey': SitePageKeys.resume},
+      {'title': 'Blog', 'index': 4, 'pageKey': SitePageKeys.blog},
       {'title': 'Contact me', 'index': 5},
     ];
 
@@ -126,81 +127,95 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 const SizedBox(width: 8),
               ]
               : [
-                // Theme toggle
                 _buildThemeToggle(),
                 const SizedBox(width: 8),
-                ...menuItems.map((item) {
-                  final isContactMe = item['title'] == 'Contact me';
-                  final isHome = item['title'] == 'Home';
-                  return Align(
-                    alignment: Alignment.center,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isContactMe ? 8 : 4,
-                      ),
-                      child:
-                          isContactMe
-                              ? ElevatedButton(
-                                onPressed: () {
-                                  _navigateToPage(controller, item);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Colors.white
-                                          : Colors.black87,
-                                  foregroundColor:
-                                      Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Colors.black
-                                          : Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 10,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  elevation: 2,
-                                ),
-                                child: Text(
-                                  item['title'] as String,
-                                  style: GoogleFonts.manrope(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color:
-                                        Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? Colors.black
-                                            : Colors.white,
-                                  ),
-                                ),
-                              )
-                              : TextButton(
-                                onPressed: () {
-                                  if (isHome) {
-                                    _handleHomeNav(controller);
-                                  } else if (item['action'] == 'resume') {
-                                    _handleResumeNav(controller);
-                                  } else {
-                                    _navigateToPage(controller, item);
-                                  }
-                                },
-                                child: Text(
-                                  item['title'] as String,
-                                  style: GoogleFonts.manrope(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
-                              ),
-                    ),
+                Obx(() {
+                  final visible = menuItems.where((item) {
+                    final key = item['pageKey'] as String?;
+                    return key == null || controller.isPageVisible(key);
+                  }).toList();
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ...visible.map((item) {
+                        final isContactMe = item['title'] == 'Contact me';
+                        final isHome = item['title'] == 'Home';
+                        return Align(
+                          alignment: Alignment.center,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isContactMe ? 8 : 4,
+                            ),
+                            child:
+                                isContactMe
+                                    ? ElevatedButton(
+                                      onPressed: () {
+                                        _navigateToPage(controller, item);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            Theme.of(context).brightness ==
+                                                    Brightness.dark
+                                                ? Colors.white
+                                                : Colors.black87,
+                                        foregroundColor:
+                                            Theme.of(context).brightness ==
+                                                    Brightness.dark
+                                                ? Colors.black
+                                                : Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 10,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        elevation: 2,
+                                      ),
+                                      child: Text(
+                                        item['title'] as String,
+                                        style: GoogleFonts.manrope(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color:
+                                              Theme.of(context).brightness ==
+                                                      Brightness.dark
+                                                  ? Colors.black
+                                                  : Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                    : TextButton(
+                                      onPressed: () {
+                                        if (isHome) {
+                                          _handleHomeNav(controller);
+                                        } else if (item['action'] ==
+                                            'resume') {
+                                          _handleResumeNav(controller);
+                                        } else {
+                                          _navigateToPage(controller, item);
+                                        }
+                                      },
+                                      child: Text(
+                                        item['title'] as String,
+                                        style: GoogleFonts.manrope(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ),
+                          ),
+                        );
+                      }),
+                      const SizedBox(width: 16),
+                    ],
                   );
                 }),
-                const SizedBox(width: 16),
               ],
     );
   }
@@ -246,11 +261,11 @@ class CustomDrawer extends StatelessWidget {
     final controller = Get.find<PortfolioController>();
 
     final menuItems = [
-      {'title': 'Home', 'index': 0, 'icon': Icons.home},
-      {'title': 'About me', 'index': 1, 'icon': Icons.person},
-      {'title': 'My Work', 'index': 3, 'icon': Icons.folder},
-      {'title': 'Resume', 'action': 'resume', 'icon': Icons.description},
-      {'title': 'Blog', 'index': 4, 'icon': Icons.article},
+      {'title': 'Home', 'index': 0, 'icon': Icons.home, 'pageKey': SitePageKeys.home},
+      {'title': 'About me', 'index': 1, 'icon': Icons.person, 'pageKey': SitePageKeys.about},
+      {'title': 'My Work', 'index': 3, 'icon': Icons.folder, 'pageKey': SitePageKeys.myWork},
+      {'title': 'Resume', 'action': 'resume', 'icon': Icons.description, 'pageKey': SitePageKeys.resume},
+      {'title': 'Blog', 'index': 4, 'icon': Icons.article, 'pageKey': SitePageKeys.blog},
       {'title': 'Contact me', 'index': 5, 'icon': Icons.contact_mail},
     ];
 
@@ -322,10 +337,14 @@ class CustomDrawer extends StatelessWidget {
 
           // Menu Items
           Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                ...menuItems.map((item) {
+            child: Obx(() {
+              final visible = menuItems.where((item) {
+                final key = item['pageKey'] as String?;
+                return key == null || controller.isPageVisible(key);
+              }).toList();
+              return ListView(
+                padding: EdgeInsets.zero,
+                children: visible.map((item) {
                   return ListTile(
                     leading: Icon(item['icon'] as IconData),
                     title: Text(
@@ -346,9 +365,9 @@ class CustomDrawer extends StatelessWidget {
                       }
                     },
                   );
-                }),
-              ],
-            ),
+                }).toList(),
+              );
+            }),
           ),
 
           // Footer
