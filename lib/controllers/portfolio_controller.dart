@@ -17,7 +17,9 @@ class PortfolioController extends GetxController {
   StreamSubscription<List<SiteSectionConfig>>? _sectionsSubscription;
   StreamSubscription<List<ManagedSocialLink>>? _socialLinksSubscription;
   StreamSubscription<List<Project>>? _projectsSubscription;
+  StreamSubscription<BasicDetails?>? _basicDetailsSubscription;
   bool _hasFirestoreProjects = false;
+  bool _hasBasicDetails = false;
 
   // ─── Availability toggle ────────────────────────────────────────────────────
   final isAvailableForWork = true.obs;
@@ -206,9 +208,65 @@ class PortfolioController extends GetxController {
         liveProjects..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
       );
     });
+
+    _basicDetailsSubscription = _firebasePortfolioService
+        .streamBasicDetails()
+        .listen((details) {
+          if (details == null) return;
+          _applyBasicDetails(details);
+        });
+  }
+
+  void _applyBasicDetails(BasicDetails details) {
+    _hasBasicDetails = true;
+    final current = personalInfo.value;
+
+    final socialLinks = <SocialLink>[
+      if (details.linkedinUrl.isNotEmpty)
+        SocialLink(
+          platform: 'LinkedIn',
+          url: details.linkedinUrl,
+          icon: 'linkedin',
+        ),
+      if (details.twitterUrl.isNotEmpty)
+        SocialLink(
+          platform: 'Twitter',
+          url: details.twitterUrl,
+          icon: 'twitter',
+        ),
+      if (details.githubUrl.isNotEmpty)
+        SocialLink(
+          platform: 'GitHub',
+          url: details.githubUrl,
+          icon: 'github',
+        ),
+      if (details.mediumUrl.isNotEmpty)
+        SocialLink(
+          platform: 'Medium',
+          url: details.mediumUrl,
+          icon: 'medium',
+        ),
+      if (details.instagramUrl.isNotEmpty)
+        SocialLink(
+          platform: 'Instagram',
+          url: details.instagramUrl,
+          icon: 'instagram',
+        ),
+    ];
+
+    personalInfo.value = PersonalInfo(
+      name: details.name.isNotEmpty ? details.name : current.name,
+      title: details.designation.isNotEmpty ? details.designation : current.title,
+      email: details.email.isNotEmpty ? details.email : current.email,
+      location: current.location,
+      bio: current.bio,
+      profileImageUrl: current.profileImageUrl,
+      socialLinks: socialLinks.isNotEmpty ? socialLinks : current.socialLinks,
+    );
   }
 
   void _applyManagedSocialLinks(List<ManagedSocialLink> links) {
+    if (_hasBasicDetails) return;
     final current = personalInfo.value;
     final visibleLinks =
         links.where((link) => link.isVisible).toList()
@@ -344,6 +402,7 @@ class PortfolioController extends GetxController {
     _sectionsSubscription?.cancel();
     _socialLinksSubscription?.cancel();
     _projectsSubscription?.cancel();
+    _basicDetailsSubscription?.cancel();
     super.onClose();
   }
 }

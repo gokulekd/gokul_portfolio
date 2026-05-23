@@ -147,8 +147,8 @@ class FirebasePortfolioService {
   Stream<BasicDetails?> streamBasicDetails() {
     if (!isEnabled) return Stream.value(null);
     return _firestore
-        .collection('site_config')
-        .doc('basic_details')
+        .collection('site_sections')
+        .doc('owner_profile')
         .snapshots()
         .map((doc) => doc.exists ? BasicDetails.fromFirestore(doc) : null);
   }
@@ -156,8 +156,8 @@ class FirebasePortfolioService {
   Future<void> saveBasicDetails(BasicDetails details) async {
     if (!isEnabled) return;
     await _firestore
-        .collection('site_config')
-        .doc('basic_details')
+        .collection('site_sections')
+        .doc('owner_profile')
         .set(details.toFirestore(), SetOptions(merge: true));
   }
 

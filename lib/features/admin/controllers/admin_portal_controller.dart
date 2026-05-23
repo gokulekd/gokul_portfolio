@@ -408,13 +408,15 @@ class AdminPortalController extends GetxController {
   BasicDetails get basicDetails =>
       liveBasicDetails.value ?? BasicDetails.defaults();
 
-  Future<void> saveBasicDetails(BasicDetails details) async {
+  Future<bool> saveBasicDetails(BasicDetails details) async {
     liveBasicDetails.value = details;
     try {
       await _portfolioService.saveBasicDetails(details);
       _clearFirestoreError();
+      return true;
     } catch (error) {
       _handleFirestoreError(error);
+      return false;
     }
   }
 

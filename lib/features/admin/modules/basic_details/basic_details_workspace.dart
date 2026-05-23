@@ -33,6 +33,7 @@ class _BasicDetailsWorkspaceState extends State<BasicDetailsWorkspace> {
 
   bool _isSaving = false;
   bool _saved = false;
+  String? _saveError;
 
   @override
   void initState() {
@@ -86,6 +87,7 @@ class _BasicDetailsWorkspaceState extends State<BasicDetailsWorkspace> {
     setState(() {
       _isSaving = true;
       _saved = false;
+      _saveError = null;
     });
 
     final details = BasicDetails(
@@ -99,15 +101,24 @@ class _BasicDetailsWorkspaceState extends State<BasicDetailsWorkspace> {
       email: _emailCtrl.text.trim(),
     );
 
-    await widget.controller.saveBasicDetails(details);
+    final success = await widget.controller.saveBasicDetails(details);
 
     if (mounted) {
-      setState(() {
-        _isSaving = false;
-        _saved = true;
-      });
-      await Future.delayed(const Duration(seconds: 2));
-      if (mounted) setState(() => _saved = false);
+      if (success) {
+        setState(() {
+          _isSaving = false;
+          _saved = true;
+        });
+        await Future.delayed(const Duration(seconds: 2));
+        if (mounted) setState(() => _saved = false);
+      } else {
+        setState(() {
+          _isSaving = false;
+          _saveError =
+              widget.controller.firestoreErrorMessage.value ??
+              'Save failed. Check Firestore rules for the site_config collection.';
+        });
+      }
     }
   }
 
@@ -201,6 +212,10 @@ class _BasicDetailsWorkspaceState extends State<BasicDetailsWorkspace> {
             ],
           ),
           const SizedBox(height: 28),
+          if (_saveError != null) ...[
+            _ErrorBanner(message: _saveError!),
+            const SizedBox(height: 14),
+          ],
           _SaveFooter(
             isSaving: _isSaving,
             saved: _saved,
@@ -338,6 +353,46 @@ class _DetailsField extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFF7C7C).withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFFFF7C7C).withValues(alpha: 0.25),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.error_outline_rounded,
+            color: Color(0xFFFF8C8C),
+            size: 18,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.manrope(
+                color: const Color(0xFFFF8C8C),
+                fontSize: 12.5,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
