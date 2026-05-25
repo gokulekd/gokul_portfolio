@@ -23,6 +23,18 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
 
+    // Settings (resume URL, etc.) — public read, authenticated write
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Media library metadata — public read, authenticated write
+    match /media_assets/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
     // Contact form — public write (visitors), authenticated read (admin)
     match /submissions/{docId} {
       allow read: if request.auth != null;

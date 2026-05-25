@@ -22,8 +22,11 @@ class AdminPortalController extends GetxController {
   final liveSubmissions = <VisitorSubmission>[].obs;
   final liveBasicDetails = Rxn<BasicDetails>();
   final livePages = <SitePageConfig>[].obs;
+  final liveResumeConfig = Rxn<ResumeConfig>();
+  final liveMediaAssets = <MediaAssetRecord>[].obs;
   final selectedSubmission = Rxn<VisitorSubmission>();
   final firestoreErrorMessage = RxnString();
+  final firestoreProjectsLoaded = false.obs;
 
   StreamSubscription<List<SiteSectionConfig>>? _sectionsSubscription;
   StreamSubscription<List<ManagedSocialLink>>? _socialLinksSubscription;
@@ -31,6 +34,8 @@ class AdminPortalController extends GetxController {
   StreamSubscription<List<VisitorSubmission>>? _submissionsSubscription;
   StreamSubscription<BasicDetails?>? _basicDetailsSubscription;
   StreamSubscription<List<SitePageConfig>>? _pagesSubscription;
+  StreamSubscription<ResumeConfig?>? _resumeSubscription;
+  StreamSubscription<List<MediaAssetRecord>>? _mediaAssetsSubscription;
 
   final modules = const <AdminModuleItem>[
     // Control
@@ -266,9 +271,8 @@ class AdminPortalController extends GetxController {
       projects,
     ) {
       _clearFirestoreError();
-      if (projects.isNotEmpty) {
-        liveProjects.assignAll(projects);
-      }
+      liveProjects.assignAll(projects);
+      firestoreProjectsLoaded.value = true;
     }, onError: _handleFirestoreError);
 
     _submissionsSubscription = _portfolioService.streamSubmissions().listen((
@@ -296,6 +300,20 @@ class AdminPortalController extends GetxController {
       if (pages.isNotEmpty) {
         livePages.assignAll(pages);
       }
+    }, onError: _handleFirestoreError);
+
+    _resumeSubscription = _portfolioService.streamResumeConfig().listen((
+      config,
+    ) {
+      _clearFirestoreError();
+      liveResumeConfig.value = config;
+    }, onError: _handleFirestoreError);
+
+    _mediaAssetsSubscription = _portfolioService.streamMediaAssets().listen((
+      assets,
+    ) {
+      _clearFirestoreError();
+      liveMediaAssets.assignAll(assets);
     }, onError: _handleFirestoreError);
 
     _portfolioService.ensurePageConfigSeedData();
@@ -433,7 +451,7 @@ class AdminPortalController extends GetxController {
           : ManagedSocialLink.defaultLinks();
 
   List<Project> get projects =>
-      liveProjects.isNotEmpty
+      firestoreProjectsLoaded.value
           ? liveProjects.toList(growable: false)
           : Project.defaultPortfolioProjects();
 
@@ -632,6 +650,37 @@ class AdminPortalController extends GetxController {
     }
   }
 
+  Future<bool> saveResumeConfig(ResumeConfig config) async {
+    liveResumeConfig.value = config;
+    try {
+      await _portfolioService.saveResumeConfig(config);
+      _clearFirestoreError();
+      return true;
+    } catch (error) {
+      _handleFirestoreError(error);
+      return false;
+    }
+  }
+
+  Future<void> saveMediaAsset(MediaAssetRecord asset) async {
+    try {
+      await _portfolioService.saveMediaAsset(asset);
+      _clearFirestoreError();
+    } catch (error) {
+      _handleFirestoreError(error);
+    }
+  }
+
+  Future<void> deleteMediaAsset(MediaAssetRecord asset) async {
+    liveMediaAssets.removeWhere((a) => a.id == asset.id);
+    try {
+      await _portfolioService.deleteMediaAsset(asset.id);
+      _clearFirestoreError();
+    } catch (error) {
+      _handleFirestoreError(error);
+    }
+  }
+
   Future<void> toggleProjectFeatured(Project project, bool isFeatured) async {
     await saveProject(project.copyWith(isFeatured: isFeatured));
   }
@@ -706,6 +755,8 @@ class AdminPortalController extends GetxController {
     _submissionsSubscription?.cancel();
     _basicDetailsSubscription?.cancel();
     _pagesSubscription?.cancel();
+    _resumeSubscription?.cancel();
+    _mediaAssetsSubscription?.cancel();
     super.onClose();
   }
 }

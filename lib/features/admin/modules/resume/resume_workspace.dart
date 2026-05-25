@@ -2,12 +2,22 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../constants/colors.dart';
+import '../../../../core/supabase/supabase_bootstrap.dart';
+import '../../../../models/firebase_content_models.dart';
+import '../../../../services/supabase_storage_service.dart';
+import '../../controllers/admin_portal_controller.dart';
 import '../../shared/admin_portal_components.dart';
 
 class ResumeManagementWorkspace extends StatefulWidget {
-  const ResumeManagementWorkspace({super.key, required this.isCompact});
+  const ResumeManagementWorkspace({
+    super.key,
+    required this.controller,
+    required this.isCompact,
+  });
+  final AdminPortalController controller;
   final bool isCompact;
 
   @override
@@ -17,56 +27,66 @@ class ResumeManagementWorkspace extends StatefulWidget {
 
 class _ResumeManagementWorkspaceState extends State<ResumeManagementWorkspace> {
   bool _isDragTarget = false;
-  String? _uploadedFileName;
-  String? _uploadedFileSize;
-  String? _uploadedDate;
   bool _isUploading = false;
 
-  final _versions = <_ResumeVersion>[
-    _ResumeVersion(
-      name: 'gokul_resume_v2.pdf',
-      date: 'Mar 2025',
-      size: '1.8 MB',
-      isCurrent: false,
-    ),
-    _ResumeVersion(
-      name: 'gokul_resume_v1.pdf',
-      date: 'Jan 2025',
-      size: '1.5 MB',
-      isCurrent: false,
-    ),
-  ];
+  SupabaseStorageService get _storage => Get.find<SupabaseStorageService>();
 
   Future<void> _pickResume() async {
+    if (!SupabaseBootstrap.isReady) {
+      Get.snackbar(
+        'Storage not configured',
+        'Add SUPABASE_URL and SUPABASE_ANON_KEY via --dart-define to enable uploads.',
+        backgroundColor: Colors.orange.withValues(alpha: 0.16),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+      return;
+    }
+
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'doc', 'docx'],
-      withData: false,
+      withData: true,
     );
-    if (result != null && result.files.isNotEmpty) {
-      final file = result.files.first;
-      setState(() => _isUploading = true);
-      await Future.delayed(const Duration(seconds: 2));
-      setState(() {
-        _isUploading = false;
-        if (_uploadedFileName != null) {
-          _versions.insert(
-            0,
-            _ResumeVersion(
-              name: _uploadedFileName!,
-              date: 'Previous',
-              size: _uploadedFileSize ?? '--',
-              isCurrent: false,
-            ),
-          );
-        }
-        _uploadedFileName = file.name;
-        _uploadedFileSize =
-            file.size != 0
-                ? '${(file.size / 1024 / 1024).toStringAsFixed(1)} MB'
-                : 'Unknown size';
-        _uploadedDate = 'Just now';
-      });
+    if (result == null || result.files.isEmpty) return;
+
+    final file = result.files.first;
+    final bytes = file.bytes;
+    if (bytes == null) return;
+
+    setState(() => _isUploading = true);
+
+    final uploadResult = await _storage.uploadFromBytes(
+      bucket: SupabaseStorageService.resumesBucket,
+      folder: 'resumes',
+      fileName: file.name,
+      bytes: bytes,
+    );
+
+    if (uploadResult == null) {
+      setState(() => _isUploading = false);
+      Get.snackbar(
+        'Upload failed',
+        'Could not upload to Supabase. Check bucket permissions.',
+        backgroundColor: const Color(0xFFFF7C7C).withValues(alpha: 0.16),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    final current = widget.controller.liveResumeConfig.value;
+    final newConfig = (current ?? const ResumeConfig()).withNewActive(
+      url: uploadResult.url,
+      fileName: file.name,
+      sizeBytes: file.size,
+      supabasePath: uploadResult.path,
+    );
+
+    final saved = await widget.controller.saveResumeConfig(newConfig);
+
+    setState(() => _isUploading = false);
+
+    if (saved) {
       Get.snackbar(
         'Resume uploaded',
         '${file.name} is now your active resume.',
@@ -77,171 +97,247 @@ class _ResumeManagementWorkspaceState extends State<ResumeManagementWorkspace> {
     }
   }
 
+  Future<void> _deleteActiveResume() async {
+    final config = widget.controller.liveResumeConfig.value;
+    if (config == null || !config.hasResume) return;
+
+    if (config.activeSupabasePath != null &&
+        config.activeSupabasePath!.isNotEmpty &&
+        SupabaseBootstrap.isReady) {
+      await _storage.deleteFile(
+        bucket: SupabaseStorageService.resumesBucket,
+        path: config.activeSupabasePath!,
+      );
+    }
+
+    final cleared = ResumeConfig(versions: config.versions);
+    await widget.controller.saveResumeConfig(cleared);
+
+    Get.snackbar(
+      'Resume removed',
+      'Active resume deleted.',
+      backgroundColor: const Color(0xFFFF7C7C).withValues(alpha: 0.16),
+      colorText: Colors.white,
+    );
+  }
+
+  Future<void> _restoreVersion(ResumeVersion version) async {
+    final current = widget.controller.liveResumeConfig.value;
+    if (current == null) return;
+
+    final updatedVersions = current.versions
+        .where((v) => v.supabasePath != version.supabasePath)
+        .toList();
+    if (current.hasResume) {
+      updatedVersions.insert(
+        0,
+        ResumeVersion(
+          url: current.activeUrl!,
+          fileName: current.activeFileName ?? '',
+          sizeBytes: current.activeSizeBytes ?? 0,
+          uploadedAt: current.updatedAt ?? DateTime.now(),
+          supabasePath: current.activeSupabasePath ?? '',
+        ),
+      );
+    }
+
+    final restored = ResumeConfig(
+      activeUrl: version.url,
+      activeFileName: version.fileName,
+      activeSizeBytes: version.sizeBytes,
+      activeSupabasePath: version.supabasePath,
+      versions: updatedVersions,
+    );
+    await widget.controller.saveResumeConfig(restored);
+
+    Get.snackbar(
+      'Version restored',
+      '${version.fileName} is now your active resume.',
+      backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.16),
+      colorText: Colors.white,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final uploadPanel = AdminSurfaceCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AdminSectionHeader(
-            eyebrow: 'RESUME MANAGEMENT',
-            title: 'Upload & manage your CV',
-            description:
-                'Keep your resume up to date. The latest version will be linked across your portfolio.',
-            action:
-                _uploadedFileName != null
-                    ? AdminGhostButton(
-                      label: 'Replace',
-                      icon: Icons.swap_horiz_rounded,
-                      onPressed: _pickResume,
-                    )
-                    : null,
-          ),
-          const SizedBox(height: 20),
-          if (_uploadedFileName != null) ...[
-            ActiveResumeCard(
-              fileName: _uploadedFileName!,
-              fileSize: _uploadedFileSize ?? '--',
-              uploadedDate: _uploadedDate ?? '--',
-              onReplace: _pickResume,
-              onDelete: () {
-                setState(() {
-                  _uploadedFileName = null;
-                  _uploadedFileSize = null;
-                  _uploadedDate = null;
-                });
-              },
+      child: Obx(() {
+        final config = widget.controller.liveResumeConfig.value;
+        final hasResume = config?.hasResume ?? false;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AdminSectionHeader(
+              eyebrow: 'RESUME MANAGEMENT',
+              title: 'Upload & manage your CV',
+              description:
+                  'The latest version is stored in Supabase and linked across your portfolio. The public resume button uses this URL.',
+              action:
+                  hasResume
+                      ? AdminGhostButton(
+                        label: 'Replace',
+                        icon: Icons.swap_horiz_rounded,
+                        onPressed: _pickResume,
+                      )
+                      : null,
             ),
             const SizedBox(height: 20),
-          ],
-          DragTarget<Object>(
-            onWillAcceptWithDetails: (_) {
-              setState(() => _isDragTarget = true);
-              return true;
-            },
-            onLeave: (_) => setState(() => _isDragTarget = false),
-            onAcceptWithDetails: (_) {
-              setState(() => _isDragTarget = false);
-              _pickResume();
-            },
-            builder: (context, candidates, rejected) {
-              return GestureDetector(
-                onTap: _pickResume,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 40),
-                  decoration: BoxDecoration(
-                    color:
-                        _isDragTarget
-                            ? AppColors.primaryGreen.withValues(alpha: 0.10)
-                            : Colors.white.withValues(alpha: 0.02),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color:
-                          _isDragTarget
-                              ? AppColors.primaryGreen.withValues(alpha: 0.45)
-                              : Colors.white.withValues(alpha: 0.08),
-                      style: BorderStyle.solid,
-                      width: 1.5,
-                    ),
-                  ),
-                  child:
-                      _isUploading
-                          ? Column(
-                            children: [
-                              const CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.primaryGreen,
-                                ),
-                                strokeWidth: 2.5,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Uploading...',
-                                style: GoogleFonts.manrope(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          )
-                          : Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryGreen.withValues(
-                                    alpha: 0.12,
-                                  ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.upload_rounded,
-                                  color: AppColors.primaryGreen,
-                                  size: 28,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Click to upload or drag & drop',
-                                style: GoogleFonts.manrope(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 15,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Supported formats: PDF, DOC, DOCX · Max 10 MB',
-                                style: GoogleFonts.manrope(
-                                  color: Colors.white54,
-                                  fontSize: 12.5,
-                                ),
-                              ),
-                            ],
-                          ),
+            if (!SupabaseBootstrap.isReady)
+              _SupabaseBanner()
+            else ...[
+              if (hasResume) ...[
+                ActiveResumeCard(
+                  fileName: config!.activeFileName ?? 'resume',
+                  fileSize: config.activeSizeLabel,
+                  resumeUrl: config.activeUrl!,
+                  onReplace: _pickResume,
+                  onDelete: _deleteActiveResume,
                 ),
-              );
-            },
-          ),
-        ],
-      ),
+                const SizedBox(height: 20),
+              ],
+              DragTarget<Object>(
+                onWillAcceptWithDetails: (_) {
+                  setState(() => _isDragTarget = true);
+                  return true;
+                },
+                onLeave: (_) => setState(() => _isDragTarget = false),
+                onAcceptWithDetails: (_) {
+                  setState(() => _isDragTarget = false);
+                  _pickResume();
+                },
+                builder: (context, candidates, rejected) {
+                  return GestureDetector(
+                    onTap: _pickResume,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      decoration: BoxDecoration(
+                        color:
+                            _isDragTarget
+                                ? AppColors.primaryGreen.withValues(alpha: 0.10)
+                                : Colors.white.withValues(alpha: 0.02),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color:
+                              _isDragTarget
+                                  ? AppColors.primaryGreen.withValues(
+                                    alpha: 0.45,
+                                  )
+                                  : Colors.white.withValues(alpha: 0.08),
+                          style: BorderStyle.solid,
+                          width: 1.5,
+                        ),
+                      ),
+                      child:
+                          _isUploading
+                              ? Column(
+                                children: [
+                                  const CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppColors.primaryGreen,
+                                    ),
+                                    strokeWidth: 2.5,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Uploading to Supabase…',
+                                    style: GoogleFonts.manrope(
+                                      color: Colors.white70,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              )
+                              : Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryGreen.withValues(
+                                        alpha: 0.12,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.upload_rounded,
+                                      color: AppColors.primaryGreen,
+                                      size: 28,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    hasResume
+                                        ? 'Drop new file to replace'
+                                        : 'Click to upload or drag & drop',
+                                    style: GoogleFonts.manrope(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Supported formats: PDF, DOC, DOCX · Max 10 MB',
+                                    style: GoogleFonts.manrope(
+                                      color: Colors.white54,
+                                      fontSize: 12.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ],
+        );
+      }),
     );
 
     final historyPanel = AdminSurfaceCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const AdminSectionHeader(
-            eyebrow: 'VERSION HISTORY',
-            title: 'Previous resume versions',
-            description:
-                'Older versions are kept for reference. You can restore any previous version.',
-          ),
-          const SizedBox(height: 18),
-          if (_versions.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: Text(
-                  'No previous versions yet.',
-                  style: GoogleFonts.manrope(
-                    color: Colors.white38,
-                    fontSize: 13,
+      child: Obx(() {
+        final config = widget.controller.liveResumeConfig.value;
+        final versions = config?.versions ?? [];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const AdminSectionHeader(
+              eyebrow: 'VERSION HISTORY',
+              title: 'Previous resume versions',
+              description:
+                  'Previous uploads are kept in Supabase. Restore any version to make it active.',
+            ),
+            const SizedBox(height: 18),
+            if (versions.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Text(
+                    'No previous versions yet.',
+                    style: GoogleFonts.manrope(
+                      color: Colors.white38,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              )
+            else
+              ...versions.map(
+                (v) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _VersionRow(
+                    version: v,
+                    onRestore: () => _restoreVersion(v),
                   ),
                 ),
               ),
-            )
-          else
-            ..._versions.map(
-              (v) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _VersionRow(version: v),
-              ),
-            ),
-        ],
-      ),
+          ],
+        );
+      }),
     );
 
     if (widget.isCompact) {
@@ -260,19 +356,45 @@ class _ResumeManagementWorkspaceState extends State<ResumeManagementWorkspace> {
   }
 }
 
+class _SupabaseBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Supabase storage is not configured. Run with --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=... to enable uploads.',
+              style: GoogleFonts.manrope(color: Colors.orange, fontSize: 12.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ActiveResumeCard extends StatelessWidget {
   const ActiveResumeCard({
     super.key,
     required this.fileName,
     required this.fileSize,
-    required this.uploadedDate,
+    required this.resumeUrl,
     required this.onReplace,
     required this.onDelete,
   });
 
   final String fileName;
   final String fileSize;
-  final String uploadedDate;
+  final String resumeUrl;
   final VoidCallback onReplace;
   final VoidCallback onDelete;
 
@@ -345,7 +467,7 @@ class ActiveResumeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '$fileSize · Uploaded $uploadedDate',
+                      '$fileSize · Stored in Supabase',
                       style: GoogleFonts.manrope(
                         color: Colors.white54,
                         fontSize: 12,
@@ -362,9 +484,14 @@ class ActiveResumeCard extends StatelessWidget {
             runSpacing: 10,
             children: [
               AdminPrimaryButton(
-                label: 'Download',
-                icon: Icons.download_rounded,
-                onPressed: () {},
+                label: 'Open',
+                icon: Icons.open_in_new_rounded,
+                onPressed: () async {
+                  final uri = Uri.parse(resumeUrl);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                },
               ),
               AdminGhostButton(
                 label: 'Replace',
@@ -382,26 +509,14 @@ class ActiveResumeCard extends StatelessWidget {
       ),
     );
   }
-}
 
-class _ResumeVersion {
-  _ResumeVersion({
-    required this.name,
-    required this.date,
-    required this.size,
-    required this.isCurrent,
-  });
-
-  final String name;
-  final String date;
-  final String size;
-  final bool isCurrent;
 }
 
 class _VersionRow extends StatelessWidget {
-  const _VersionRow({required this.version});
+  const _VersionRow({required this.version, required this.onRestore});
 
-  final _ResumeVersion version;
+  final ResumeVersion version;
+  final VoidCallback onRestore;
 
   @override
   Widget build(BuildContext context) {
@@ -421,7 +536,7 @@ class _VersionRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  version.name,
+                  version.fileName,
                   style: GoogleFonts.manrope(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -431,7 +546,7 @@ class _VersionRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '${version.date} · ${version.size}',
+                  '${version.sizeLabel}  ·  ${_uploadedLabel(version.uploadedAt)}',
                   style: GoogleFonts.manrope(
                     color: Colors.white54,
                     fontSize: 11.5,
@@ -441,7 +556,7 @@ class _VersionRow extends StatelessWidget {
             ),
           ),
           TextButton(
-            onPressed: () {},
+            onPressed: onRestore,
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               foregroundColor: AppColors.primaryGreen,
@@ -457,5 +572,12 @@ class _VersionRow extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _uploadedLabel(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
   }
 }

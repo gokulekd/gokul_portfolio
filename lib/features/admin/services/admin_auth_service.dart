@@ -56,7 +56,6 @@ class AdminAuthService {
       }
 
       if (!isOwner(credential.user)) {
-        await signOut();
         return 'Access denied for ${credential.user?.email ?? 'this account'}.';
       }
 

@@ -248,6 +248,52 @@ class FirebasePortfolioService {
     await batch.commit();
   }
 
+  // ─── Resume ─────────────────────────────────────────────────────────────────
+
+  Stream<ResumeConfig?> streamResumeConfig() {
+    if (!isEnabled) return Stream.value(null);
+    return _firestore
+        .collection('settings')
+        .doc('resume')
+        .snapshots()
+        .map((doc) => doc.exists ? ResumeConfig.fromFirestore(doc) : null);
+  }
+
+  Future<void> saveResumeConfig(ResumeConfig config) async {
+    if (!isEnabled) return;
+    await _firestore
+        .collection('settings')
+        .doc('resume')
+        .set(config.toFirestore(), SetOptions(merge: true));
+  }
+
+  // ─── Media Assets ────────────────────────────────────────────────────────────
+
+  Stream<List<MediaAssetRecord>> streamMediaAssets() {
+    if (!isEnabled) return Stream.value(const []);
+    return _firestore
+        .collection('media_assets')
+        .orderBy('uploadedAt', descending: true)
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map(MediaAssetRecord.fromFirestore)
+              .toList(growable: false),
+        );
+  }
+
+  Future<void> saveMediaAsset(MediaAssetRecord asset) async {
+    if (!isEnabled) return;
+    final ref = _firestore.collection('media_assets');
+    final docRef = asset.id.isEmpty ? ref.doc() : ref.doc(asset.id);
+    await docRef.set(asset.toFirestore(), SetOptions(merge: true));
+  }
+
+  Future<void> deleteMediaAsset(String id) async {
+    if (!isEnabled || id.isEmpty) return;
+    await _firestore.collection('media_assets').doc(id).delete();
+  }
+
   Project _projectFromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? <String, dynamic>{};
     return Project(

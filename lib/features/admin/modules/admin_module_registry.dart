@@ -271,7 +271,10 @@ class AdminModuleRegistry {
         controller: controller,
         isCompact: isCompact,
       ),
-      AdminModule.mediaLibrary => MediaLibraryWorkspace(isCompact: isCompact),
+      AdminModule.mediaLibrary => MediaLibraryWorkspace(
+        controller: controller,
+        isCompact: isCompact,
+      ),
       AdminModule.settings => SettingsWorkspace(
         controller: controller,
         isCompact: isCompact,
@@ -282,6 +285,7 @@ class AdminModuleRegistry {
         isCompact: isCompact,
       ),
       AdminModule.resumeManagement => ResumeManagementWorkspace(
+        controller: controller,
         isCompact: isCompact,
       ),
     };

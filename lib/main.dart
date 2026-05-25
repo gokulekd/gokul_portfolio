@@ -5,13 +5,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'controllers/portfolio_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'core/firebase/firebase_bootstrap.dart';
+import 'core/supabase/supabase_bootstrap.dart';
 import 'features/admin/services/admin_auth_service.dart';
 import 'routes/app_routes.dart';
 import 'services/firebase_portfolio_service.dart';
+import 'services/supabase_storage_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseBootstrap.initialize();
+  await SupabaseBootstrap.initialize();
   runApp(const MyApp());
 }
 
@@ -22,6 +25,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeController = Get.put(ThemeController());
     Get.put(FirebasePortfolioService(), permanent: true);
+    Get.put(SupabaseStorageService(), permanent: true);
     Get.put(AdminAuthService(), permanent: true);
     Get.put(PortfolioController());
 

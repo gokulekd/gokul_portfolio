@@ -19,8 +19,11 @@ class PortfolioController extends GetxController {
   StreamSubscription<List<Project>>? _projectsSubscription;
   StreamSubscription<BasicDetails?>? _basicDetailsSubscription;
   StreamSubscription<List<SitePageConfig>>? _pagesSubscription;
+  StreamSubscription<ResumeConfig?>? _resumeSubscription;
   bool _hasFirestoreProjects = false;
   bool _hasBasicDetails = false;
+
+  final resumeConfig = Rxn<ResumeConfig>();
 
   // ─── Availability toggle ────────────────────────────────────────────────────
   final isAvailableForWork = true.obs;
@@ -226,6 +229,12 @@ class PortfolioController extends GetxController {
             for (final page in pages) page.key: page.isVisible,
           });
         });
+
+    _resumeSubscription = _firebasePortfolioService
+        .streamResumeConfig()
+        .listen((config) {
+          resumeConfig.value = config;
+        });
   }
 
   void _applyBasicDetails(BasicDetails details) {
@@ -386,9 +395,17 @@ class PortfolioController extends GetxController {
   Future<void> launchSocialLink(String url) => launchUrlFromString(url);
 
   Future<void> launchResume() async {
-    const resumeUrl =
-        'https://drive.google.com/file/d/YOUR_RESUME_FILE_ID/view';
-    await launchUrlFromString(resumeUrl);
+    final url = resumeConfig.value?.activeUrl;
+    if (url == null || url.isEmpty) {
+      Get.snackbar(
+        'No resume available',
+        'Resume has not been uploaded yet.',
+        backgroundColor: Colors.orange.withValues(alpha: 0.16),
+        colorText: Colors.white,
+      );
+      return;
+    }
+    await launchUrlFromString(url);
   }
 
   // ─── Filter helpers ────────────────────────────────────────────────────────
@@ -419,6 +436,7 @@ class PortfolioController extends GetxController {
     _projectsSubscription?.cancel();
     _basicDetailsSubscription?.cancel();
     _pagesSubscription?.cancel();
+    _resumeSubscription?.cancel();
     super.onClose();
   }
 }

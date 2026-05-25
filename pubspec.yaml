@@ -76,6 +76,9 @@ dependencies:
   # File picker for resume/image uploads
   file_picker: ^8.1.0
 
+  # Supabase for file storage (images, resumes, media)
+  supabase_flutter: ^2.8.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,9 +1,13 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../constants/colors.dart';
+import '../../../../core/supabase/supabase_bootstrap.dart';
+import '../../../../models/firebase_content_models.dart';
 import '../../../../models/portfolio_models.dart';
+import '../../../../services/supabase_storage_service.dart';
 import '../../controllers/admin_portal_controller.dart';
 import '../../models/admin_portal_models.dart';
 import '../../shared/admin_portal_components.dart';
@@ -339,6 +343,56 @@ Future<void> showProjectEditorDialog(
 
   var isFeatured = project?.isFeatured ?? false;
   var isPublished = project?.isPublished ?? true;
+  var isUploadingImage = false;
+
+  Future<void> pickAndUploadImage(StateSetter setDlgState) async {
+    if (!SupabaseBootstrap.isReady) {
+      Get.snackbar(
+        'Storage not configured',
+        'Add SUPABASE_URL and SUPABASE_ANON_KEY to enable image uploads.',
+        backgroundColor: Colors.orange.withValues(alpha: 0.16),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) return;
+
+    final file = result.files.first;
+    final bytes = file.bytes;
+    if (bytes == null) return;
+
+    setDlgState(() => isUploadingImage = true);
+
+    final storage = Get.find<SupabaseStorageService>();
+    final uploadResult = await storage.uploadFromBytes(
+      bucket: SupabaseStorageService.mediaBucket,
+      folder: 'media/projects',
+      fileName: file.name,
+      bytes: bytes,
+    );
+
+    if (uploadResult != null) {
+      imageUrlController.text = uploadResult.url;
+      final asset = MediaAssetRecord(
+        id: '',
+        name: file.name,
+        url: uploadResult.url,
+        supabasePath: uploadResult.path,
+        bucket: SupabaseStorageService.mediaBucket,
+        sizeBytes: file.size,
+        assetType: MediaAssetType.image,
+        uploadedAt: DateTime.now(),
+      );
+      await controller.saveMediaAsset(asset);
+    }
+
+    setDlgState(() => isUploadingImage = false);
+  }
 
   await showDialog<void>(
     context: context,
@@ -388,10 +442,82 @@ Future<void> showProjectEditorDialog(
                         maxLines: 4,
                       ),
                       const SizedBox(height: 14),
-                      _ProjectFormField(
-                        label: 'Image URL',
-                        controller: imageUrlController,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: _ProjectFormField(
+                              label: 'Image URL',
+                              controller: imageUrlController,
+                              hint: 'Paste URL or upload →',
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 2),
+                            child: SizedBox(
+                              height: 46,
+                              child: ElevatedButton.icon(
+                                onPressed:
+                                    isUploadingImage
+                                        ? null
+                                        : () => pickAndUploadImage(setState),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primaryGreen
+                                      .withValues(alpha: 0.16),
+                                  foregroundColor: AppColors.primaryGreen,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                  ),
+                                  elevation: 0,
+                                ),
+                                icon:
+                                    isUploadingImage
+                                        ? const SizedBox(
+                                          width: 14,
+                                          height: 14,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              AppColors.primaryGreen,
+                                            ),
+                                          ),
+                                        )
+                                        : const Icon(
+                                          Icons.upload_rounded,
+                                          size: 16,
+                                        ),
+                                label: Text(
+                                  isUploadingImage ? '' : 'Upload',
+                                  style: GoogleFonts.manrope(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+                      if (imageUrlController.text.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: Image.network(
+                              imageUrlController.text,
+                              height: 80,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder:
+                                  (_, __, ___) => const SizedBox.shrink(),
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: 14),
                       Row(
                         children: [
@@ -563,12 +689,14 @@ class _ProjectFormField extends StatelessWidget {
     required this.controller,
     this.maxLines = 1,
     this.keyboardType,
+    this.hint,
   });
 
   final String label;
   final TextEditingController controller;
   final int maxLines;
   final TextInputType? keyboardType;
+  final String? hint;
 
   @override
   Widget build(BuildContext context) {
@@ -596,6 +724,7 @@ class _ProjectFormField extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
               borderSide: BorderSide.none,
             ),
+            hintText: hint,
             hintStyle: GoogleFonts.manrope(color: Colors.white38),
           ),
         ),
