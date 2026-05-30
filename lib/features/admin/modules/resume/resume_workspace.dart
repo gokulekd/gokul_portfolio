@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../constants/colors.dart';
+import '../../../../config/app_colors.dart';
 import '../../../../core/supabase/supabase_bootstrap.dart';
 import '../../../../models/firebase_content_models.dart';
 import '../../../../services/supabase_storage_service.dart';

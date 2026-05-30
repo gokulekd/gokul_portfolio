@@ -1,0 +1,10 @@
+export 'contact_section.dart';
+export 'faq_section.dart';
+export 'freelance_process_section.dart';
+export 'hero_section.dart';
+export 'project_types_marquee.dart';
+export 'proud_achievements_section.dart';
+export 'selected_projects_section.dart';
+export 'skills_section.dart';
+export 'stats_marquee.dart';
+export 'testimonials_section.dart';

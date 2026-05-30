@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../../constants/colors.dart';
+import '../../../../../config/app_colors.dart';
 import '../models/skill_entry.dart';
 
 class SkillRow extends StatelessWidget {

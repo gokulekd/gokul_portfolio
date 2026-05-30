@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../constants/colors.dart';
+import '../../../../config/app_colors.dart';
 import '../../shared/admin_portal_components.dart';
 
 class CreatePostWorkspace extends StatefulWidget {

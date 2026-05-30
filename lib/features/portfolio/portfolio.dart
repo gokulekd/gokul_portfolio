@@ -1,0 +1,9 @@
+export 'pages/about_page.dart';
+export 'pages/blog_page.dart';
+export 'pages/contact_page.dart';
+export 'pages/experience_page.dart';
+export 'pages/home_page.dart';
+export 'pages/projects_page.dart';
+export 'pages/resume_page.dart';
+export 'pages/skills_page.dart';
+export 'pages/splash_screen.dart';

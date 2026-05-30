@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../constants/colors.dart';
+import '../../../config/app_colors.dart';
 import '../../../models/firebase_content_models.dart';
 import '../../../models/portfolio_models.dart';
 import '../../../services/firebase_portfolio_service.dart';

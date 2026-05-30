@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../../constants/colors.dart';
+import '../../../../../config/app_colors.dart';
 import '../../../controllers/admin_portal_controller.dart';
 import '../../../models/admin_portal_models.dart';
 import 'action_tile.dart';

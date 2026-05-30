@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../constants/colors.dart';
+import '../../../../config/app_colors.dart';
 import '../../controllers/admin_auth_controller.dart';
 import '../../controllers/admin_portal_controller.dart';
 import '../../shared/admin_portal_components.dart';
