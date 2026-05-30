@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../constants/colors.dart';
 import '../controllers/admin_portal_controller.dart';
 import '../models/admin_portal_models.dart';
-import 'admin_portal_components.dart';
+import '../widgets/widgets.dart';
 
 class PortalTopBar extends StatelessWidget {
   const PortalTopBar({
