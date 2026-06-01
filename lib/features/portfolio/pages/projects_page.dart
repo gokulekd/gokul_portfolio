@@ -289,7 +289,7 @@ class _FeaturedProjectsSection extends StatelessWidget {
               final project = entry.value;
               return Column(
                 children: [
-                  AppProjectCard(project: project),
+                  AppProjectCard(project: project, index: index),
                   if (index < featured.length - 1)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 48),

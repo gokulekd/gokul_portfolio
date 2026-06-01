@@ -201,13 +201,9 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
               child: CircleAvatar(
                 radius: imageRadius,
                 backgroundColor: Colors.grey[300],
-                backgroundImage:
-                    profileImageUrl.startsWith('http')
-                        ? NetworkImage(profileImageUrl) as ImageProvider
-                        : const AssetImage(
-                          'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
-                        ),
-                onBackgroundImageError: (_, __) {},
+                backgroundImage: const AssetImage(
+                  'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
+                ),
               ),
             ),
           ),
@@ -325,7 +321,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Text(
-                      '(2024 - PRESENT)',
+                      '3+ YRS EXPERIENCE',
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -404,7 +400,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
               (context, child) => Opacity(
                 opacity: _contentOpacity.value,
                 child: Text(
-                  "Hi, I'm Gokul, a passionate mobile app developer and designer with a love for creating visually stunning experiences. With a strong background in design and front-end development, I specialize in crafting responsive mobile apps that not only look great but also provide seamless interactions across all devices.",
+                  "I'm a dynamic Flutter Developer with 3+ years of hands-on experience building scalable, cross-platform mobile applications. I bring proven expertise in Flutter, Firebase, Bloc, and GetX — with a passion for creating pixel-perfect UIs using Figma. Skilled in API integration, payment systems, and location-based services.",
                   style: GoogleFonts.manrope(
                     fontSize:
                         isMobile
@@ -427,7 +423,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
               (context, child) => Opacity(
                 opacity: _taglineOpacity.value,
                 child: Text(
-                  "Over the years, I've had the opportunity to work with a diverse range of clients, from startups to established brands, helping them bring their visions to life online.",
+                  "Over 3 years I've delivered government apps, social platforms, payment systems, and HRM tools — consistently recognised for clean, maintainable code and on-time delivery across freelance and full-time roles.",
                   style: GoogleFonts.manrope(
                     fontSize:
                         isMobile
@@ -706,7 +702,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Text(
-                    '(2024 - PRESENT)',
+                    '3+ YRS EXPERIENCE',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -725,7 +721,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
               (context, child) => Opacity(
                 opacity: _contentOpacity.value,
                 child: Text(
-                  "Hi, I'm Gokul, a passionate mobile app developer and designer with a love for creating visually stunning experiences. With a strong background in design and front-end development, I specialize in crafting responsive mobile apps that not only look great but also provide seamless interactions across all devices.",
+                  "I'm a dynamic Flutter Developer with 3+ years of hands-on experience building scalable, cross-platform mobile applications. I bring proven expertise in Flutter, Firebase, Bloc, and GetX — with a passion for creating pixel-perfect UIs using Figma. Skilled in API integration, payment systems, and location-based services.",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.manrope(
                     fontSize: 18,
@@ -744,7 +740,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
               (context, child) => Opacity(
                 opacity: _taglineOpacity.value,
                 child: Text(
-                  "Over the years, I've had the opportunity to work with a diverse range of clients, from startups to established brands, helping them bring their visions to life online.",
+                  "Over 3 years I've delivered government apps, social platforms, payment systems, and HRM tools — consistently recognised for clean, maintainable code and on-time delivery across freelance and full-time roles.",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.manrope(
                     fontSize: 16,
@@ -808,27 +804,28 @@ class _EducationExperienceSection extends StatelessWidget {
 
   static const List<_EducationEntry> _educationEntries = [
     _EducationEntry(
-      title: "Academic Foundation",
-      period: "Add degree and years",
-      description: "Add your university, course, and graduation timeline here.",
+      title: "BSc Mathematics",
+      period: "Jun 2013 – Jun 2016",
+      description:
+          "Devaswom Board Pampa College, Parumala. Built a strong analytical and problem-solving foundation.",
     ),
     _EducationEntry(
-      title: "Specialized Learning",
-      period: "Add certifications or training",
+      title: "Higher Secondary — Computer Science",
+      period: "Jun 2011 – Jun 2013",
       description:
-          "Use this block for certifications, focused coursework, or bootcamps.",
+          "Govt. Higher Secondary School, Budhanoor. First exposure to programming and computer fundamentals.",
     ),
     _EducationEntry(
-      title: "Technical Focus",
-      period: "Computer science and product skills",
+      title: "Flutter & Mobile Development",
+      period: "2021 – Present",
       description:
-          "Summarize the areas you studied most deeply and what they prepared you for.",
+          "Continuous self-learning — Flutter, Dart, Firebase, Bloc, GetX, Figma, REST APIs, and payment integrations.",
     ),
     _EducationEntry(
-      title: "Continuous Learning",
-      period: "Self-directed growth",
+      title: "Internship — Brototype, Kochi",
+      period: "Oct 2021 – Oct 2022",
       description:
-          "Highlight the learning habits, programs, or communities that sharpen your craft.",
+          "Intensive full-stack Flutter training. Built real-world projects with Google Maps, Firebase, and GetX state management.",
     ),
   ];
 

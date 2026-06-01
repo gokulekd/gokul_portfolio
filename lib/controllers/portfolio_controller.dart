@@ -54,13 +54,8 @@ class PortfolioController extends GetxController {
         profileImageUrl: 'https://avatars.githubusercontent.com/u/gokulks',
         socialLinks: [
           SocialLink(
-            platform: 'Twitter',
-            url: 'https://twitter.com/gokulks',
-            icon: 'twitter',
-          ),
-          SocialLink(
             platform: 'LinkedIn',
-            url: 'https://linkedin.com/in/gokulks',
+            url: 'https://linkedin.com/in/gokul-k-s',
             icon: 'linkedin',
           ),
           SocialLink(
@@ -90,34 +85,20 @@ class PortfolioController extends GetxController {
   final experiences =
       <Experience>[
         Experience(
-          company: 'Tech Solutions Inc.',
-          position: 'Senior Flutter Developer',
-          duration: '2024 - Present',
-          description:
-              'Leading mobile app development projects using Flutter, implementing clean architecture patterns and mentoring junior developers.',
-          technologies: ['Flutter', 'Dart', 'Firebase', 'REST APIs', 'Git'],
-        ),
-        Experience(
-          company: 'Digital Innovations',
+          company: 'Sowedane IT Solutions Pvt.',
           position: 'Flutter Developer',
-          duration: '2022 - 2024',
+          duration: 'Oct 2022 – Oct 2025',
           description:
-              'Developed cross-platform mobile applications for various clients, focusing on user experience and performance optimization.',
-          technologies: [
-            'Flutter',
-            'Dart',
-            'SQLite',
-            'Provider',
-            'Material Design',
-          ],
+              'Collaborated with cross-functional teams to deliver user-focused designs using Figma, increasing app engagement by 30%. Integrated Firebase services for real-time data syncing, push notifications, and analytics. Delivered multiple projects on time, maintaining high client satisfaction rates.',
+          technologies: ['Flutter', 'Dart', 'Firebase', 'Figma', 'GetX', 'Bloc', 'REST APIs'],
         ),
         Experience(
-          company: 'StartupXYZ',
-          position: 'Junior Mobile Developer',
-          duration: '2021 - 2022',
+          company: 'Brototype – Kochi',
+          position: 'Flutter Developer Intern',
+          duration: 'Oct 2021 – Oct 2022',
           description:
-              'Started my journey in mobile development, learning Flutter and contributing to various app projects.',
-          technologies: ['Flutter', 'Dart', 'Firebase', 'Android Studio'],
+              'Transformed Figma prototypes into functional, visually appealing UIs. Spearheaded Google Maps integration for precise location tracking. Implemented GetX state management to streamline app navigation and reduce complexity.',
+          technologies: ['Flutter', 'Dart', 'GetX', 'Google Maps', 'Figma', 'Firebase'],
         ),
       ].obs;
 

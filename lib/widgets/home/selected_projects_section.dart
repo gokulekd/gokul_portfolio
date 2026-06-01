@@ -121,7 +121,7 @@ class SelectedProjectsSection extends StatelessWidget {
                             ),
                           ),
                           itemBuilder: (context, index) =>
-                              AppProjectCard(project: featuredProjects[index]),
+                              AppProjectCard(project: featuredProjects[index], index: index),
                         ),
 
                       const SizedBox(height: 60),
