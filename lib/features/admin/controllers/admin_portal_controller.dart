@@ -9,6 +9,8 @@ import '../../../models/firebase_content_models.dart';
 import '../../../models/portfolio_models.dart';
 import '../../../services/firebase_portfolio_service.dart';
 import '../models/admin_portal_models.dart';
+import '../modules/projects/models/app_project.dart';
+import '../modules/projects/services/supabase_projects_service.dart';
 import 'admin_auth_controller.dart';
 
 class AdminPortalController extends GetxController {
@@ -27,6 +29,9 @@ class AdminPortalController extends GetxController {
   final selectedSubmission = Rxn<VisitorSubmission>();
   final firestoreErrorMessage = RxnString();
   final firestoreProjectsLoaded = false.obs;
+
+  final _projectsService = SupabaseProjectsService();
+  final liveAppProjects = <AppProject>[].obs;
 
   StreamSubscription<List<SiteSectionConfig>>? _sectionsSubscription;
   StreamSubscription<List<ManagedSocialLink>>? _socialLinksSubscription;
@@ -317,6 +322,12 @@ class AdminPortalController extends GetxController {
     }, onError: _handleFirestoreError);
 
     _portfolioService.ensurePageConfigSeedData();
+    _loadAppProjects();
+  }
+
+  Future<void> _loadAppProjects() async {
+    final projects = await _projectsService.fetchProjects();
+    liveAppProjects.assignAll(projects);
   }
 
   void selectSubmission(VisitorSubmission submission) {
@@ -687,6 +698,42 @@ class AdminPortalController extends GetxController {
 
   Future<void> toggleProjectPublished(Project project, bool isPublished) async {
     await saveProject(project.copyWith(isPublished: isPublished));
+  }
+
+  Future<bool> saveAppProject(AppProject project) async {
+    try {
+      final saved = await _projectsService.saveProject(project);
+      if (saved == null) return false;
+      final index = liveAppProjects.indexWhere((p) => p.id == saved.id);
+      if (index != -1) {
+        liveAppProjects[index] = saved;
+      } else {
+        liveAppProjects.add(saved);
+      }
+      liveAppProjects.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+      liveAppProjects.refresh();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> deleteAppProject(AppProject project) async {
+    try {
+      final ok = await _projectsService.deleteProject(project.id);
+      if (ok) liveAppProjects.removeWhere((p) => p.id == project.id);
+      return ok;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> toggleAppProjectFeatured(AppProject project, bool value) async {
+    await saveAppProject(project.copyWith(isFeatured: value));
+  }
+
+  Future<void> toggleAppProjectPublished(AppProject project, bool value) async {
+    await saveAppProject(project.copyWith(isPublished: value));
   }
 
   Future<void> updateSectionVisibility(

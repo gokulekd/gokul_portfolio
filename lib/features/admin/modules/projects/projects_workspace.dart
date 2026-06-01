@@ -6,12 +6,11 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../config/app_colors.dart';
 import '../../../../core/supabase/supabase_bootstrap.dart';
 import '../../../../models/firebase_content_models.dart';
-import '../../../../models/portfolio_models.dart';
 import '../../../../services/supabase_storage_service.dart';
 import '../../controllers/admin_portal_controller.dart';
 import '../../models/admin_portal_models.dart';
 import '../../shared/admin_portal_components.dart';
-import '../../shared/preview_tile.dart';
+import 'models/app_project.dart';
 
 class ProjectsWorkspace extends StatelessWidget {
   const ProjectsWorkspace({
@@ -25,123 +24,115 @@ class ProjectsWorkspace extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final listPanel = AdminSurfaceCard(
+    return AdminSurfaceCard(
       child: Obx(
         () => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AdminSectionHeader(
-              eyebrow: 'PROJECT COLLECTION',
-              title: 'Featured projects from Firestore',
+              eyebrow: 'APP PROJECTS',
+              title: 'Your portfolio projects',
               description:
-                  'This module now reads and writes the real `projects` collection. Featured and published state control what the public portfolio shows.',
+                  'Projects are saved to Supabase. Add app name, description, icon, banner, store links, and website URL.',
               action: AdminPrimaryButton(
                 label: 'Add project',
-                onPressed:
-                    () => showProjectEditorDialog(
-                      context,
-                      controller: controller,
-                    ),
+                onPressed: () => showAppProjectEditorDialog(
+                  context,
+                  controller: controller,
+                ),
               ),
             ),
             const SizedBox(height: 18),
-            ...controller.projects.map(
-              (project) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: ProjectEditorRow(
-                  project: project,
-                  onEdit:
-                      () => showProjectEditorDialog(
-                        context,
-                        controller: controller,
-                        project: project,
-                      ),
-                  onDelete: () async {
-                    await controller.deleteProject(project);
-                    Get.snackbar(
-                      'Project removed',
-                      '${project.title} was deleted from Firestore.',
-                      backgroundColor: const Color(
-                        0xFFFF7C7C,
-                      ).withValues(alpha: 0.16),
-                      colorText: Colors.white,
-                    );
-                  },
-                  onFeatureToggle:
-                      (value) =>
-                          controller.toggleProjectFeatured(project, value),
-                  onPublishToggle:
-                      (value) =>
-                          controller.toggleProjectPublished(project, value),
+            if (controller.liveAppProjects.isEmpty)
+              const _EmptyProjectsState()
+            else
+              ...controller.liveAppProjects.map(
+                (project) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: AppProjectRow(
+                    project: project,
+                    onEdit: () => showAppProjectEditorDialog(
+                      context,
+                      controller: controller,
+                      project: project,
+                    ),
+                    onDelete: () async {
+                      final ok = await controller.deleteAppProject(project);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              ok
+                                  ? '${project.appName} was deleted.'
+                                  : 'Could not delete. Check Supabase config.',
+                              style: GoogleFonts.manrope(color: Colors.white),
+                            ),
+                            backgroundColor: (ok
+                                    ? const Color(0xFFFF7C7C)
+                                    : Colors.orange)
+                                .withValues(alpha: 0.85),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    onFeatureToggle: (value) =>
+                        controller.toggleAppProjectFeatured(project, value),
+                    onPublishToggle: (value) =>
+                        controller.toggleAppProjectPublished(project, value),
+                  ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyProjectsState extends StatelessWidget {
+  const _EmptyProjectsState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 48),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.apps_rounded,
+              size: 40,
+              color: Colors.white.withValues(alpha: 0.2),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'No projects yet',
+              style: GoogleFonts.manrope(
+                color: Colors.white60,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Add your first app project to show it on the portfolio.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.manrope(color: Colors.white38, fontSize: 13),
             ),
           ],
         ),
       ),
     );
-
-    final sidePanel = AdminSurfaceCard(
-      child: Obx(() {
-        final featuredCount =
-            controller.projects.where((project) => project.isFeatured).length;
-        final publishedCount =
-            controller.projects.where((project) => project.isPublished).length;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const AdminSectionHeader(
-              eyebrow: 'PROJECT STATUS',
-              title: 'Public portfolio output',
-              description:
-                  'These counts reflect the same project collection now used by the public site.',
-            ),
-            const SizedBox(height: 18),
-            PreviewTile(
-              title: 'Featured on homepage',
-              value: '$featuredCount project(s)',
-              icon: Icons.folder_special_rounded,
-              color: AppColors.primaryGreen,
-            ),
-            const SizedBox(height: 12),
-            PreviewTile(
-              title: 'Published to projects page',
-              value: '$publishedCount project(s)',
-              icon: Icons.public_rounded,
-              color: const Color(0xFF5CD6FF),
-            ),
-            const SizedBox(height: 12),
-            const PreviewTile(
-              title: 'Collection mode',
-              value: 'Live Firestore CRUD enabled',
-              icon: Icons.cloud_done_rounded,
-              color: Color(0xFFFFB44C),
-            ),
-          ],
-        );
-      }),
-    );
-
-    if (isCompact) {
-      return Column(
-        children: [listPanel, const SizedBox(height: 18), sidePanel],
-      );
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(flex: 8, child: listPanel),
-        const SizedBox(width: 18),
-        Expanded(flex: 4, child: sidePanel),
-      ],
-    );
   }
 }
 
-class ProjectEditorRow extends StatelessWidget {
-  const ProjectEditorRow({
+class AppProjectRow extends StatelessWidget {
+  const AppProjectRow({
     super.key,
     required this.project,
     required this.onEdit,
@@ -150,7 +141,7 @@ class ProjectEditorRow extends StatelessWidget {
     required this.onPublishToggle,
   });
 
-  final Project project;
+  final AppProject project;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final ValueChanged<bool> onFeatureToggle;
@@ -159,7 +150,7 @@ class ProjectEditorRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(22),
@@ -168,144 +159,142 @@ class ProjectEditorRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        Text(
-                          project.title,
-                          style: GoogleFonts.manrope(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        AdminStateChip(
-                          state:
-                              project.isPublished
-                                  ? AdminItemState.live
-                                  : AdminItemState.draft,
-                        ),
-                        if (project.isFeatured)
-                          const AdminStateChip(
-                            state: AdminItemState.live,
-                            label: 'Featured',
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      project.description,
-                      style: GoogleFonts.manrope(
-                        color: Colors.white60,
-                        fontSize: 12.5,
-                        height: 1.6,
-                      ),
-                    ),
-                  ],
+          // ── Banner (full size, no fixed height) ───────────────
+          if (project.appBannerUrl.isNotEmpty)
+            Image.network(
+              project.appBannerUrl,
+              width: double.infinity,
+              fit: BoxFit.fitWidth,
+              errorBuilder: (_, __, ___) => Container(
+                height: 160,
+                color: Colors.white.withValues(alpha: 0.04),
+                child: const Icon(Icons.image_not_supported_rounded, color: Colors.white24),
+              ),
+            )
+          else
+            Container(
+              height: 160,
+              width: double.infinity,
+              color: Colors.white.withValues(alpha: 0.04),
+              child: Icon(Icons.image_rounded, size: 36, color: Colors.white.withValues(alpha: 0.1)),
+            ),
+
+          // ── Icon + Name + Edit/Delete ──────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 12, 0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // App icon
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: project.appIconUrl.isNotEmpty
+                      ? Image.network(
+                          project.appIconUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.apps_rounded, color: Colors.white24),
+                        )
+                      : const Icon(Icons.apps_rounded, color: Colors.white24),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Column(
-                children: [
-                  IconButton(
-                    onPressed: onEdit,
-                    icon: const Icon(Icons.edit_rounded, color: Colors.white70),
+                const SizedBox(width: 12),
+                // Name + status chips
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        project.appName,
+                        style: GoogleFonts.manrope(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 6,
+                        children: [
+                          AdminStateChip(
+                            state: project.isPublished ? AdminItemState.live : AdminItemState.draft,
+                          ),
+                          if (project.isFeatured)
+                            const AdminStateChip(state: AdminItemState.live, label: 'Featured'),
+                        ],
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    onPressed: onDelete,
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      color: Colors.white54,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                ),
+                // Edit / Delete at the end
+                _IconChip(icon: Icons.edit_rounded, onTap: onEdit),
+                const SizedBox(width: 6),
+                _IconChip(icon: Icons.delete_outline_rounded, onTap: onDelete, destructive: true),
+              ],
+            ),
           ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _ProjectMetaPill(
-                label: project.category,
-                icon: Icons.category_rounded,
+
+          // ── Description ───────────────────────────────────────
+          if (project.appDescription.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              child: Text(
+                project.appDescription,
+                style: GoogleFonts.manrope(
+                  color: Colors.white54,
+                  fontSize: 12.5,
+                  height: 1.6,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
-              _ProjectMetaPill(
-                label: 'Order ${project.displayOrder}',
-                icon: Icons.swap_vert_rounded,
-              ),
-              _ProjectMetaPill(
-                label: '${project.technologies.length} stack item(s)',
-                icon: Icons.code_rounded,
-              ),
-            ],
+            ),
+
+          // ── Links ─────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (project.appWebsiteUrl.isNotEmpty)
+                  _ProjectLinkChip(label: 'Website', icon: Icons.language_rounded),
+                if (project.githubUrl != null && project.githubUrl!.isNotEmpty)
+                  _ProjectLinkChip(label: 'GitHub', icon: Icons.code_rounded, color: const Color(0xFFE6EDF3)),
+                if (project.playStoreUrl != null && project.playStoreUrl!.isNotEmpty)
+                  _ProjectLinkChip(label: 'Play Store', icon: Icons.shop_rounded, color: const Color(0xFF34A853)),
+                if (project.appStoreUrl != null && project.appStoreUrl!.isNotEmpty)
+                  _ProjectLinkChip(label: 'App Store', icon: Icons.apple_rounded, color: const Color(0xFF5CD6FF)),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Text(
-                'Featured',
-                style: GoogleFonts.manrope(color: Colors.white70),
-              ),
-              const SizedBox(width: 8),
-              Switch(
-                value: project.isFeatured,
-                onChanged: onFeatureToggle,
-                activeThumbColor: AppColors.primaryGreen,
-              ),
-              const SizedBox(width: 18),
-              Text(
-                'Published',
-                style: GoogleFonts.manrope(color: Colors.white70),
-              ),
-              const SizedBox(width: 8),
-              Switch(
-                value: project.isPublished,
-                onChanged: onPublishToggle,
-                activeThumbColor: AppColors.primaryGreen,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
 
-class _ProjectMetaPill extends StatelessWidget {
-  const _ProjectMetaPill({required this.label, required this.icon});
-
-  final String label;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: Colors.white70),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: GoogleFonts.manrope(
-              color: Colors.white70,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+          // ── Toggles ───────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+            child: Row(
+              children: [
+                Text('Featured', style: GoogleFonts.manrope(color: Colors.white54, fontSize: 13)),
+                const SizedBox(width: 6),
+                Switch(
+                  value: project.isFeatured,
+                  onChanged: onFeatureToggle,
+                  activeThumbColor: AppColors.primaryGreen,
+                ),
+                const SizedBox(width: 14),
+                Text('Published', style: GoogleFonts.manrope(color: Colors.white54, fontSize: 13)),
+                const SizedBox(width: 6),
+                Switch(
+                  value: project.isPublished,
+                  onChanged: onPublishToggle,
+                  activeThumbColor: AppColors.primaryGreen,
+                ),
+              ],
             ),
           ),
         ],
@@ -314,44 +303,139 @@ class _ProjectMetaPill extends StatelessWidget {
   }
 }
 
-Future<void> showProjectEditorDialog(
+class _IconChip extends StatelessWidget {
+  const _IconChip({
+    required this.icon,
+    required this.onTap,
+    this.destructive = false,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        ),
+        child: Icon(
+          icon,
+          size: 15,
+          color: destructive ? const Color(0xFFFF7C7C) : Colors.white70,
+        ),
+      ),
+    );
+  }
+}
+
+class _ProjectLinkChip extends StatelessWidget {
+  const _ProjectLinkChip({
+    required this.label,
+    required this.icon,
+    this.color = Colors.white54,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: GoogleFonts.manrope(
+              color: Colors.white70,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> showAppProjectEditorDialog(
   BuildContext context, {
   required AdminPortalController controller,
-  Project? project,
+  AppProject? project,
 }) async {
-  final titleController = TextEditingController(text: project?.title ?? '');
-  final descriptionController = TextEditingController(
-    text: project?.description ?? '',
-  );
-  final imageUrlController = TextEditingController(
-    text: project?.imageUrl ?? '',
-  );
-  final githubController = TextEditingController(
-    text: project?.githubUrl ?? '',
-  );
-  final liveUrlController = TextEditingController(text: project?.liveUrl ?? '');
-  final technologiesController = TextEditingController(
-    text: project?.technologies.join(', ') ?? '',
-  );
-  final categoryController = TextEditingController(
-    text: project?.category ?? 'Mobile App',
-  );
+  final nameController =
+      TextEditingController(text: project?.appName ?? '');
+  final descriptionController =
+      TextEditingController(text: project?.appDescription ?? '');
+  final websiteController =
+      TextEditingController(text: project?.appWebsiteUrl ?? '');
+  final playStoreController =
+      TextEditingController(text: project?.playStoreUrl ?? '');
+  final appStoreController =
+      TextEditingController(text: project?.appStoreUrl ?? '');
+  final iconUrlController =
+      TextEditingController(text: project?.appIconUrl ?? '');
+  final bannerUrlController =
+      TextEditingController(text: project?.appBannerUrl ?? '');
+  final githubController =
+      TextEditingController(text: project?.githubUrl ?? '');
   final orderController = TextEditingController(
-    text:
-        (project?.displayOrder ?? (controller.projects.length + 1)).toString(),
+    text: (project?.displayOrder ??
+            (controller.liveAppProjects.length + 1))
+        .toString(),
   );
 
   var isFeatured = project?.isFeatured ?? false;
   var isPublished = project?.isPublished ?? true;
-  var isUploadingImage = false;
+  var isUploadingIcon = false;
+  var isUploadingBanner = false;
+  var iconPreviewUrl = project?.appIconUrl ?? '';
+  var bannerPreviewUrl = project?.appBannerUrl ?? '';
 
-  Future<void> pickAndUploadImage(StateSetter setDlgState) async {
+  void showMsg(BuildContext ctx, String title, String body, Color color) {
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(
+        content: Text(
+          '$title — $body',
+          style: GoogleFonts.manrope(color: Colors.white),
+        ),
+        backgroundColor: color.withValues(alpha: 0.85),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+    );
+  }
+
+  Future<void> pickAndUpload(
+    BuildContext ctx,
+    StateSetter setDlgState,
+    TextEditingController urlController,
+    String folder, {
+    required void Function(bool) setUploading,
+    required void Function(String) setPreview,
+  }) async {
     if (!SupabaseBootstrap.isReady) {
-      Get.snackbar(
+      showMsg(
+        ctx,
         'Storage not configured',
-        'Add SUPABASE_URL and SUPABASE_ANON_KEY to enable image uploads.',
-        backgroundColor: Colors.orange.withValues(alpha: 0.16),
-        colorText: Colors.white,
+        'Add SUPABASE_URL and SUPABASE_ANON_KEY.',
+        Colors.orange,
       );
       return;
     }
@@ -366,18 +450,22 @@ Future<void> showProjectEditorDialog(
     final bytes = file.bytes;
     if (bytes == null) return;
 
-    setDlgState(() => isUploadingImage = true);
+    setDlgState(() => setUploading(true));
 
     final storage = Get.find<SupabaseStorageService>();
     final uploadResult = await storage.uploadFromBytes(
       bucket: SupabaseStorageService.mediaBucket,
-      folder: 'media/projects',
+      folder: 'media/$folder',
       fileName: file.name,
       bytes: bytes,
     );
 
     if (uploadResult != null) {
-      imageUrlController.text = uploadResult.url;
+      urlController.text = uploadResult.url;
+      setDlgState(() {
+        setUploading(false);
+        setPreview(uploadResult.url);
+      });
       final asset = MediaAssetRecord(
         id: '',
         name: file.name,
@@ -389,9 +477,17 @@ Future<void> showProjectEditorDialog(
         uploadedAt: DateTime.now(),
       );
       await controller.saveMediaAsset(asset);
+    } else {
+      setDlgState(() => setUploading(false));
+      if (ctx.mounted) {
+        showMsg(
+          ctx,
+          'Upload failed',
+          'Could not upload. Check Supabase storage config.',
+          Colors.red,
+        );
+      }
     }
-
-    setDlgState(() => isUploadingImage = false);
   }
 
   await showDialog<void>(
@@ -400,276 +496,378 @@ Future<void> showProjectEditorDialog(
       return StatefulBuilder(
         builder: (context, setState) {
           return Dialog(
-            backgroundColor: const Color(0xFF14171A),
-            insetPadding: const EdgeInsets.all(24),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
             ),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 760),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
+              constraints: const BoxConstraints(maxWidth: 900),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0E1114),
+                  borderRadius: BorderRadius.circular(32),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.07),
+                  ),
+                ),
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        project == null ? 'Add Project' : 'Edit Project',
-                        style: GoogleFonts.manrope(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
+                      // ── Banner upload zone ──────────────────────────────
+                      _BannerUploadZone(
+                        bannerPreviewUrl: bannerPreviewUrl,
+                        iconPreviewUrl: iconPreviewUrl,
+                        isUploading: isUploadingBanner,
+                        isUploadingIcon: isUploadingIcon,
+                        onUploadBanner: () => pickAndUpload(
+                          context,
+                          setState,
+                          bannerUrlController,
+                          'project-banners',
+                          setUploading: (v) => isUploadingBanner = v,
+                          setPreview: (url) => bannerPreviewUrl = url,
+                        ),
+                        onUploadIcon: () => pickAndUpload(
+                          context,
+                          setState,
+                          iconUrlController,
+                          'project-icons',
+                          setUploading: (v) => isUploadingIcon = v,
+                          setPreview: (url) => iconPreviewUrl = url,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'This writes directly to the Firestore `projects` collection.',
-                        style: GoogleFonts.manrope(
-                          color: Colors.white60,
-                          height: 1.6,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      _ProjectFormField(
-                        label: 'Title',
-                        controller: titleController,
-                      ),
-                      const SizedBox(height: 14),
-                      _ProjectFormField(
-                        label: 'Description',
-                        controller: descriptionController,
-                        maxLines: 4,
-                      ),
-                      const SizedBox(height: 14),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: _ProjectFormField(
-                              label: 'Image URL',
-                              controller: imageUrlController,
-                              hint: 'Paste URL or upload →',
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 2),
-                            child: SizedBox(
-                              height: 46,
-                              child: ElevatedButton.icon(
-                                onPressed:
-                                    isUploadingImage
-                                        ? null
-                                        : () => pickAndUploadImage(setState),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primaryGreen
-                                      .withValues(alpha: 0.16),
-                                  foregroundColor: AppColors.primaryGreen,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
+
+                      // ── Form fields ─────────────────────────────────────
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(28, 20, 28, 28),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title row
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    project == null
+                                        ? 'New Project'
+                                        : 'Edit Project',
+                                    style: GoogleFonts.manrope(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                  ),
-                                  elevation: 0,
                                 ),
-                                icon:
-                                    isUploadingImage
-                                        ? const SizedBox(
-                                          width: 14,
-                                          height: 14,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              AppColors.primaryGreen,
-                                            ),
-                                          ),
-                                        )
-                                        : const Icon(
-                                          Icons.upload_rounded,
-                                          size: 16,
+                                // Publish toggle pill
+                                GestureDetector(
+                                  onTap: () => setState(
+                                    () => isPublished = !isPublished,
+                                  ),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 7,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isPublished
+                                          ? AppColors.primaryGreen
+                                              .withValues(alpha: 0.15)
+                                          : Colors.white.withValues(alpha: 0.06),
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(
+                                        color: isPublished
+                                            ? AppColors.primaryGreen
+                                                .withValues(alpha: 0.4)
+                                            : Colors.white
+                                                .withValues(alpha: 0.1),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          isPublished
+                                              ? Icons.public_rounded
+                                              : Icons.public_off_rounded,
+                                          size: 13,
+                                          color: isPublished
+                                              ? AppColors.primaryGreen
+                                              : Colors.white38,
                                         ),
-                                label: Text(
-                                  isUploadingImage ? '' : 'Upload',
-                                  style: GoogleFonts.manrope(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 13,
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          isPublished ? 'Published' : 'Draft',
+                                          style: GoogleFonts.manrope(
+                                            color: isPublished
+                                                ? AppColors.primaryGreen
+                                                : Colors.white38,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
+                                const SizedBox(width: 10),
+                                // Featured toggle pill
+                                GestureDetector(
+                                  onTap: () => setState(
+                                    () => isFeatured = !isFeatured,
+                                  ),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 7,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isFeatured
+                                          ? const Color(0xFFFFB44C)
+                                              .withValues(alpha: 0.13)
+                                          : Colors.white.withValues(alpha: 0.06),
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(
+                                        color: isFeatured
+                                            ? const Color(0xFFFFB44C)
+                                                .withValues(alpha: 0.4)
+                                            : Colors.white
+                                                .withValues(alpha: 0.1),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.star_rounded,
+                                          size: 13,
+                                          color: isFeatured
+                                              ? const Color(0xFFFFB44C)
+                                              : Colors.white38,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Featured',
+                                          style: GoogleFonts.manrope(
+                                            color: isFeatured
+                                                ? const Color(0xFFFFB44C)
+                                                : Colors.white38,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            _AppProjectFormField(
+                              label: 'App Name',
+                              controller: nameController,
+                              hint: 'e.g. My Awesome App',
+                            ),
+                            const SizedBox(height: 14),
+                            _AppProjectFormField(
+                              label: 'Description',
+                              controller: descriptionController,
+                              maxLines: 6,
+                              hint:
+                                  'Briefly describe what your app does…',
+                            ),
+                            const SizedBox(height: 20),
+
+                            // ── Links section ─────────────────────────────
+                            _SectionDivider(label: 'Links'),
+                            const SizedBox(height: 14),
+                            _AppProjectFormField(
+                              label: 'Website URL',
+                              controller: websiteController,
+                              hint: 'https://yourapp.com',
+                              prefixIcon: Icons.language_rounded,
+                            ),
+                            const SizedBox(height: 12),
+                            _AppProjectFormField(
+                              label: 'GitHub Repo',
+                              controller: githubController,
+                              hint: 'https://github.com/you/repo',
+                              prefixIcon: Icons.code_rounded,
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _AppProjectFormField(
+                                    label: 'Play Store',
+                                    controller: playStoreController,
+                                    hint: 'play.google.com/...',
+                                    prefixIcon: Icons.shop_rounded,
+                                    prefixColor: const Color(0xFF34A853),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _AppProjectFormField(
+                                    label: 'App Store',
+                                    controller: appStoreController,
+                                    hint: 'apps.apple.com/...',
+                                    prefixIcon: Icons.apple_rounded,
+                                    prefixColor: const Color(0xFF5CD6FF),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+
+                            // ── Settings section ──────────────────────────
+                            _SectionDivider(label: 'Settings'),
+                            const SizedBox(height: 14),
+                            SizedBox(
+                              width: 140,
+                              child: _AppProjectFormField(
+                                label: 'Display Order',
+                                controller: orderController,
+                                keyboardType: TextInputType.number,
+                                prefixIcon: Icons.swap_vert_rounded,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      if (imageUrlController.text.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(14),
-                            child: Image.network(
-                              imageUrlController.text,
-                              height: 80,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder:
-                                  (_, __, ___) => const SizedBox.shrink(),
+                            const SizedBox(height: 28),
+
+                            // ── Actions ───────────────────────────────────
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: AdminGhostButton(
+                                    label: 'Cancel',
+                                    icon: Icons.close_rounded,
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 2,
+                                  child: AdminPrimaryButton(
+                                    label: project == null
+                                        ? 'Create project'
+                                        : 'Save changes',
+                                    icon: Icons.check_rounded,
+                                    onPressed: () async {
+                                      if (nameController.text
+                                          .trim()
+                                          .isEmpty) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'App name is required.',
+                                              style: GoogleFonts.manrope(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            backgroundColor: const Color(
+                                              0xFFFFB44C,
+                                            ).withValues(alpha: 0.85),
+                                            behavior:
+                                                SnackBarBehavior.floating,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      final savedProject = AppProject(
+                                        id: project?.id ?? '',
+                                        appName:
+                                            nameController.text.trim(),
+                                        appDescription:
+                                            descriptionController.text
+                                                .trim(),
+                                        appIconUrl:
+                                            iconUrlController.text.trim(),
+                                        appBannerUrl:
+                                            bannerUrlController.text.trim(),
+                                        appWebsiteUrl:
+                                            websiteController.text.trim(),
+                                        githubUrl: githubController.text
+                                                .trim()
+                                                .isEmpty
+                                            ? null
+                                            : githubController.text.trim(),
+                                        playStoreUrl: playStoreController
+                                                .text
+                                                .trim()
+                                                .isEmpty
+                                            ? null
+                                            : playStoreController.text
+                                                .trim(),
+                                        appStoreUrl: appStoreController
+                                                .text
+                                                .trim()
+                                                .isEmpty
+                                            ? null
+                                            : appStoreController.text
+                                                .trim(),
+                                        isFeatured: isFeatured,
+                                        isPublished: isPublished,
+                                        displayOrder: int.tryParse(
+                                              orderController.text.trim(),
+                                            ) ??
+                                            (project?.displayOrder ??
+                                                controller.liveAppProjects
+                                                        .length +
+                                                    1),
+                                        createdAt: project?.createdAt ??
+                                            DateTime.now(),
+                                      );
+
+                                      final ok = await controller
+                                          .saveAppProject(savedProject);
+
+                                      if (context.mounted) {
+                                        Navigator.of(context).pop();
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              ok
+                                                  ? '${savedProject.appName} was saved to Supabase.'
+                                                  : 'Could not save. Check Supabase config.',
+                                              style: GoogleFonts.manrope(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            backgroundColor: (ok
+                                                    ? AppColors.primaryGreen
+                                                    : Colors.orange)
+                                                .withValues(alpha: 0.85),
+                                            behavior:
+                                                SnackBarBehavior.floating,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                          ],
                         ),
-                      const SizedBox(height: 14),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _ProjectFormField(
-                              label: 'GitHub URL',
-                              controller: githubController,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: _ProjectFormField(
-                              label: 'Live URL',
-                              controller: liveUrlController,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _ProjectFormField(
-                              label: 'Category',
-                              controller: categoryController,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: _ProjectFormField(
-                              label: 'Display Order',
-                              controller: orderController,
-                              keyboardType: TextInputType.number,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      _ProjectFormField(
-                        label: 'Technologies (comma separated)',
-                        controller: technologiesController,
-                      ),
-                      const SizedBox(height: 18),
-                      Row(
-                        children: [
-                          Text(
-                            'Featured',
-                            style: GoogleFonts.manrope(color: Colors.white70),
-                          ),
-                          const SizedBox(width: 8),
-                          Switch(
-                            value: isFeatured,
-                            onChanged:
-                                (value) => setState(() => isFeatured = value),
-                            activeThumbColor: AppColors.primaryGreen,
-                          ),
-                          const SizedBox(width: 18),
-                          Text(
-                            'Published',
-                            style: GoogleFonts.manrope(color: Colors.white70),
-                          ),
-                          const SizedBox(width: 8),
-                          Switch(
-                            value: isPublished,
-                            onChanged:
-                                (value) => setState(() => isPublished = value),
-                            activeThumbColor: AppColors.primaryGreen,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 22),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: AdminGhostButton(
-                              label: 'Cancel',
-                              icon: Icons.close_rounded,
-                              onPressed: () => Navigator.of(context).pop(),
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: AdminPrimaryButton(
-                              label: project == null ? 'Create' : 'Save',
-                              icon: Icons.check_rounded,
-                              onPressed: () async {
-                                if (titleController.text.trim().isEmpty ||
-                                    descriptionController.text.trim().isEmpty) {
-                                  Get.snackbar(
-                                    'Missing fields',
-                                    'Title and description are required.',
-                                    backgroundColor: const Color(
-                                      0xFFFFB44C,
-                                    ).withValues(alpha: 0.16),
-                                    colorText: Colors.white,
-                                  );
-                                  return;
-                                }
-
-                                final savedProject = Project(
-                                  id: project?.id ?? '',
-                                  title: titleController.text.trim(),
-                                  description:
-                                      descriptionController.text.trim(),
-                                  imageUrl: imageUrlController.text.trim(),
-                                  technologies: technologiesController.text
-                                      .split(',')
-                                      .map((item) => item.trim())
-                                      .where((item) => item.isNotEmpty)
-                                      .toList(growable: false),
-                                  githubUrl:
-                                      githubController.text.trim().isEmpty
-                                          ? null
-                                          : githubController.text.trim(),
-                                  liveUrl:
-                                      liveUrlController.text.trim().isEmpty
-                                          ? null
-                                          : liveUrlController.text.trim(),
-                                  category:
-                                      categoryController.text.trim().isEmpty
-                                          ? 'Mobile App'
-                                          : categoryController.text.trim(),
-                                  isFeatured: isFeatured,
-                                  isPublished: isPublished,
-                                  displayOrder:
-                                      int.tryParse(
-                                        orderController.text.trim(),
-                                      ) ??
-                                      (project?.displayOrder ??
-                                          controller.projects.length + 1),
-                                  stars: project?.stars ?? 0,
-                                  forks: project?.forks ?? 0,
-                                );
-
-                                await controller.saveProject(savedProject);
-                                if (context.mounted) {
-                                  Navigator.of(context).pop();
-                                }
-
-                                Get.snackbar(
-                                  project == null
-                                      ? 'Project created'
-                                      : 'Project updated',
-                                  '${savedProject.title} was saved to Firestore.',
-                                  backgroundColor: AppColors.primaryGreen
-                                      .withValues(alpha: 0.16),
-                                  colorText: Colors.white,
-                                );
-                              },
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
@@ -683,13 +881,334 @@ Future<void> showProjectEditorDialog(
   );
 }
 
-class _ProjectFormField extends StatelessWidget {
-  const _ProjectFormField({
+class _BannerUploadZone extends StatelessWidget {
+  const _BannerUploadZone({
+    required this.bannerPreviewUrl,
+    required this.iconPreviewUrl,
+    required this.isUploading,
+    required this.isUploadingIcon,
+    required this.onUploadBanner,
+    required this.onUploadIcon,
+  });
+
+  final String bannerPreviewUrl;
+  final String iconPreviewUrl;
+  final bool isUploading;
+  final bool isUploadingIcon;
+  final VoidCallback onUploadBanner;
+  final VoidCallback onUploadIcon;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasBanner = bannerPreviewUrl.isNotEmpty;
+    final hasIcon = iconPreviewUrl.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Banner
+        GestureDetector(
+          onTap: isUploading ? null : onUploadBanner,
+          child: Container(
+            height: 420,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.04),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(32),
+              ),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: hasBanner
+                ? Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.network(
+                        bannerPreviewUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            _BannerPlaceholder(isUploading: isUploading),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.55),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 10,
+                        right: 12,
+                        child: _UploadChip(
+                          label: 'Change banner',
+                          isUploading: isUploading,
+                        ),
+                      ),
+                    ],
+                  )
+                : _BannerPlaceholder(isUploading: isUploading),
+          ),
+        ),
+
+        // App icon row below the banner
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: isUploadingIcon ? null : onUploadIcon,
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1D21),
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          width: 1.5,
+                        ),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: hasIcon
+                          ? Image.network(
+                              iconPreviewUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  _IconPlaceholder(isUploading: isUploadingIcon),
+                            )
+                          : _IconPlaceholder(isUploading: isUploadingIcon),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: isUploadingIcon
+                              ? Colors.black54
+                              : AppColors.primaryGreen,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF0E1114),
+                            width: 2,
+                          ),
+                        ),
+                        child: isUploadingIcon
+                            ? const Padding(
+                                padding: EdgeInsets.all(4),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1.5,
+                                  valueColor: AlwaysStoppedAnimation(
+                                    AppColors.primaryGreen,
+                                  ),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.camera_alt_rounded,
+                                size: 11,
+                                color: Colors.black,
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'App Icon',
+                    style: GoogleFonts.manrope(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'Tap icon to upload · 512 × 512 recommended',
+                    style: GoogleFonts.manrope(
+                      color: Colors.white38,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BannerPlaceholder extends StatelessWidget {
+  const _BannerPlaceholder({required this.isUploading});
+  final bool isUploading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (isUploading)
+          const SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation(AppColors.primaryGreen),
+            ),
+          )
+        else ...[
+          Icon(
+            Icons.add_photo_alternate_rounded,
+            size: 30,
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Click to upload banner',
+            style: GoogleFonts.manrope(
+              color: Colors.white30,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text(
+            'Recommended: 1200 × 630',
+            style: GoogleFonts.manrope(
+              color: Colors.white.withValues(alpha: 0.2),
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _IconPlaceholder extends StatelessWidget {
+  const _IconPlaceholder({required this.isUploading});
+  final bool isUploading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: isUploading
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation(AppColors.primaryGreen),
+              ),
+            )
+          : Icon(
+              Icons.apps_rounded,
+              size: 28,
+              color: Colors.white.withValues(alpha: 0.2),
+            ),
+    );
+  }
+}
+
+class _UploadChip extends StatelessWidget {
+  const _UploadChip({required this.label, required this.isUploading});
+  final String label;
+  final bool isUploading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(999),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.15)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isUploading)
+            const SizedBox(
+              width: 10,
+              height: 10,
+              child: CircularProgressIndicator(
+                strokeWidth: 1.5,
+                valueColor:
+                    AlwaysStoppedAnimation(AppColors.primaryGreen),
+              ),
+            )
+          else
+            const Icon(
+              Icons.upload_rounded,
+              size: 12,
+              color: Colors.white70,
+            ),
+          const SizedBox(width: 6),
+          Text(
+            isUploading ? 'Uploading…' : label,
+            style: GoogleFonts.manrope(
+              color: Colors.white70,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionDivider extends StatelessWidget {
+  const _SectionDivider({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: GoogleFonts.manrope(
+            color: Colors.white30,
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Divider(
+            color: Colors.white.withValues(alpha: 0.07),
+            height: 1,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AppProjectFormField extends StatelessWidget {
+  const _AppProjectFormField({
     required this.label,
     required this.controller,
     this.maxLines = 1,
     this.keyboardType,
     this.hint,
+    this.prefixIcon,
+    this.prefixColor = Colors.white38,
   });
 
   final String label;
@@ -697,6 +1216,8 @@ class _ProjectFormField extends StatelessWidget {
   final int maxLines;
   final TextInputType? keyboardType;
   final String? hint;
+  final IconData? prefixIcon;
+  final Color prefixColor;
 
   @override
   Widget build(BuildContext context) {
@@ -706,26 +1227,40 @@ class _ProjectFormField extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.manrope(
-            color: Colors.white70,
+            color: Colors.white54,
             fontWeight: FontWeight.w700,
-            fontSize: 12,
+            fontSize: 11,
+            letterSpacing: 0.4,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 7),
         TextField(
           controller: controller,
           maxLines: maxLines,
           keyboardType: keyboardType,
-          style: GoogleFonts.manrope(color: Colors.white),
+          style: GoogleFonts.manrope(color: Colors.white, fontSize: 14),
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.04),
+            fillColor: Colors.white.withValues(alpha: 0.05),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
             ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: AppColors.primaryGreen.withValues(alpha: 0.5),
+              ),
+            ),
             hintText: hint,
-            hintStyle: GoogleFonts.manrope(color: Colors.white38),
+            hintStyle: GoogleFonts.manrope(color: Colors.white24, fontSize: 13),
+            prefixIcon: prefixIcon != null
+                ? Icon(prefixIcon, size: 16, color: prefixColor)
+                : null,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
           ),
         ),
       ],

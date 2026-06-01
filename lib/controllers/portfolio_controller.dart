@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../features/admin/modules/projects/models/app_project.dart';
+import '../features/admin/modules/projects/services/supabase_projects_service.dart';
 import '../models/firebase_content_models.dart';
 import '../models/portfolio_models.dart';
 import '../services/devto_service.dart';
@@ -22,6 +24,9 @@ class PortfolioController extends GetxController {
   StreamSubscription<ResumeConfig?>? _resumeSubscription;
   bool _hasFirestoreProjects = false;
   bool _hasBasicDetails = false;
+
+  final _supabaseProjectsService = SupabaseProjectsService();
+  final appProjects = <AppProject>[].obs;
 
   final resumeConfig = Rxn<ResumeConfig>();
 
@@ -200,6 +205,8 @@ class PortfolioController extends GetxController {
 
           _applyManagedSocialLinks(links);
         });
+
+    _loadAppProjects();
 
     _projectsSubscription = _firebasePortfolioService.streamProjects().listen((
       liveProjects,
@@ -409,6 +416,17 @@ class PortfolioController extends GetxController {
   }
 
   // ─── Filter helpers ────────────────────────────────────────────────────────
+  Future<void> _loadAppProjects() async {
+    final list = await _supabaseProjectsService.fetchProjects();
+    appProjects.assignAll(list);
+  }
+
+  List<AppProject> get publishedAppProjects =>
+      appProjects.where((p) => p.isPublished).toList();
+
+  List<AppProject> get featuredAppProjects =>
+      publishedAppProjects.where((p) => p.isFeatured).toList();
+
   List<Project> get publishedProjects =>
       projects.where((project) => project.isPublished).toList(growable: false)
         ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));

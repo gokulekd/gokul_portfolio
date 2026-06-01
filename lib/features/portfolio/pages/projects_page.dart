@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../config/app_colors.dart';
 import '../../../controllers/portfolio_controller.dart';
+import '../../../features/admin/modules/projects/models/app_project.dart';
 import '../../../models/portfolio_models.dart';
 import '../../../utils/responsive_helper.dart';
 import '../../../widgets/shared/custom_widgets.dart';
@@ -509,7 +511,6 @@ class _AllProjectsSection extends StatefulWidget {
 }
 
 class _AllProjectsSectionState extends State<_AllProjectsSection> {
-  String _selected = 'All';
 
   @override
   Widget build(BuildContext context) {
@@ -520,11 +521,8 @@ class _AllProjectsSectionState extends State<_AllProjectsSection> {
     final hPad = isMobile ? 20.0 : isTablet ? 48.0 : 88.0;
 
     return Obx(() {
-      final all = controller.publishedProjects;
-      final categories = ['All', ...{...all.map((p) => p.category)}];
-      final filtered = _selected == 'All'
-          ? all
-          : all.where((p) => p.category == _selected).toList();
+      final all = controller.publishedAppProjects;
+      final filtered = all;
 
       return Padding(
         padding: EdgeInsets.fromLTRB(hPad, isMobile ? 56 : 88, hPad, 0),
@@ -565,44 +563,6 @@ class _AllProjectsSectionState extends State<_AllProjectsSection> {
             ),
             const SizedBox(height: 28),
 
-            // Category filter tabs
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: categories.map((cat) {
-                  final active = cat == _selected;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selected = cat),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: active
-                              ? AppColors.primaryGreen
-                              : colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: Text(
-                          cat,
-                          style: GoogleFonts.manrope(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: active ? Colors.black : colorScheme.onSurface.withValues(alpha: 0.6),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: 36),
-
             // Projects grid
             if (filtered.isEmpty)
               Padding(
@@ -629,7 +589,7 @@ class _AllProjectsSectionState extends State<_AllProjectsSection> {
                     runSpacing: spacing,
                     children: filtered.map((project) => SizedBox(
                       width: cardWidth,
-                      child: _ProjectGridCard(project: project),
+                      child: _AppProjectGridCard(project: project),
                     )).toList(),
                   );
                 },
@@ -641,14 +601,18 @@ class _AllProjectsSectionState extends State<_AllProjectsSection> {
   }
 }
 
-class _ProjectGridCard extends StatelessWidget {
-  final Project project;
+class _AppProjectGridCard extends StatelessWidget {
+  final AppProject project;
 
-  const _ProjectGridCard({required this.project});
+  const _AppProjectGridCard({required this.project});
+
+  Future<void> _launch(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -665,117 +629,114 @@ class _ProjectGridCard extends StatelessWidget {
           ),
         ],
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: project.imageUrl.isNotEmpty
-                  ? Image.network(
-                      project.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _ImagePlaceholder(colorScheme: colorScheme),
-                    )
-                  : _ImagePlaceholder(colorScheme: colorScheme),
-            ),
-          ),
+          // Banner
+          if (project.appBannerUrl.isNotEmpty)
+            Image.network(
+              project.appBannerUrl,
+              width: double.infinity,
+              fit: BoxFit.fitWidth,
+              errorBuilder: (_, __, ___) =>
+                  _ImagePlaceholder(colorScheme: colorScheme),
+            )
+          else
+            _ImagePlaceholder(colorScheme: colorScheme),
 
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Category
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryGreen.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    project.category,
-                    style: GoogleFonts.manrope(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.darkGreen,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Title
-                Text(
-                  project.title,
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
-                    letterSpacing: -0.3,
-                    height: 1.25,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-
-                // Description
-                Text(
-                  project.description,
-                  style: GoogleFonts.manrope(
-                    fontSize: 13,
-                    color: colorScheme.onSurface.withValues(alpha: 0.55),
-                    height: 1.6,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 14),
-
-                // Tech chips
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: project.technologies.take(3).map((tech) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      tech,
-                      style: GoogleFonts.manrope(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  )).toList(),
-                ),
-                const SizedBox(height: 16),
-
-                // Buttons
+                // Icon + Name
                 Row(
                   children: [
-                    if (project.githubUrl != null)
+                    if (project.appIconUrl.isNotEmpty)
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: colorScheme.surfaceContainerHighest,
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Image.network(
+                          project.appIconUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const SizedBox(),
+                        ),
+                      ),
+                    if (project.appIconUrl.isNotEmpty)
+                      const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        project.appName,
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                          letterSpacing: -0.3,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                if (project.appDescription.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    project.appDescription,
+                    style: GoogleFonts.manrope(
+                      fontSize: 13,
+                      color: colorScheme.onSurface.withValues(alpha: 0.55),
+                      height: 1.6,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                const SizedBox(height: 14),
+                // Store / link buttons
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (project.playStoreUrl != null &&
+                        project.playStoreUrl!.isNotEmpty)
                       _ActionBtn(
-                        icon: FontAwesomeIcons.github,
-                        label: 'Code',
-                        onTap: () => controller.launchUrlFromString(project.githubUrl!),
+                        icon: Icons.shop_rounded,
+                        label: 'Play Store',
+                        onTap: () => _launch(project.playStoreUrl!),
                         colorScheme: colorScheme,
                       ),
-                    if (project.githubUrl != null && project.liveUrl != null)
-                      const SizedBox(width: 10),
-                    if (project.liveUrl != null)
+                    if (project.appStoreUrl != null &&
+                        project.appStoreUrl!.isNotEmpty)
                       _ActionBtn(
-                        icon: Icons.open_in_new,
-                        label: 'Live',
-                        onTap: () => controller.launchUrlFromString(project.liveUrl!),
+                        icon: Icons.apple_rounded,
+                        label: 'App Store',
+                        onTap: () => _launch(project.appStoreUrl!),
+                        colorScheme: colorScheme,
+                      ),
+                    if (project.appWebsiteUrl.isNotEmpty)
+                      _ActionBtn(
+                        icon: Icons.language_rounded,
+                        label: 'Website',
+                        onTap: () => _launch(project.appWebsiteUrl),
                         colorScheme: colorScheme,
                         filled: true,
+                      ),
+                    if (project.githubUrl != null &&
+                        project.githubUrl!.isNotEmpty)
+                      _ActionBtn(
+                        icon: Icons.code_rounded,
+                        label: 'GitHub',
+                        onTap: () => _launch(project.githubUrl!),
+                        colorScheme: colorScheme,
                       ),
                   ],
                 ),

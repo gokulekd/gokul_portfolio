@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../controllers/portfolio_controller.dart';
+import '../../features/admin/modules/projects/models/app_project.dart';
 import '../../routes/app_routes.dart';
 import '../../utils/responsive_helper.dart';
-import '../shared/custom_widgets.dart';
 
 class FeaturedProjectsSection extends StatelessWidget {
   const FeaturedProjectsSection({super.key});
@@ -132,25 +133,21 @@ class FeaturedProjectsSection extends StatelessWidget {
                     : 60,
           ),
 
-          // Display first 2 projects as featured
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 2, // Show only 2
-            itemBuilder: (context, index) {
-              if (index >= controller.projects.length)
-                return const SizedBox.shrink();
-              final project = controller.projects[index];
-              return ProjectCard(
-                title: project.title,
-                description: project.description,
-                imageUrl: project.imageUrl,
-                technologies: project.technologies,
-                githubUrl: project.githubUrl,
-                liveUrl: project.liveUrl,
-              );
-            },
-          ),
+          // Featured AppProjects from Supabase
+          Obx(() {
+            final featured = controller.featuredAppProjects;
+            if (featured.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: featured.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 32),
+              itemBuilder: (context, index) =>
+                  AppProjectCard(project: featured[index]),
+            );
+          }),
 
           SizedBox(height: isMobile ? 24 : 40),
 
@@ -181,6 +178,196 @@ class FeaturedProjectsSection extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── AppProject Card for public portfolio ──────────────────────────────────
+
+class AppProjectCard extends StatelessWidget {
+  const AppProjectCard({super.key, required this.project});
+  final AppProject project;
+
+  Future<void> _launch(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Banner
+          if (project.appBannerUrl.isNotEmpty)
+            Image.network(
+              project.appBannerUrl,
+              width: double.infinity,
+              fit: BoxFit.fitWidth,
+              errorBuilder: (_, __, ___) => Container(
+                height: 200,
+                color: Colors.grey.shade900,
+              ),
+            )
+          else
+            Container(
+              height: 200,
+              color: Colors.grey.shade900,
+            ),
+
+          // Icon + Name + description
+          Padding(
+            padding: EdgeInsets.all(isMobile ? 16 : 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // App icon
+                    if (project.appIconUrl.isNotEmpty)
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Image.network(
+                          project.appIconUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const SizedBox(),
+                        ),
+                      ),
+                    if (project.appIconUrl.isNotEmpty) const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        project.appName,
+                        style: GoogleFonts.manrope(
+                          color: Colors.white,
+                          fontSize: isMobile ? 20 : 24,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (project.appDescription.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    project.appDescription,
+                    style: GoogleFonts.manrope(
+                      color: Colors.white60,
+                      fontSize: 14,
+                      height: 1.7,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 20),
+                // Store / link buttons
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    if (project.playStoreUrl != null &&
+                        project.playStoreUrl!.isNotEmpty)
+                      _StoreButton(
+                        label: 'Play Store',
+                        icon: Icons.shop_rounded,
+                        color: const Color(0xFF34A853),
+                        onTap: () => _launch(project.playStoreUrl!),
+                      ),
+                    if (project.appStoreUrl != null &&
+                        project.appStoreUrl!.isNotEmpty)
+                      _StoreButton(
+                        label: 'App Store',
+                        icon: Icons.apple_rounded,
+                        color: Colors.white,
+                        onTap: () => _launch(project.appStoreUrl!),
+                      ),
+                    if (project.appWebsiteUrl.isNotEmpty)
+                      _StoreButton(
+                        label: 'Website',
+                        icon: Icons.language_rounded,
+                        color: Colors.white70,
+                        onTap: () => _launch(project.appWebsiteUrl),
+                      ),
+                    if (project.githubUrl != null &&
+                        project.githubUrl!.isNotEmpty)
+                      _StoreButton(
+                        label: 'GitHub',
+                        icon: Icons.code_rounded,
+                        color: Colors.white70,
+                        onTap: () => _launch(project.githubUrl!),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StoreButton extends StatelessWidget {
+  const _StoreButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 15, color: color),
+            const SizedBox(width: 7),
+            Text(
+              label,
+              style: GoogleFonts.manrope(
+                color: color,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

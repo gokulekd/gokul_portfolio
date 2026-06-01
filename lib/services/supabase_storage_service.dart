@@ -28,7 +28,9 @@ class SupabaseStorageService {
         fileOptions: FileOptions(contentType: contentType, upsert: true),
       );
       return _client.storage.from(bucket).getPublicUrl(path);
-    } catch (_) {
+    } catch (e) {
+      // ignore: avoid_print
+      print('[SupabaseStorage] uploadFile failed — bucket: $bucket, path: $path, error: $e');
       return null;
     }
   }
