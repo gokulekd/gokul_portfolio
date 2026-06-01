@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -7,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../config/app_colors.dart';
 import '../../../controllers/portfolio_controller.dart';
 import '../../../features/admin/modules/projects/models/app_project.dart';
-import '../../../models/portfolio_models.dart';
+import '../../../widgets/projects/featured_projects_section.dart';
 import '../../../utils/responsive_helper.dart';
 import '../../../widgets/shared/custom_widgets.dart';
 import '../../../widgets/shared/footer_section.dart';
@@ -236,14 +235,14 @@ class _FeaturedProjectsSection extends StatelessWidget {
     final hPad = isMobile ? 20.0 : isTablet ? 48.0 : 88.0;
 
     return Obx(() {
-      final featured = controller.featuredProjects;
+      final featured = controller.featuredAppProjects;
+      if (featured.isEmpty) return const SizedBox.shrink();
 
       return Padding(
         padding: EdgeInsets.fromLTRB(hPad, isMobile ? 48 : 80, hPad, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section label
             Row(
               children: [
                 Text(
@@ -285,66 +284,37 @@ class _FeaturedProjectsSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 52),
-
-            if (featured.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: Center(
-                  child: Text(
-                    'Featured projects will appear here once published.',
-                    style: GoogleFonts.manrope(
-                      fontSize: 16,
-                      color: colorScheme.onSurface.withValues(alpha: 0.5),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              )
-            else
-              ...featured.take(3).toList().asMap().entries.map((entry) {
-                final index = entry.key;
-                final project = entry.value;
-                return Column(
-                  children: [
-                    _FeaturedCard(project: project, isReversed: index.isOdd),
-                    if (index < featured.take(3).length - 1)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 60),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Divider(
-                                color: colorScheme.surfaceContainerHighest,
-                                thickness: 1,
+            ...featured.asMap().entries.map((entry) {
+              final index = entry.key;
+              final project = entry.value;
+              return Column(
+                children: [
+                  AppProjectCard(project: project),
+                  if (index < featured.length - 1)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 48),
+                      child: Row(
+                        children: [
+                          Expanded(child: Divider(color: colorScheme.surfaceContainerHighest)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Container(
+                              width: 10,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: colorScheme.surface,
+                                border: Border.all(color: AppColors.primaryGreen, width: 2),
+                                shape: BoxShape.circle,
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: colorScheme.surface,
-                                  border: Border.all(
-                                    color: AppColors.primaryGreen,
-                                    width: 2,
-                                  ),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Divider(
-                                color: colorScheme.surfaceContainerHighest,
-                                thickness: 1,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                          Expanded(child: Divider(color: colorScheme.surfaceContainerHighest)),
+                        ],
                       ),
-                  ],
-                );
-              }),
+                    ),
+                ],
+              );
+            }),
           ],
         ),
       );
@@ -352,152 +322,6 @@ class _FeaturedProjectsSection extends StatelessWidget {
   }
 }
 
-class _FeaturedCard extends StatelessWidget {
-  final Project project;
-  final bool isReversed;
-
-  const _FeaturedCard({required this.project, this.isReversed = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
-    final isMobile = ResponsiveHelper.isMobile(context);
-    final isTablet = ResponsiveHelper.isTablet(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final compact = isMobile || isTablet;
-
-    final image = _ProjectImage(imageUrl: project.imageUrl);
-
-    final content = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Category badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          decoration: BoxDecoration(
-            color: AppColors.primaryGreen.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppColors.primaryGreen.withValues(alpha: 0.3),
-            ),
-          ),
-          child: Text(
-            project.category,
-            style: GoogleFonts.manrope(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.darkGreen,
-              letterSpacing: 0.4,
-            ),
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        // Title
-        Text(
-          project.title,
-          style: GoogleFonts.inter(
-            fontSize: isMobile ? 24 : 30,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-            height: 1.2,
-            letterSpacing: -0.5,
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        // Description card
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colorScheme.surfaceContainerHighest),
-          ),
-          child: Text(
-            project.description,
-            style: GoogleFonts.manrope(
-              fontSize: 15,
-              color: colorScheme.onSurface.withValues(alpha: 0.6),
-              height: 1.7,
-            ),
-            maxLines: 4,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // Tech chips
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: project.technologies.take(5).map((tech) => Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              tech,
-              style: GoogleFonts.manrope(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
-              ),
-            ),
-          )).toList(),
-        ),
-        const SizedBox(height: 24),
-
-        // Action buttons
-        Row(
-          children: [
-            if (project.githubUrl != null)
-              _ActionBtn(
-                icon: FontAwesomeIcons.github,
-                label: 'View Code',
-                onTap: () => controller.launchUrlFromString(project.githubUrl!),
-                colorScheme: colorScheme,
-              ),
-            if (project.githubUrl != null && project.liveUrl != null)
-              const SizedBox(width: 12),
-            if (project.liveUrl != null)
-              _ActionBtn(
-                icon: Icons.open_in_new,
-                label: 'Live Demo',
-                onTap: () => controller.launchUrlFromString(project.liveUrl!),
-                colorScheme: colorScheme,
-                filled: true,
-              ),
-          ],
-        ),
-      ],
-    );
-
-    if (compact) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [image, const SizedBox(height: 28), content],
-      );
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: isReversed
-          ? [
-              Expanded(flex: 5, child: content),
-              const SizedBox(width: 52),
-              Expanded(flex: 6, child: image),
-            ]
-          : [
-              Expanded(flex: 6, child: image),
-              const SizedBox(width: 52),
-              Expanded(flex: 5, child: content),
-            ],
-    );
-  }
-}
 
 // ─────────────────────────────────────────────
 // 3. All Projects Grid
@@ -871,43 +695,6 @@ class _ProjectsCTASection extends StatelessWidget {
 // ─────────────────────────────────────────────
 // Shared helpers
 // ─────────────────────────────────────────────
-
-class _ProjectImage extends StatelessWidget {
-  final String imageUrl;
-
-  const _ProjectImage({required this.imageUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryGreen.withValues(alpha: 0.12),
-            blurRadius: 40,
-            offset: const Offset(0, 20),
-            spreadRadius: -10,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: AspectRatio(
-          aspectRatio: 16 / 9,
-          child: imageUrl.isNotEmpty
-              ? Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _ImagePlaceholder(colorScheme: colorScheme),
-                )
-              : _ImagePlaceholder(colorScheme: colorScheme),
-        ),
-      ),
-    );
-  }
-}
 
 class _ImagePlaceholder extends StatelessWidget {
   final ColorScheme colorScheme;

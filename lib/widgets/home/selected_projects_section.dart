@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -9,6 +8,7 @@ import '../../config/app_colors.dart';
 import '../../controllers/portfolio_controller.dart';
 import '../../routes/app_routes.dart';
 import '../../utils/responsive_helper.dart';
+import '../projects/featured_projects_section.dart';
 
 class SelectedProjectsSection extends StatelessWidget {
   const SelectedProjectsSection({super.key});
@@ -20,7 +20,7 @@ class SelectedProjectsSection extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Obx(() {
-      final featuredProjects = controller.featuredProjects;
+      final featuredProjects = controller.featuredAppProjects;
 
       return Container(
         width: double.infinity,
@@ -98,63 +98,30 @@ class SelectedProjectsSection extends StatelessWidget {
                         ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: math.min(featuredProjects.length, 2),
-                          separatorBuilder:
-                              (context, index) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 60,
+                          itemCount: featuredProjects.length,
+                          separatorBuilder: (context, index) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 48),
+                            child: Row(
+                              children: [
+                                Expanded(child: Divider(color: colorScheme.surfaceContainerHighest, thickness: 1)),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  child: Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.surface,
+                                      border: Border.all(color: AppColors.primaryGreen, width: 2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
                                 ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Divider(
-                                        color:
-                                            colorScheme.surfaceContainerHighest,
-                                        thickness: 1,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                      ),
-                                      child: Container(
-                                        width: 12,
-                                        height: 12,
-                                        decoration: BoxDecoration(
-                                          color: colorScheme.surface,
-                                          border: Border.all(
-                                            color: AppColors.primaryGreen,
-                                            width: 2,
-                                          ),
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Divider(
-                                        color:
-                                            colorScheme.surfaceContainerHighest,
-                                        thickness: 1,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          itemBuilder: (context, index) {
-                            if (index >= featuredProjects.length) {
-                              return const SizedBox.shrink();
-                            }
-                            final project = featuredProjects[index];
-                            return _FeaturedProjectCard(
-                              title: project.title,
-                              description: project.description,
-                              imageUrl: project.imageUrl,
-                              technologies: project.technologies,
-                              githubUrl: project.githubUrl,
-                              liveUrl: project.liveUrl,
-                              isReversed: index % 2 != 0,
-                            );
-                          },
+                                Expanded(child: Divider(color: colorScheme.surfaceContainerHighest, thickness: 1)),
+                              ],
+                            ),
+                          ),
+                          itemBuilder: (context, index) =>
+                              AppProjectCard(project: featuredProjects[index]),
                         ),
 
                       const SizedBox(height: 60),
@@ -209,221 +176,6 @@ class SelectedProjectsSection extends StatelessWidget {
   }
 }
 
-class _FeaturedProjectCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final String imageUrl;
-  final List<String> technologies;
-  final String? githubUrl;
-  final String? liveUrl;
-  final bool isReversed;
-
-  const _FeaturedProjectCard({
-    required this.title,
-    required this.description,
-    required this.imageUrl,
-    required this.technologies,
-    this.githubUrl,
-    this.liveUrl,
-    this.isReversed = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
-    final isMobile = ResponsiveHelper.isMobile(context);
-    final isTablet = ResponsiveHelper.isTablet(context);
-    final bool useVerticalLayout = isMobile || isTablet;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    // Content Widget
-    final content = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          title,
-          style: GoogleFonts.manrope(
-            fontSize: isMobile ? 24 : 32,
-            fontWeight: FontWeight.w800,
-            color: colorScheme.onSurface,
-            height: 1.2,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: colorScheme.surfaceContainerHighest),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Text(
-            description,
-            style: GoogleFonts.manrope(
-              fontSize: 16,
-              color: colorScheme.onSurface.withValues(alpha: 0.6),
-              height: 1.8,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children:
-              technologies
-                  .map(
-                    (tech) => Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(
-                          color: colorScheme.surfaceContainerHighest,
-                        ),
-                      ),
-                      child: Text(
-                        tech,
-                        style: GoogleFonts.manrope(
-                          fontSize: 13,
-                          color: colorScheme.onSurface,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
-        ),
-        const SizedBox(height: 32),
-        Row(
-          children: [
-            if (githubUrl != null)
-              _ActionButton(
-                icon: FontAwesomeIcons.github,
-                label: "Code",
-                onTap: () => controller.launchUrlFromString(githubUrl!),
-              ),
-            if (githubUrl != null && liveUrl != null) const SizedBox(width: 16),
-          ],
-        ),
-      ],
-    );
-
-    // Image Widget
-    final image = Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryGreen.withValues(alpha: 0.15),
-            offset: const Offset(0, 20),
-            blurRadius: 40,
-            spreadRadius: -10,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: AspectRatio(
-          aspectRatio: 16 / 9,
-          child: Image.network(
-            imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder:
-                (context, error, stackTrace) => Container(
-                  color: const Color(0xFF1F2937),
-                  child: Center(
-                    child: Icon(
-                      Icons.image,
-                      color: colorScheme.onSurface.withValues(alpha: 0.45),
-                      size: 50,
-                    ),
-                  ),
-                ),
-          ),
-        ),
-      ),
-    );
-
-    if (useVerticalLayout) {
-      return Column(children: [image, const SizedBox(height: 32), content]);
-    }
-
-    // Desktop Layout (Alternating)
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        if (isReversed) ...[
-          Expanded(flex: 6, child: content),
-          const SizedBox(width: 48),
-          Expanded(flex: 7, child: image),
-        ] else ...[
-          Expanded(flex: 7, child: image),
-          const SizedBox(width: 48),
-          Expanded(flex: 6, child: content),
-        ],
-      ],
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(30),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: colorScheme.onSurface.withValues(alpha: 0.2),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 16, color: colorScheme.onSurface),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: GoogleFonts.manrope(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _BackgroundPainter extends CustomPainter {
   @override
