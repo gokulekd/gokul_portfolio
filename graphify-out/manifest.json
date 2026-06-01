@@ -152,8 +152,16 @@
     "hash": "498629a9f07ec936f944e57f580157e0"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/admin/modules/projects/projects_workspace.dart": {
-    "mtime": 1780164906.641711,
-    "hash": "22a355993e7d7181436cb5504176d3e9"
+    "mtime": 1780332735.4623387,
+    "hash": "5669783788ca6cf24526277f7dffb703"
+  },
+  "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/admin/modules/projects/models/app_project.dart": {
+    "mtime": 1780323304.368827,
+    "hash": "61cb60158954dab5ccaab25d01b31c31"
+  },
+  "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/admin/modules/projects/services/supabase_projects_service.dart": {
+    "mtime": 1780321511.6453419,
+    "hash": "fd4c9bcedd5e189f4eaa537fc3c9a52e"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/admin/modules/resume/resume_workspace.dart": {
     "mtime": 1780164906.6539063,
@@ -224,8 +232,8 @@
     "hash": "7939ba5402a222686e712698697089a1"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/admin/controllers/admin_portal_controller.dart": {
-    "mtime": 1780164906.731904,
-    "hash": "248ffd46084bef4c8ca3d8f08c7e2a91"
+    "mtime": 1780321348.8920095,
+    "hash": "9802ef1b1154321383afea186959a79b"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/admin/pages/admin_portal_page.dart": {
     "mtime": 1777643967.1086698,
@@ -300,8 +308,8 @@
     "hash": "245f319f2a91d74ac9310b9acc017630"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/portfolio/pages/projects_page.dart": {
-    "mtime": 1780164906.848997,
-    "hash": "5c22316b0ce84b65d553c785e025e3b0"
+    "mtime": 1780335856.3439631,
+    "hash": "c4b851c5009837c7dee827833aed879a"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/portfolio/pages/resume_page.dart": {
     "mtime": 1780164906.8334424,
@@ -316,8 +324,8 @@
     "hash": "67ca06d670cdd2bb79d77227372edc58"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/portfolio/pages/about_page.dart": {
-    "mtime": 1780164906.8568795,
-    "hash": "537619244bbba9a800df81ee419c460c"
+    "mtime": 1780336639.4023552,
+    "hash": "65352e1beb99cda79a48ea9880b0f76a"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/portfolio/pages/experience_page.dart": {
     "mtime": 1780164906.8414423,
@@ -344,8 +352,8 @@
     "hash": "2cb1c2cec17e2673fe1f97ed87bd8611"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/controllers/portfolio_controller.dart": {
-    "mtime": 1779728038.8878582,
-    "hash": "b53e4afbde5eb6048a23ce49bb9e6954"
+    "mtime": 1780336377.4320111,
+    "hash": "6094b0c361202f1c672ff8b34b531d02"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/pages/skills_page.dart": {
     "mtime": 1780164417.7726068,
@@ -388,8 +396,8 @@
     "hash": "d2b00e70e986416d22f5a1294734baa4"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/services/supabase_storage_service.dart": {
-    "mtime": 1779727933.6560726,
-    "hash": "2bfb9b6d3284fbbc5b27c4f711c5b7c6"
+    "mtime": 1780328418.0870092,
+    "hash": "b8c96afb5d51dd367f87c4409437da84"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/services/firebase_portfolio_service.dart": {
     "mtime": 1779727963.4593186,
@@ -508,8 +516,8 @@
     "hash": "4702ba82cc7bd0ba0d024ad14fde641c"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/home/selected_projects_section.dart": {
-    "mtime": 1780164906.892152,
-    "hash": "20eafff5c816d20f496aaa8f8bb371e4"
+    "mtime": 1780335856.8296409,
+    "hash": "51f791784723cdde4d7b21d3be89238d"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/home/skills_section.dart": {
     "mtime": 1780164906.9453447,
@@ -528,8 +536,8 @@
     "hash": "d792eb700bbcd6a8bb28ea50ccc3a237"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/projects/featured_projects_section.dart": {
-    "mtime": 1780164744.0845535,
-    "hash": "6a82eb8f1ddd012bf6ed7fb6d171c974"
+    "mtime": 1780336058.0758972,
+    "hash": "c1bc6c1b66876c015a9d1634d21d5244"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/shared/widgets.dart": {
     "mtime": 1780164826.5009384,
