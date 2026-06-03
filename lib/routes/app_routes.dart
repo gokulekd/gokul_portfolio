@@ -6,6 +6,7 @@ import '../pages/blog_page.dart';
 import '../pages/contact_page.dart';
 import '../pages/experience_page.dart';
 import '../pages/home_page.dart';
+import '../pages/project_detail_page.dart';
 import '../pages/projects_page.dart';
 import '../pages/resume_page.dart';
 import '../pages/skills_page.dart';
@@ -22,6 +23,7 @@ class AppRoutes {
   static const String contact = '/contact';
   static const String skills = '/skills';
   static const String admin = '/admin';
+  static const String projectDetail = '/projects/:id';
 
   static const Map<int, String> indexToRoute = {
     0: home,
@@ -44,5 +46,6 @@ class AppRoutes {
     GetPage(name: contact, page: () => const ContactPage()),
     GetPage(name: skills, page: () => const SkillsPage()),
     GetPage(name: admin, page: () => AdminAuthGatePage()),
+    GetPage(name: projectDetail, page: () => const ProjectDetailPage()),
   ];
 }

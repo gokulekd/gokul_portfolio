@@ -403,6 +403,8 @@ Future<void> showAppProjectEditorDialog(
 
   var isFeatured = project?.isFeatured ?? false;
   var isPublished = project?.isPublished ?? true;
+  // Personal = GitHub visible & editable; Company = GitHub disabled/hidden
+  var isPersonalProject = (project?.githubUrl?.isNotEmpty ?? false) || project == null;
   var isUploadingIcon = false;
   var isUploadingBanner = false;
   var iconPreviewUrl = project?.appIconUrl ?? '';
@@ -693,11 +695,37 @@ Future<void> showAppProjectEditorDialog(
                               prefixIcon: Icons.language_rounded,
                             ),
                             const SizedBox(height: 12),
+                            // ── Project type toggle ────────────────────────
+                            Row(
+                              children: [
+                                Text(
+                                  'Project type',
+                                  style: GoogleFonts.manrope(
+                                    color: Colors.white54,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                _ProjectTypeToggle(
+                                  isPersonal: isPersonalProject,
+                                  onChanged: (personal) => setState(() {
+                                    isPersonalProject = personal;
+                                    if (!personal) githubController.clear();
+                                  }),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
                             _AppProjectFormField(
                               label: 'GitHub Repo',
                               controller: githubController,
-                              hint: 'https://github.com/you/repo',
+                              hint: isPersonalProject
+                                  ? 'https://github.com/you/repo'
+                                  : 'Not applicable for company projects',
                               prefixIcon: Icons.code_rounded,
+                              enabled: isPersonalProject,
                             ),
                             const SizedBox(height: 12),
                             Row(
@@ -1209,6 +1237,7 @@ class _AppProjectFormField extends StatelessWidget {
     this.hint,
     this.prefixIcon,
     this.prefixColor = Colors.white38,
+    this.enabled = true,
   });
 
   final String label;
@@ -1218,6 +1247,7 @@ class _AppProjectFormField extends StatelessWidget {
   final String? hint;
   final IconData? prefixIcon;
   final Color prefixColor;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -1227,7 +1257,7 @@ class _AppProjectFormField extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.manrope(
-            color: Colors.white54,
+            color: enabled ? Colors.white54 : Colors.white24,
             fontWeight: FontWeight.w700,
             fontSize: 11,
             letterSpacing: 0.4,
@@ -1238,10 +1268,16 @@ class _AppProjectFormField extends StatelessWidget {
           controller: controller,
           maxLines: maxLines,
           keyboardType: keyboardType,
-          style: GoogleFonts.manrope(color: Colors.white, fontSize: 14),
+          enabled: enabled,
+          style: GoogleFonts.manrope(
+            color: enabled ? Colors.white : Colors.white24,
+            fontSize: 14,
+          ),
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.05),
+            fillColor: enabled
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.white.withValues(alpha: 0.02),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
@@ -1252,10 +1288,23 @@ class _AppProjectFormField extends StatelessWidget {
                 color: AppColors.primaryGreen.withValues(alpha: 0.5),
               ),
             ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: 0.04),
+              ),
+            ),
             hintText: hint,
-            hintStyle: GoogleFonts.manrope(color: Colors.white24, fontSize: 13),
+            hintStyle: GoogleFonts.manrope(
+              color: enabled ? Colors.white24 : Colors.white12,
+              fontSize: 13,
+            ),
             prefixIcon: prefixIcon != null
-                ? Icon(prefixIcon, size: 16, color: prefixColor)
+                ? Icon(
+                    prefixIcon,
+                    size: 16,
+                    color: enabled ? prefixColor : Colors.white12,
+                  )
                 : null,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -1264,6 +1313,99 @@ class _AppProjectFormField extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ProjectTypeToggle extends StatelessWidget {
+  const _ProjectTypeToggle({
+    required this.isPersonal,
+    required this.onChanged,
+  });
+
+  final bool isPersonal;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _TypeChip(
+            label: 'Personal',
+            icon: Icons.person_rounded,
+            selected: isPersonal,
+            onTap: () => onChanged(true),
+          ),
+          _TypeChip(
+            label: 'Company',
+            icon: Icons.business_rounded,
+            selected: !isPersonal,
+            onTap: () => onChanged(false),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TypeChip extends StatelessWidget {
+  const _TypeChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.primaryGreen.withValues(alpha: 0.18)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected
+                ? AppColors.primaryGreen.withValues(alpha: 0.45)
+                : Colors.transparent,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 13,
+              color: selected ? AppColors.primaryGreen : Colors.white38,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.manrope(
+                color: selected ? AppColors.primaryGreen : Colors.white38,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

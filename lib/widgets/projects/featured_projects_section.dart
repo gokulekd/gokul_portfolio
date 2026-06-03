@@ -228,7 +228,12 @@ class _AppProjectCardState extends State<AppProjectCard> {
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedContainer(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => Get.toNamed(
+          AppRoutes.projectDetail.replaceFirst(':id', project.id),
+        ),
+        child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOut,
         transform: Matrix4.translationValues(0, _hovered ? -4 : 0, 0),
@@ -293,6 +298,7 @@ class _AppProjectCardState extends State<AppProjectCard> {
                         ],
                 ),
               ),
+        ),
       ),
     );
   }
