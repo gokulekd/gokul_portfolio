@@ -487,57 +487,81 @@ class _SkillsSectionState extends State<SkillsSection>
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // Progress bar with percentage pill
+                  // Progress bar with percentage circle at the end
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final cardWidth = constraints.maxWidth;
-                      final fillWidth = cardWidth * (percentage / 100);
+                      const circleSize = 32.0;
 
-                      return Stack(
-                        children: [
-                          // Background track
-                          Container(
-                            width: double.infinity,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          // Animated fill with percentage pill
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 1500),
-                            curve: Curves.easeOutQuart,
-                            width: isVisible ? fillWidth : 0,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: skill['color'] as Color,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Container(
-                                margin: const EdgeInsets.only(right: 4),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: skill['color'] as Color,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  '$percentage%',
-                                  style: GoogleFonts.manrope(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
+                      return TweenAnimationBuilder<double>(
+                        tween: Tween<double>(
+                          begin: 0,
+                          end: isVisible ? percentage / 100.0 : 0,
+                        ),
+                        duration: const Duration(milliseconds: 1500),
+                        curve: Curves.easeOutQuart,
+                        builder: (context, value, _) {
+                          final fillWidth = cardWidth * value;
+                          final circleLeft = (fillWidth - circleSize / 2).clamp(0.0, cardWidth - circleSize);
+
+                          return SizedBox(
+                            height: circleSize,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                // Background track
+                                Positioned(
+                                  top: (circleSize - 8) / 2,
+                                  left: 0,
+                                  right: 0,
+                                  child: Container(
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
                                   ),
                                 ),
-                              ),
+                                // Green fill
+                                Positioned(
+                                  top: (circleSize - 8) / 2,
+                                  left: 0,
+                                  child: Container(
+                                    width: fillWidth,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: skill['color'] as Color,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                ),
+                                // Circle at the end of the green fill
+                                if (fillWidth > 0)
+                                  Positioned(
+                                    left: circleLeft,
+                                    top: 0,
+                                    child: Container(
+                                      width: circleSize,
+                                      height: circleSize,
+                                      decoration: BoxDecoration(
+                                        color: skill['color'] as Color,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        '$percentage%',
+                                        style: GoogleFonts.manrope(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       );
                     },
                   ),
