@@ -56,7 +56,10 @@ class _HomePageState extends State<HomePage> {
                   if (controller.isSectionVisible(SiteSectionKeys.hero))
                     const HeroSection(),
                   if (controller.isSectionVisible(SiteSectionKeys.statsTop))
-                    const StatsMarquee(),
+                    const StatsMarquee(
+                      backgroundColor: Color(0xFF0A0A0A),
+                      padding: EdgeInsets.zero,
+                    ),
                   if (controller.isSectionVisible(
                     SiteSectionKeys.skillsExperience,
                   ))
