@@ -12,6 +12,8 @@ class AppProject {
   final bool isPublished;
   final int displayOrder;
   final DateTime createdAt;
+  final List<String> techStack;
+  final String developerResponsibilities;
 
   const AppProject({
     this.id = '',
@@ -27,6 +29,8 @@ class AppProject {
     this.isPublished = true,
     this.displayOrder = 0,
     required this.createdAt,
+    this.techStack = const [],
+    this.developerResponsibilities = '',
   });
 
   AppProject copyWith({
@@ -43,6 +47,8 @@ class AppProject {
     bool? isPublished,
     int? displayOrder,
     DateTime? createdAt,
+    List<String>? techStack,
+    String? developerResponsibilities,
   }) {
     return AppProject(
       id: id ?? this.id,
@@ -58,6 +64,8 @@ class AppProject {
       isPublished: isPublished ?? this.isPublished,
       displayOrder: displayOrder ?? this.displayOrder,
       createdAt: createdAt ?? this.createdAt,
+      techStack: techStack ?? this.techStack,
+      developerResponsibilities: developerResponsibilities ?? this.developerResponsibilities,
     );
   }
 
@@ -75,6 +83,8 @@ class AppProject {
     'is_published': isPublished,
     'display_order': displayOrder,
     'created_at': createdAt.toIso8601String(),
+    'tech_stack': techStack,
+    'developer_responsibilities': developerResponsibilities,
   };
 
   factory AppProject.fromJson(Map<String, dynamic> json) => AppProject(
@@ -93,5 +103,11 @@ class AppProject {
     createdAt: json['created_at'] != null
         ? DateTime.parse(json['created_at'] as String)
         : DateTime.now(),
+    techStack: (json['tech_stack'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        [],
+    developerResponsibilities:
+        json['developer_responsibilities'] as String? ?? '',
   );
 }

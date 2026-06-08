@@ -137,6 +137,64 @@ class _ProjectDetailView extends StatelessWidget {
                         const SizedBox(height: 40),
                       ],
 
+                      // Tech Stack
+                      if (project.techStack.isNotEmpty) ...[
+                        Text(
+                          'Tech Stack',
+                          style: GoogleFonts.manrope(
+                            fontSize: isMobile ? 13 : 14,
+                            fontWeight: FontWeight.w700,
+                            color: accent,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: project.techStack.map((tag) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: accent.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(color: accent.withValues(alpha: 0.25)),
+                            ),
+                            child: Text(
+                              tag,
+                              style: GoogleFonts.manrope(
+                                color: accent,
+                                fontSize: isMobile ? 12 : 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          )).toList(),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
+
+                      // Developer Responsibilities
+                      if (project.developerResponsibilities.isNotEmpty) ...[
+                        Text(
+                          'My Contributions',
+                          style: GoogleFonts.manrope(
+                            fontSize: isMobile ? 13 : 14,
+                            fontWeight: FontWeight.w700,
+                            color: accent,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          project.developerResponsibilities,
+                          style: GoogleFonts.manrope(
+                            fontSize: isMobile ? 15 : 17,
+                            color: Colors.white.withValues(alpha: 0.75),
+                            height: 1.75,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
+
                       // Links
                       Text(
                         'Links',

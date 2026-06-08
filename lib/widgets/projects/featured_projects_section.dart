@@ -503,11 +503,37 @@ class _InfoPanel extends StatelessWidget {
                 fontSize: isMobile ? 13 : 14,
                 height: 1.65,
               ),
-              maxLines: isMobile ? 5 : 4,
+              maxLines: project.techStack.isNotEmpty
+                  ? (isMobile ? 3 : 2)
+                  : (isMobile ? 5 : 4),
               overflow: TextOverflow.ellipsis,
             ),
 
-          const SizedBox(height: 24),
+          if (project.techStack.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: project.techStack.map((tag) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: accent.withValues(alpha: 0.25)),
+                ),
+                child: Text(
+                  tag,
+                  style: GoogleFonts.manrope(
+                    color: accent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              )).toList(),
+            ),
+          ],
+
+          const SizedBox(height: 20),
 
           Wrap(
             spacing: 8,
@@ -555,13 +581,12 @@ class _InfoPanel extends StatelessWidget {
   }
 }
 
-// ─── Link Pill ────────────────────────────────────────────────────────────────
+// ─── Link Button ─────────────────────────────────────────────────────────────
 
 class _LinkPill extends StatefulWidget {
   const _LinkPill({
     required this.label,
     required this.icon,
-    // nullable — null means "coming soon" (disabled)
     required this.onTap,
     this.accent,
     this.filled = false,
@@ -584,51 +609,63 @@ class _LinkPillState extends State<_LinkPill> {
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = widget.accent ?? Colors.white70;
-    final color = _disabled ? baseColor.withValues(alpha: 0.3) : baseColor;
-    final bg = _disabled
-        ? (widget.accent ?? Colors.white).withValues(alpha: 0.03)
+    final baseColor = widget.accent ?? Colors.white;
+    final isDisabled = _disabled;
+
+    // Filled (primary) button: solid coloured background
+    // Ghost button: dark background, coloured border + text
+    final bg = isDisabled
+        ? Colors.white.withValues(alpha: 0.04)
         : widget.filled
-            ? (_hovered ? baseColor.withValues(alpha: 0.22) : baseColor.withValues(alpha: 0.13))
+            ? (_hovered ? baseColor.withValues(alpha: 0.95) : baseColor.withValues(alpha: 0.85))
             : (_hovered
-                ? (widget.accent ?? Colors.white).withValues(alpha: 0.13)
-                : (widget.accent ?? Colors.white).withValues(alpha: 0.07));
+                ? Colors.white.withValues(alpha: 0.10)
+                : Colors.white.withValues(alpha: 0.06));
+
+    final fgColor = isDisabled
+        ? Colors.white24
+        : widget.filled
+            ? Colors.black
+            : (widget.accent ?? Colors.white70);
+
+    final borderColor = isDisabled
+        ? Colors.white.withValues(alpha: 0.08)
+        : widget.filled
+            ? Colors.transparent
+            : (widget.accent ?? Colors.white).withValues(alpha: _hovered ? 0.5 : 0.25);
 
     return MouseRegion(
-      onEnter: _disabled ? null : (_) => setState(() => _hovered = true),
-      onExit: _disabled ? null : (_) => setState(() => _hovered = false),
-      cursor: _disabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+      onEnter: isDisabled ? null : (_) => setState(() => _hovered = true),
+      onExit: isDisabled ? null : (_) => setState(() => _hovered = false),
+      cursor: isDisabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             color: bg,
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: _disabled
-                  ? (widget.accent ?? Colors.white).withValues(alpha: 0.08)
-                  : (widget.accent ?? Colors.white).withValues(alpha: _hovered ? 0.35 : 0.18),
-              style: _disabled ? BorderStyle.solid : BorderStyle.solid,
+              color: borderColor,
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(widget.icon, size: 14, color: color),
-              const SizedBox(width: 7),
+              Icon(widget.icon, size: 15, color: fgColor),
+              const SizedBox(width: 8),
               Text(
                 widget.label,
                 style: GoogleFonts.manrope(
-                  color: color,
+                  color: fgColor,
                   fontSize: 13,
-                  fontWeight: _disabled ? FontWeight.w500 : FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              if (widget.filled && !_disabled) ...[
+              if (!isDisabled) ...[
                 const SizedBox(width: 5),
-                Icon(Icons.arrow_outward_rounded, size: 12, color: color.withValues(alpha: 0.7)),
+                Icon(Icons.arrow_outward_rounded, size: 12, color: fgColor.withValues(alpha: 0.6)),
               ],
             ],
           ),

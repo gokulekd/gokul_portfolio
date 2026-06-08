@@ -255,6 +255,39 @@ class AppProjectRow extends StatelessWidget {
               ),
             ),
 
+          // ── Tech Stack chips ──────────────────────────────────
+          if (project.techStack.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: project.techStack
+                    .map(
+                      (tag) => Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryGreen.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: AppColors.primaryGreen.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Text(
+                          tag,
+                          style: GoogleFonts.manrope(
+                            color: AppColors.primaryGreen,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+
           // ── Links ─────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -400,6 +433,9 @@ Future<void> showAppProjectEditorDialog(
             (controller.liveAppProjects.length + 1))
         .toString(),
   );
+  final techStackInputController = TextEditingController();
+  final responsibilitiesController =
+      TextEditingController(text: project?.developerResponsibilities ?? '');
 
   var isFeatured = project?.isFeatured ?? false;
   var isPublished = project?.isPublished ?? true;
@@ -409,6 +445,7 @@ Future<void> showAppProjectEditorDialog(
   var isUploadingBanner = false;
   var iconPreviewUrl = project?.appIconUrl ?? '';
   var bannerPreviewUrl = project?.appBannerUrl ?? '';
+  var techStack = List<String>.from(project?.techStack ?? []);
 
   void showMsg(BuildContext ctx, String title, String body, Color color) {
     ScaffoldMessenger.of(ctx).showSnackBar(
@@ -753,6 +790,30 @@ Future<void> showAppProjectEditorDialog(
                             ),
                             const SizedBox(height: 20),
 
+                            // ── Tech Stack section ────────────────────────
+                            _SectionDivider(label: 'Tech Stack'),
+                            const SizedBox(height: 14),
+                            _TechStackInput(
+                              tags: techStack,
+                              inputController: techStackInputController,
+                              onAdd: (tag) => setState(() => techStack.add(tag)),
+                              onRemove: (tag) =>
+                                  setState(() => techStack.remove(tag)),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // ── Developer Responsibilities section ─────────
+                            _SectionDivider(label: 'Developer Responsibilities'),
+                            const SizedBox(height: 14),
+                            _AppProjectFormField(
+                              label: 'What you built & contributed',
+                              controller: responsibilitiesController,
+                              maxLines: 6,
+                              hint:
+                                  'Describe your role, features you developed, architecture decisions…',
+                            ),
+                            const SizedBox(height: 20),
+
                             // ── Settings section ──────────────────────────
                             _SectionDivider(label: 'Settings'),
                             const SizedBox(height: 14),
@@ -857,6 +918,10 @@ Future<void> showAppProjectEditorDialog(
                                                     1),
                                         createdAt: project?.createdAt ??
                                             DateTime.now(),
+                                        techStack: List.from(techStack),
+                                        developerResponsibilities:
+                                            responsibilitiesController.text
+                                                .trim(),
                                       );
 
                                       final ok = await controller
@@ -1312,6 +1377,127 @@ class _AppProjectFormField extends StatelessWidget {
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _TechStackInput extends StatelessWidget {
+  const _TechStackInput({
+    required this.tags,
+    required this.inputController,
+    required this.onAdd,
+    required this.onRemove,
+  });
+
+  final List<String> tags;
+  final TextEditingController inputController;
+  final ValueChanged<String> onAdd;
+  final ValueChanged<String> onRemove;
+
+  void _submit() {
+    final tag = inputController.text.trim();
+    if (tag.isEmpty || tags.contains(tag)) return;
+    onAdd(tag);
+    inputController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Input row
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: inputController,
+                style: GoogleFonts.manrope(color: Colors.white, fontSize: 14),
+                onSubmitted: (_) => _submit(),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white.withValues(alpha: 0.05),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                      color: AppColors.primaryGreen.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  hintText: 'e.g. Flutter, Firebase, GetX…',
+                  hintStyle:
+                      GoogleFonts.manrope(color: Colors.white24, fontSize: 13),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            GestureDetector(
+              onTap: _submit,
+              child: Container(
+                height: 48,
+                width: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryGreen.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: AppColors.primaryGreen.withValues(alpha: 0.35)),
+                ),
+                child: Icon(Icons.add_rounded,
+                    color: AppColors.primaryGreen, size: 20),
+              ),
+            ),
+          ],
+        ),
+        if (tags.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: tags
+                .map(
+                  (tag) => Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGreen.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                          color:
+                              AppColors.primaryGreen.withValues(alpha: 0.25)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          tag,
+                          style: GoogleFonts.manrope(
+                            color: AppColors.primaryGreen,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        GestureDetector(
+                          onTap: () => onRemove(tag),
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 12,
+                            color: AppColors.primaryGreen.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
       ],
     );
   }

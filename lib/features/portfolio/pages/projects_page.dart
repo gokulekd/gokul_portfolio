@@ -524,6 +524,29 @@ class _AppProjectGridCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
+                if (project.techStack.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: project.techStack.map((tag) => Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryGreen.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: AppColors.primaryGreen.withValues(alpha: 0.22)),
+                      ),
+                      child: Text(
+                        tag,
+                        style: GoogleFonts.manrope(
+                          color: AppColors.primaryGreen,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    )).toList(),
+                  ),
+                ],
                 const SizedBox(height: 14),
                 // Store / link buttons
                 Wrap(
