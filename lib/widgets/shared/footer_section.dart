@@ -199,8 +199,8 @@ class FooterSection extends StatelessWidget {
               // Description
               _buildDescription(),
               const SizedBox(height: 48),
-              // LinkedIn Button
-              _buildLinkedInButton(controller),
+              // Social Links
+              _buildSocialLinks(controller),
             ],
           ),
         ),
@@ -284,8 +284,8 @@ class FooterSection extends StatelessWidget {
         // Description
         _buildDescription(),
         const SizedBox(height: 48),
-        // LinkedIn Button
-        _buildLinkedInButton(controller),
+        // Social Links
+        _buildSocialLinks(controller),
       ],
     );
   }
@@ -325,61 +325,10 @@ class FooterSection extends StatelessWidget {
                   color: Colors.white.withOpacity(0.7),
                 ),
               ),
-              const SizedBox(height: 16),
-              // Social Icons
-              Row(
-                children: [
-                  _buildSocialIcon(FontAwesomeIcons.github, () {
-                    try {
-                      final githubLink = controller
-                          .personalInfo
-                          .value
-                          .socialLinks
-                          .firstWhere((link) => link.platform == "GitHub");
-                      controller.launchSocialLink(githubLink.url);
-                    } catch (e) {
-                      // Link not found
-                    }
-                  }),
-                  const SizedBox(width: 16),
-                  _buildSocialIcon(FontAwesomeIcons.dribbble, () {
-                    try {
-                      final dribbbleLink = controller
-                          .personalInfo
-                          .value
-                          .socialLinks
-                          .firstWhere((link) => link.platform == "Dribbble");
-                      controller.launchSocialLink(dribbbleLink.url);
-                    } catch (e) {
-                      // Link not found
-                    }
-                  }),
-                  const SizedBox(width: 16),
-                  _buildSocialIcon(FontAwesomeIcons.linkedin, () {
-                    try {
-                      final linkedInLink = controller
-                          .personalInfo
-                          .value
-                          .socialLinks
-                          .firstWhere((link) => link.platform == "LinkedIn");
-                      controller.launchSocialLink(linkedInLink.url);
-                    } catch (e) {
-                      // Link not found
-                    }
-                  }),
-                ],
-              ),
             ],
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSocialIcon(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Icon(icon, size: 28, color: Colors.white.withOpacity(0.8)),
     );
   }
 
@@ -433,39 +382,53 @@ class FooterSection extends StatelessWidget {
     );
   }
 
-  Widget _buildLinkedInButton(PortfolioController controller) {
-    return ElevatedButton(
-      onPressed: () {
-        try {
-          final linkedInLink = controller.personalInfo.value.socialLinks
-              .firstWhere((link) => link.platform == "LinkedIn");
-          controller.launchSocialLink(linkedInLink.url);
-        } catch (e) {
-          // Link not found
-        }
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primaryGreen,
-        foregroundColor: Colors.black,
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        elevation: 0,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            "Linked In",
-            style: GoogleFonts.manrope(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
+  IconData _iconForPlatform(String platform) {
+    switch (platform.toLowerCase()) {
+      case 'twitter': return FontAwesomeIcons.xTwitter;
+      case 'linkedin': return FontAwesomeIcons.linkedin;
+      case 'github': return FontAwesomeIcons.github;
+      case 'medium': return FontAwesomeIcons.medium;
+      case 'instagram': return FontAwesomeIcons.instagram;
+      default: return FontAwesomeIcons.link;
+    }
+  }
+
+  Widget _buildSocialLinks(PortfolioController controller) {
+    final links = controller.personalInfo.value.socialLinks
+        .where((l) => l.platform.toLowerCase() != 'instagram')
+        .toList();
+
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      children: [
+        for (final link in links)
+          GestureDetector(
+            onTap: () => controller.launchSocialLink(link.url),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white.withOpacity(0.15)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(_iconForPlatform(link.platform), size: 18, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Text(
+                    link.platform,
+                    style: GoogleFonts.manrope(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 12),
-          Icon(Icons.arrow_upward, size: 22, color: Colors.black),
-        ],
-      ),
+      ],
     );
   }
 }

@@ -160,6 +160,43 @@ class _HeroSectionState extends State<HeroSection>
   }
 
 
+  IconData _iconForPlatform(String platform) {
+    switch (platform.toLowerCase()) {
+      case 'twitter': return FontAwesomeIcons.xTwitter;
+      case 'linkedin': return FontAwesomeIcons.linkedin;
+      case 'github': return FontAwesomeIcons.github;
+      case 'medium': return FontAwesomeIcons.medium;
+      case 'instagram': return FontAwesomeIcons.instagram;
+      default: return FontAwesomeIcons.link;
+    }
+  }
+
+  Widget _buildSocialLinks(PortfolioController controller, double socialIconScale, BuildContext context) {
+    final links = controller.personalInfo.value.socialLinks
+        .where((l) => l.platform.toLowerCase() != 'instagram')
+        .toList();
+    final gap = SizedBox(width: ResponsiveHelper.isMobile(context) ? 16.0 : 24.0);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (int i = 0; i < links.length; i++) ...[
+          if (i > 0) gap,
+          Transform.scale(
+            scale: socialIconScale,
+            child: _buildAnimatedSocialIcon(
+              SocialIconButton(
+                platform: links[i].platform,
+                url: links[i].url,
+                icon: _iconForPlatform(links[i].platform),
+              ),
+              i,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildAnimatedSocialIcon(Widget child, int index) {
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 400 + (index * 100)),
@@ -449,75 +486,7 @@ class _HeroSectionState extends State<HeroSection>
           builder: (context, child) {
             return Opacity(
               opacity: _socialOpacity.value,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Transform.scale(
-                    scale: socialIconScale,
-                    child: _buildAnimatedSocialIcon(
-                      SocialIconButton(
-                        platform: "Twitter",
-                        url: controller.personalInfo.value.socialLinks[0].url,
-                        icon: FontAwesomeIcons.twitter,
-                      ),
-                      0,
-                    ),
-                  ),
-                  SizedBox(width: ResponsiveHelper.isMobile(context) ? 16 : 24),
-                  Transform.scale(
-                    scale: socialIconScale,
-                    child: _buildAnimatedSocialIcon(
-                      SocialIconButton(
-                        platform: "LinkedIn",
-                        url: controller.personalInfo.value.socialLinks[1].url,
-                        icon: FontAwesomeIcons.linkedin,
-                      ),
-                      1,
-                    ),
-                  ),
-                  SizedBox(width: ResponsiveHelper.isMobile(context) ? 16 : 24),
-                  Transform.scale(
-                    scale: socialIconScale,
-                    child: _buildAnimatedSocialIcon(
-                      SocialIconButton(
-                        platform: "GitHub",
-                        url: controller.personalInfo.value.socialLinks[2].url,
-                        icon: FontAwesomeIcons.github,
-                      ),
-                      2,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 24),
-
-        // Timeline
-        AnimatedBuilder(
-          animation: _socialController,
-          builder: (context, child) {
-            return Opacity(
-              opacity: _socialOpacity.value,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Text(
-                  "(2024 - PRESENT)",
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
-                ),
-              ),
+              child: _buildSocialLinks(controller, socialIconScale, context),
             );
           },
         ),
@@ -748,80 +717,10 @@ class _HeroSectionState extends State<HeroSection>
                   builder: (context, child) {
                     return Opacity(
                       opacity: _socialOpacity.value,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Transform.scale(
-                            scale: socialIconScale,
-                            child: _buildAnimatedSocialIcon(
-                              SocialIconButton(
-                                platform: "Twitter",
-                                url: controller.personalInfo.value.socialLinks[0].url,
-                                icon: FontAwesomeIcons.twitter,
-                              ),
-                              0,
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Transform.scale(
-                            scale: socialIconScale,
-                            child: _buildAnimatedSocialIcon(
-                              SocialIconButton(
-                                platform: "LinkedIn",
-                                url: controller.personalInfo.value.socialLinks[1].url,
-                                icon: FontAwesomeIcons.linkedin,
-                              ),
-                              1,
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Transform.scale(
-                            scale: socialIconScale,
-                            child: _buildAnimatedSocialIcon(
-                              SocialIconButton(
-                                platform: "GitHub",
-                                url: controller.personalInfo.value.socialLinks[2].url,
-                                icon: FontAwesomeIcons.github,
-                              ),
-                              2,
-                            ),
-                          ),
-                        ],
-                      ),
+                      child: _buildSocialLinks(controller, socialIconScale, context),
                     );
                   },
                 ),
-              ),
-              const SizedBox(height: 32),
-
-              // Timeline
-              AnimatedBuilder(
-                animation: _socialController,
-                builder: (context, child) {
-                  return Opacity(
-                    opacity: _socialOpacity.value,
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Text(
-                          "(2024 - PRESENT)",
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
               ),
             ],
           ),
