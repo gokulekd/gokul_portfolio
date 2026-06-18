@@ -3,10 +3,10 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../features/admin/modules/projects/models/app_project.dart';
-import '../controllers/portfolio_controller.dart';
-import '../utils/responsive_helper.dart';
-import '../widgets/shared/custom_widgets.dart';
+import '../../admin/modules/projects/models/app_project.dart';
+import '../../../controllers/portfolio_controller.dart';
+import '../../../utils/responsive_helper.dart';
+import '../../../widgets/shared/custom_widgets.dart';
 
 const _kAccents = [
   Color(0xFF6C63FF),

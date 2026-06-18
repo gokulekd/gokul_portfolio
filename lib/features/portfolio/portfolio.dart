@@ -7,3 +7,4 @@ export 'pages/projects_page.dart';
 export 'pages/resume_page.dart';
 export 'pages/skills_page.dart';
 export 'pages/splash_screen.dart';
+export 'pages/project_detail_page.dart';

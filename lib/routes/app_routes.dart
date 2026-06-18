@@ -1,16 +1,7 @@
 import 'package:get/get.dart';
 
 import '../features/admin/admin.dart';
-import '../pages/about_page.dart';
-import '../pages/blog_page.dart';
-import '../pages/contact_page.dart';
-import '../pages/experience_page.dart';
-import '../pages/home_page.dart';
-import '../pages/project_detail_page.dart';
-import '../pages/projects_page.dart';
-import '../pages/resume_page.dart';
-import '../pages/skills_page.dart';
-import '../pages/splash_screen.dart';
+import '../features/portfolio/portfolio.dart';
 
 class AppRoutes {
   static const String home = '/';
