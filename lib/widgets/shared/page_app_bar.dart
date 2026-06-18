@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../controllers/portfolio_controller.dart';
+import '../../providers/portfolio_provider.dart';
 import '../../routes/app_routes.dart';
 
-class PageAppBar extends StatelessWidget implements PreferredSizeWidget {
+class PageAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback? onBackPressed;
 
   const PageAppBar({super.key, required this.title, this.onBackPressed});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -31,11 +32,10 @@ class PageAppBar extends StatelessWidget implements PreferredSizeWidget {
             onBackPressed ??
             () {
               try {
-                final controller = Get.find<PortfolioController>();
-                controller.changePage(0);
-                Get.offNamed(AppRoutes.home);
+                ref.read(portfolioProvider.notifier).changePage(0);
+                context.go(AppRoutes.home);
               } catch (_) {
-                Get.back();
+                context.pop();
               }
             },
       ),

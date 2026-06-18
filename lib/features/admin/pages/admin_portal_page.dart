@@ -1,37 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../providers/admin_portal_provider.dart';
 import '../../../utils/responsive_helper.dart';
-import '../controllers/admin_portal_controller.dart';
 import '../models/admin_portal_models.dart';
 import '../modules/admin_module_registry.dart';
 import '../shared/admin_portal_navigation.dart';
 import '../shared/portal_layout_widgets.dart';
 
-class AdminPortalPage extends StatelessWidget {
-  AdminPortalPage({super.key});
-
-  final AdminPortalController controller =
-      Get.isRegistered<AdminPortalController>()
-          ? Get.find<AdminPortalController>()
-          : Get.put(AdminPortalController());
+class AdminPortalPage extends ConsumerWidget {
+  const AdminPortalPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isCompact = ResponsiveHelper.isMobileOrTablet(context);
+    final module = ref.watch(adminPortalProvider).selectedModule;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0B0C0E),
-      drawer:
-          isCompact
-              ? Drawer(
-                backgroundColor: const Color(0xFF101113),
-                child: AdminPortalNavigation(
-                  controller: controller,
-                  isDrawer: true,
-                ),
-              )
-              : null,
+      drawer: isCompact
+          ? const Drawer(
+              backgroundColor: Color(0xFF101113),
+              child: AdminPortalNavigation(isDrawer: true),
+            )
+          : null,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -44,39 +36,31 @@ class AdminPortalPage extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (!isCompact) AdminPortalNavigation(controller: controller),
+              if (!isCompact) const AdminPortalNavigation(),
               Expanded(
-                child: Obx(() {
-                  final module = controller.selectedModule.value;
-
-                  return SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(
-                      isCompact ? 18 : 28,
-                      isCompact ? 18 : 24,
-                      isCompact ? 18 : 28,
-                      28,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        PortalTopBar(
-                          controller: controller,
-                          isCompact: isCompact,
-                        ),
-                        if (module == AdminModule.dashboard) ...[
-                          const SizedBox(height: 24),
-                          HeroHeader(controller: controller),
-                        ],
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                    isCompact ? 18 : 28,
+                    isCompact ? 18 : 24,
+                    isCompact ? 18 : 28,
+                    28,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      PortalTopBar(isCompact: isCompact),
+                      if (module == AdminModule.dashboard) ...[
                         const SizedBox(height: 24),
-                        AdminModuleRegistry.buildWorkspace(
-                          module: module,
-                          controller: controller,
-                          isCompact: isCompact,
-                        ),
+                        const HeroHeader(),
                       ],
-                    ),
-                  );
-                }),
+                      const SizedBox(height: 24),
+                      AdminModuleRegistry.buildWorkspace(
+                        module: module,
+                        isCompact: isCompact,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

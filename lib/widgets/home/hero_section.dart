@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../config/app_colors.dart';
 import '../../controllers/portfolio_controller.dart';
@@ -600,7 +601,7 @@ class _HeroSectionState extends State<HeroSection>
                 () {
                   final ctrl = Get.find<PortfolioController>();
                   ctrl.changePage(3);
-                  Get.toNamed(AppRoutes.projects);
+                  context.go(AppRoutes.projects);
                 },
                 context,
               ),
@@ -852,7 +853,7 @@ class _HeroSectionState extends State<HeroSection>
                         () {
                           final ctrl = Get.find<PortfolioController>();
                           ctrl.changePage(3);
-                          Get.toNamed(AppRoutes.projects);
+                          context.go(AppRoutes.projects);
                         },
                         context,
                       ),

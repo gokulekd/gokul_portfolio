@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import '../../config/app_colors.dart';
 import 'package:gokul_portfolio/controllers/portfolio_controller.dart';
 import 'package:gokul_portfolio/routes/app_routes.dart';
@@ -124,7 +125,7 @@ class ProudAchievementsSection extends StatelessWidget {
                 const SizedBox(height: 100),
                 _buildPrinciples(isMobile),
                 const SizedBox(height: 100),
-                _buildCta(isMobile),
+                _buildCta(isMobile, context),
               ],
             ),
           ),
@@ -283,7 +284,7 @@ class ProudAchievementsSection extends StatelessWidget {
     );
   }
 
-  Widget _buildCta(bool isMobile) {
+  Widget _buildCta(bool isMobile, BuildContext context) {
     return Column(
       children: [
         Text(
@@ -301,7 +302,7 @@ class ProudAchievementsSection extends StatelessWidget {
           onPressed: () {
             final controller = Get.find<PortfolioController>();
             controller.changePage(5);
-            Get.offNamed(AppRoutes.contact);
+            context.go(AppRoutes.contact);
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryGreen,

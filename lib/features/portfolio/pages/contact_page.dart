@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../config/app_colors.dart';
-import '../../../controllers/portfolio_controller.dart';
 import '../../../models/portfolio_models.dart';
+import '../../../providers/portfolio_provider.dart';
 import '../../../utils/responsive_helper.dart';
 import '../../../routes/app_routes.dart';
 import '../../../widgets/shared/custom_widgets.dart';
 import '../../../widgets/shared/footer_section.dart';
 
-class ContactPage extends StatelessWidget {
+class ContactPage extends ConsumerWidget {
   const ContactPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
 
     return Scaffold(
       appBar: const CustomAppBar(),
@@ -27,9 +28,9 @@ class ContactPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const _ContactHeroSection(),
-            _ContactChannelsSection(info: controller.personalInfo.value),
+            _ContactChannelsSection(info: state.personalInfo),
             _SocialLinksSection(
-              links: controller.personalInfo.value.socialLinks,
+              links: state.personalInfo.socialLinks,
             ),
             Padding(
               padding: EdgeInsets.fromLTRB(
@@ -46,7 +47,7 @@ class ContactPage extends StatelessWidget {
                         : 88.0,
                 0,
               ),
-              child: _ContactFormSection(controller: controller),
+              child: const _ContactFormSection(),
             ),
             const _ContactClosingSection(),
             const FooterSection(),
@@ -57,13 +58,13 @@ class ContactPage extends StatelessWidget {
   }
 }
 
-class _ContactHeroSection extends StatelessWidget {
+class _ContactHeroSection extends ConsumerWidget {
   const _ContactHeroSection();
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
-    final info = controller.personalInfo.value;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
+    final info = state.personalInfo;
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final isDesktop = !isMobile && !isTablet;
@@ -141,15 +142,14 @@ class _ContactHeroSection extends StatelessWidget {
   }
 }
 
-class _ContactHeroContent extends StatelessWidget {
+class _ContactHeroContent extends ConsumerWidget {
   const _ContactHeroContent({required this.info, required this.colorScheme});
 
   final PersonalInfo info;
   final ColorScheme colorScheme;
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
 
@@ -217,12 +217,12 @@ class _ContactHeroContent extends StatelessWidget {
               label: 'Send Email',
               icon: Icons.north_east_rounded,
               isPrimary: true,
-              onPressed: controller.launchEmail,
+              onPressed: () => ref.read(portfolioProvider.notifier).launchEmail(),
             ),
             _HeroActionButton(
               label: 'Download CV',
               icon: Icons.download_rounded,
-              onPressed: controller.launchResume,
+              onPressed: () => ref.read(portfolioProvider.notifier).launchResume(),
             ),
           ],
         ),
@@ -244,14 +244,13 @@ class _ContactHeroContent extends StatelessWidget {
   }
 }
 
-class _ContactChannelsSection extends StatelessWidget {
+class _ContactChannelsSection extends ConsumerWidget {
   const _ContactChannelsSection({required this.info});
 
   final PersonalInfo info;
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final hPad =
@@ -283,7 +282,7 @@ class _ContactChannelsSection extends StatelessWidget {
                   description:
                       'The fastest way to discuss project scope, timelines, and collaboration details.',
                   actionLabel: 'Send Email',
-                  onTap: controller.launchEmail,
+                  onTap: () => ref.read(portfolioProvider.notifier).launchEmail(),
                 ),
                 _ContactMethodCard(
                   icon: Icons.location_on_outlined,
@@ -292,7 +291,7 @@ class _ContactChannelsSection extends StatelessWidget {
                   description:
                       'Available for remote work and async-friendly collaboration across time zones.',
                   actionLabel: 'Say Hello',
-                  onTap: controller.launchEmail,
+                  onTap: () => ref.read(portfolioProvider.notifier).launchEmail(),
                 ),
                 _ContactMethodCard(
                   icon: Icons.description_outlined,
@@ -301,7 +300,7 @@ class _ContactChannelsSection extends StatelessWidget {
                   description:
                       'Get the full overview of experience, skills, and work history in a single file.',
                   actionLabel: 'Download CV',
-                  onTap: controller.launchResume,
+                  onTap: () => ref.read(portfolioProvider.notifier).launchResume(),
                 ),
               ];
 
@@ -333,14 +332,13 @@ class _ContactChannelsSection extends StatelessWidget {
   }
 }
 
-class _SocialLinksSection extends StatelessWidget {
+class _SocialLinksSection extends ConsumerWidget {
   const _SocialLinksSection({required this.links});
 
   final List<SocialLink> links;
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final hPad =
@@ -379,7 +377,7 @@ class _SocialLinksSection extends StatelessWidget {
                         width: cardWidth,
                         child: _SocialLinkCard(
                           link: link,
-                          onTap: () => controller.launchSocialLink(link.url),
+                          onTap: () => ref.read(portfolioProvider.notifier).launchSocialLink(link.url),
                         ),
                       ),
                     )
@@ -393,12 +391,11 @@ class _SocialLinksSection extends StatelessWidget {
   }
 }
 
-class _ContactClosingSection extends StatelessWidget {
+class _ContactClosingSection extends ConsumerWidget {
   const _ContactClosingSection();
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final hPad =
@@ -463,12 +460,12 @@ class _ContactClosingSection extends StatelessWidget {
                   label: 'Get In Touch',
                   icon: Icons.mail_outline_rounded,
                   isPrimary: true,
-                  onPressed: controller.launchEmail,
+                  onPressed: () => ref.read(portfolioProvider.notifier).launchEmail(),
                 ),
                 _HeroActionButton(
                   label: 'View Resume',
                   icon: Icons.file_download_outlined,
-                  onPressed: controller.launchResume,
+                  onPressed: () => ref.read(portfolioProvider.notifier).launchResume(),
                 ),
               ],
             ),
@@ -936,16 +933,14 @@ class _ProfileMetric extends StatelessWidget {
   }
 }
 
-class _ContactFormSection extends StatefulWidget {
-  const _ContactFormSection({required this.controller});
-
-  final PortfolioController controller;
+class _ContactFormSection extends ConsumerStatefulWidget {
+  const _ContactFormSection();
 
   @override
-  State<_ContactFormSection> createState() => _ContactFormSectionState();
+  ConsumerState<_ContactFormSection> createState() => _ContactFormSectionState();
 }
 
-class _ContactFormSectionState extends State<_ContactFormSection> {
+class _ContactFormSectionState extends ConsumerState<_ContactFormSection> {
   late final TextEditingController _nameController;
   late final TextEditingController _emailController;
   late final TextEditingController _messageController;
@@ -974,7 +969,7 @@ class _ContactFormSectionState extends State<_ContactFormSection> {
     final isCompact =
         ResponsiveHelper.isMobile(context) ||
         ResponsiveHelper.isTablet(context);
-    final socialLinks = widget.controller.personalInfo.value.socialLinks
+    final socialLinks = ref.watch(portfolioProvider).personalInfo.socialLinks
         .take(4)
         .toList(growable: false);
 
@@ -1040,7 +1035,7 @@ class _ContactFormSectionState extends State<_ContactFormSection> {
         const SizedBox(height: 28),
         _buildContactDetails(
           context,
-          widget.controller.personalInfo.value.socialLinks
+          ref.watch(portfolioProvider).personalInfo.socialLinks
               .take(4)
               .toList(growable: false),
           Theme.of(context).colorScheme,
@@ -1215,13 +1210,13 @@ class _ContactFormSectionState extends State<_ContactFormSection> {
         _buildContactDetailRow(
           icon: FontAwesomeIcons.envelope,
           label: 'Email',
-          value: widget.controller.personalInfo.value.email,
+          value: ref.watch(portfolioProvider).personalInfo.email,
         ),
         const SizedBox(height: 18),
         _buildContactDetailRow(
           icon: FontAwesomeIcons.locationDot,
           label: 'Location',
-          value: widget.controller.personalInfo.value.location,
+          value: ref.watch(portfolioProvider).personalInfo.location,
         ),
         const SizedBox(height: 28),
         Text(
@@ -1241,7 +1236,7 @@ class _ContactFormSectionState extends State<_ContactFormSection> {
               socialLinks
                   .map<Widget>(
                     (link) => InkWell(
-                      onTap: () => widget.controller.launchSocialLink(link.url),
+                      onTap: () => ref.read(portfolioProvider.notifier).launchSocialLink(link.url),
                       borderRadius: BorderRadius.circular(999),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -1337,11 +1332,11 @@ class _ContactFormSectionState extends State<_ContactFormSection> {
     final message = _messageController.text.trim();
 
     if (name.isEmpty || email.isEmpty || message.isEmpty) {
-      Get.snackbar(
-        'Missing details',
-        'Please fill in name, email, and message.',
-        backgroundColor: Colors.red.shade600,
-        colorText: Colors.white,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please fill in name, email, and message.'),
+          backgroundColor: Colors.red.shade600,
+        ),
       );
       return;
     }
@@ -1368,7 +1363,7 @@ class _ContactFormSectionState extends State<_ContactFormSection> {
           barrierColor: Colors.black.withValues(alpha: 0.6),
           builder: (_) => _SuccessDialog(senderName: name),
         );
-        Get.offNamed(AppRoutes.home);
+        context.go(AppRoutes.home);
       } else {
         setState(() { _isSubmitting = false; _hasError = true; });
       }

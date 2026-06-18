@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../config/app_colors.dart';
-import '../../controllers/portfolio_controller.dart';
+import '../../providers/portfolio_provider.dart';
 
 class SocialPlatform {
   final String name;
@@ -19,12 +19,11 @@ class SocialPlatform {
   });
 }
 
-class ContactSection extends StatelessWidget {
+class ContactSection extends ConsumerWidget {
   const ContactSection({super.key});
 
-  List<SocialPlatform> _buildPlatforms(PortfolioController controller) {
-    String urlFor(String platform) =>
-        controller.getSocialLink(platform)?.url ?? '';
+  List<SocialPlatform> _buildPlatforms(PortfolioState state) {
+    String urlFor(String platform) => state.getSocialLink(platform)?.url ?? '';
 
     return [
       SocialPlatform(
@@ -83,16 +82,15 @@ class ContactSection extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
     final isMobile = MediaQuery.of(context).size.width < 768;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Obx(() {
-      final platforms = _buildPlatforms(controller);
+    final platforms = _buildPlatforms(state);
 
-      return Container(
+    return Container(
         decoration: BoxDecoration(color: theme.scaffoldBackgroundColor),
         child: Stack(
           children: [
@@ -197,7 +195,7 @@ class ContactSection extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(
-                                      child: _buildGetInTouchCard(context),
+                                      child: _buildGetInTouchCard(context, ref),
                                     ),
                                   ],
                                 ),
@@ -248,7 +246,7 @@ class ContactSection extends StatelessWidget {
                                     const SizedBox(width: 16),
                                     Expanded(
                                       flex: 2,
-                                      child: _buildGetInTouchCard(context),
+                                      child: _buildGetInTouchCard(context, ref),
                                     ),
                                   ],
                                 ),
@@ -263,7 +261,6 @@ class ContactSection extends StatelessWidget {
           ],
         ),
       );
-    });
   }
 
   Widget _buildSocialCard(SocialPlatform platform, BuildContext context) {
@@ -327,15 +324,14 @@ class ContactSection extends StatelessWidget {
     );
   }
 
-  Widget _buildGetInTouchCard(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget _buildGetInTouchCard(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
     return InkWell(
       onTap:
-          () => controller.launchEmail(
+          () => ref.read(portfolioProvider.notifier).launchEmail(
             subject: 'Let\'s work together!',
             body:
                 'Hi Gokul,\n\nI came across your portfolio and would love to discuss a project with you.\n\n',

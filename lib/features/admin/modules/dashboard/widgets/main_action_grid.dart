@@ -1,30 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../../config/app_colors.dart';
-import '../../../controllers/admin_portal_controller.dart';
+import '../../../../../providers/admin_portal_provider.dart';
 import '../../../models/admin_portal_models.dart';
 import 'action_tile.dart';
 
-class MainActionGrid extends StatelessWidget {
+class MainActionGrid extends ConsumerWidget {
   const MainActionGrid({
     super.key,
-    required this.controller,
     required this.isCompact,
   });
 
-  final AdminPortalController controller;
   final bool isCompact;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(adminPortalProvider.notifier);
+
     final tiles = <AdminActionTile>[
       AdminActionTile(
         icon: Icons.add_circle_rounded,
         label: 'Create a Post',
         description: 'Write & publish content to your portfolio feed',
         accentColor: AppColors.primaryGreen,
-        onTap: () => controller.selectModule(AdminModule.createPost),
+        onTap: () => notifier.selectModule(AdminModule.createPost),
         showPlus: true,
       ),
       AdminActionTile(
@@ -33,7 +34,7 @@ class MainActionGrid extends StatelessWidget {
         description:
             'Open the page manager and control blog or post visibility on your website',
         accentColor: const Color(0xFF5CD6FF),
-        onTap: () => controller.selectModule(AdminModule.managePages),
+        onTap: () => notifier.selectModule(AdminModule.managePages),
       ),
       AdminActionTile(
         icon: Icons.description_rounded,
@@ -41,7 +42,7 @@ class MainActionGrid extends StatelessWidget {
         description:
             'Upload and manage the resume that visitors can view on your website',
         accentColor: const Color(0xFFFFB44C),
-        onTap: () => controller.selectModule(AdminModule.resumeManagement),
+        onTap: () => notifier.selectModule(AdminModule.resumeManagement),
       ),
       AdminActionTile(
         icon: Icons.inbox_rounded,
@@ -49,7 +50,7 @@ class MainActionGrid extends StatelessWidget {
         description:
             'Open all visitor communications and requirement requests from your contact form',
         accentColor: const Color(0xFFFF7C7C),
-        onTap: () => controller.selectModule(AdminModule.submissions),
+        onTap: () => notifier.selectModule(AdminModule.submissions),
       ),
     ];
 

@@ -1,37 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../controllers/admin_portal_controller.dart';
+import '../../../../../providers/admin_portal_provider.dart';
 import '../../../shared/preview_tile.dart';
 import '../../../widgets/admin_buttons.dart';
 import '../../../widgets/admin_section_header.dart';
 import '../../../widgets/admin_surface_card.dart';
 import 'collection_row.dart';
 
-class FallbackModuleWorkspace extends StatelessWidget {
+class FallbackModuleWorkspace extends ConsumerWidget {
   const FallbackModuleWorkspace({
     super.key,
-    required this.controller,
     required this.isCompact,
   });
 
-  final AdminPortalController controller;
   final bool isCompact;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(adminPortalProvider.notifier);
+
     final editorPanel = AdminSurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AdminSectionHeader(
             eyebrow: 'COLLECTION EDITOR',
-            title: controller.pageTitle,
+            title: notifier.pageTitle,
             description:
                 'This pattern is intentionally reusable so all future Firebase-backed modules share the same editing rhythm.',
             action: AdminPrimaryButton(label: 'New entry', onPressed: () {}),
           ),
           const SizedBox(height: 18),
-          ...controller.activeCollections.map(
+          ...notifier.activeCollections.map(
             (item) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: CollectionRow(item: item),

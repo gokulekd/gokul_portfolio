@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../config/app_colors.dart';
-import '../../../controllers/portfolio_controller.dart';
 import '../../../models/portfolio_models.dart';
+import '../../../providers/portfolio_provider.dart';
 import '../../../utils/responsive_helper.dart';
 import '../../../widgets/shared/custom_widgets.dart';
 import '../../../widgets/shared/footer_section.dart';
@@ -36,13 +36,13 @@ class ResumePage extends StatelessWidget {
   }
 }
 
-class _ResumeHeroSection extends StatelessWidget {
+class _ResumeHeroSection extends ConsumerWidget {
   const _ResumeHeroSection();
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
-    final info = controller.personalInfo.value;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
+    final info = state.personalInfo;
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -154,12 +154,12 @@ class _ResumeHeroSection extends StatelessWidget {
                         label: 'Download CV',
                         icon: Icons.download_rounded,
                         isPrimary: true,
-                        onPressed: controller.launchResume,
+                        onPressed: () => ref.read(portfolioProvider.notifier).launchResume(),
                       ),
                       _ResumeActionButton(
                         label: 'Email Me',
                         icon: Icons.north_east_rounded,
-                        onPressed: controller.launchEmail,
+                        onPressed: () => ref.read(portfolioProvider.notifier).launchEmail(),
                       ),
                     ],
                   ),
@@ -193,14 +193,14 @@ class _ResumeHeroSection extends StatelessWidget {
   }
 }
 
-class _ResumeOverviewSection extends StatelessWidget {
+class _ResumeOverviewSection extends ConsumerWidget {
   const _ResumeOverviewSection();
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
-    final info = controller.personalInfo.value;
-    final experiences = controller.experiences;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
+    final info = state.personalInfo;
+    final experiences = state.experiences;
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final hPad =
@@ -262,13 +262,13 @@ class _ResumeOverviewSection extends StatelessWidget {
   }
 }
 
-class _ResumeExperienceSection extends StatelessWidget {
+class _ResumeExperienceSection extends ConsumerWidget {
   const _ResumeExperienceSection();
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
-    final experiences = controller.experiences;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
+    final experiences = state.experiences;
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final hPad =
@@ -394,12 +394,11 @@ class _ResumeHighlightsSection extends StatelessWidget {
   }
 }
 
-class _ResumeClosingSection extends StatelessWidget {
+class _ResumeClosingSection extends ConsumerWidget {
   const _ResumeClosingSection();
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final hPad =
@@ -468,12 +467,12 @@ class _ResumeClosingSection extends StatelessWidget {
                       label: 'Download CV',
                       icon: Icons.file_download_outlined,
                       isPrimary: true,
-                      onPressed: controller.launchResume,
+                      onPressed: () => ref.read(portfolioProvider.notifier).launchResume(),
                     ),
                     _ResumeActionButton(
                       label: 'Contact Me',
                       icon: Icons.mail_outline_rounded,
-                      onPressed: controller.launchEmail,
+                      onPressed: () => ref.read(portfolioProvider.notifier).launchEmail(),
                     ),
                   ],
                 ),

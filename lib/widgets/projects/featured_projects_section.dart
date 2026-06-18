@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../controllers/portfolio_controller.dart';
 import '../../features/admin/modules/projects/models/app_project.dart';
+import '../../providers/portfolio_provider.dart';
 import '../../routes/app_routes.dart';
 import '../../utils/responsive_helper.dart';
 
@@ -16,12 +17,12 @@ const _kAccents = [
   Color(0xFFFFB347), // amber
 ];
 
-class FeaturedProjectsSection extends StatelessWidget {
+class FeaturedProjectsSection extends ConsumerWidget {
   const FeaturedProjectsSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
 
@@ -44,7 +45,7 @@ class FeaturedProjectsSection extends StatelessWidget {
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
-                      child: _ClientButton(isMobile: isMobile, isTablet: isTablet, controller: controller),
+                      child: _ClientButton(isMobile: isMobile, isTablet: isTablet),
                     ),
                   ],
                 )
@@ -54,14 +55,14 @@ class FeaturedProjectsSection extends StatelessWidget {
                   children: [
                     Flexible(child: _SectionHeader(isMobile: isMobile, isTablet: isTablet)),
                     const SizedBox(width: 16),
-                    _ClientButton(isMobile: isMobile, isTablet: isTablet, controller: controller),
+                    _ClientButton(isMobile: isMobile, isTablet: isTablet),
                   ],
                 ),
 
           SizedBox(height: isMobile ? 32 : isTablet ? 48 : 60),
 
-          Obx(() {
-            final featured = controller.featuredAppProjects;
+          Builder(builder: (context) {
+            final featured = state.featuredAppProjects;
             if (featured.isEmpty) return const SizedBox.shrink();
             return ListView.separated(
               shrinkWrap: true,
@@ -80,8 +81,8 @@ class FeaturedProjectsSection extends StatelessWidget {
           Center(
             child: OutlinedButton(
               onPressed: () {
-                controller.changePage(3);
-                Get.offNamed(AppRoutes.projects);
+                ref.read(portfolioProvider.notifier).changePage(3);
+                context.go(AppRoutes.projects);
               },
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(
@@ -146,22 +147,20 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _ClientButton extends StatelessWidget {
+class _ClientButton extends ConsumerWidget {
   const _ClientButton({
     required this.isMobile,
     required this.isTablet,
-    required this.controller,
   });
   final bool isMobile;
   final bool isTablet;
-  final PortfolioController controller;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton(
       onPressed: () {
-        controller.changePage(5);
-        Get.offNamed(AppRoutes.contact);
+        ref.read(portfolioProvider.notifier).changePage(5);
+        context.go(AppRoutes.contact);
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.black87,
@@ -230,7 +229,7 @@ class _AppProjectCardState extends State<AppProjectCard> {
       onExit: (_) => setState(() => _hovered = false),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () => Get.toNamed(
+        onTap: () => context.go(
           AppRoutes.projectDetail.replaceFirst(':id', project.id),
         ),
         child: AnimatedContainer(

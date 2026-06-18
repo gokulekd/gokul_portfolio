@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../config/app_colors.dart';
-import '../controllers/admin_auth_controller.dart';
-import '../controllers/admin_portal_controller.dart';
+import '../../../providers/admin_auth_provider.dart';
+import '../../../providers/admin_portal_provider.dart';
 import '../models/admin_portal_models.dart';
 
-class AdminPortalNavigation extends StatelessWidget {
+class AdminPortalNavigation extends ConsumerWidget {
   const AdminPortalNavigation({
     super.key,
-    required this.controller,
     this.isDrawer = false,
   });
 
-  final AdminPortalController controller;
   final bool isDrawer;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final portalState = ref.watch(adminPortalProvider);
+    final notifier = ref.read(adminPortalProvider.notifier);
 
     return Container(
       width: isDrawer ? null : 296,
@@ -38,37 +38,32 @@ class AdminPortalNavigation extends StatelessWidget {
               const SizedBox(height: 20),
               Expanded(
                 child: SingleChildScrollView(
-                  child: Obx(
-                    () => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: controller.navigationGroups.indexed
-                          .expand((entry) {
-                            final (index, group) = entry;
-                            final items = controller.modulesForGroup(group);
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: notifier.navigationGroups.indexed
+                        .expand((entry) {
+                          final (index, group) = entry;
+                          final items = notifier.modulesForGroup(group);
 
-                            return [
-                              _GroupLabel(title: group.label),
-                              ...items.map(
-                                (item) => _NavItem(
-                                  item: item,
-                                  selected:
-                                      controller.selectedModule.value ==
-                                      item.module,
-                                  onTap: () {
-                                    controller.selectModule(item.module);
-                                    if (isDrawer) {
-                                      Navigator.of(context).pop();
-                                    }
-                                  },
-                                ),
+                          return [
+                            _GroupLabel(title: group.label),
+                            ...items.map(
+                              (item) => _NavItem(
+                                item: item,
+                                selected: portalState.selectedModule == item.module,
+                                onTap: () {
+                                  notifier.selectModule(item.module);
+                                  if (isDrawer) {
+                                    Navigator.of(context).pop();
+                                  }
+                                },
                               ),
-                              if (index !=
-                                  controller.navigationGroups.length - 1)
-                                const SizedBox(height: 16),
-                            ];
-                          })
-                          .toList(growable: false),
-                    ),
+                            ),
+                            if (index != notifier.navigationGroups.length - 1)
+                              const SizedBox(height: 16),
+                          ];
+                        })
+                        .toList(growable: false),
                   ),
                 ),
               ),
@@ -181,15 +176,13 @@ class _NavItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            color:
-                selected
-                    ? const Color(0xFF1B2220)
-                    : Colors.white.withValues(alpha: 0.02),
+            color: selected
+                ? const Color(0xFF1B2220)
+                : Colors.white.withValues(alpha: 0.02),
             border: Border.all(
-              color:
-                  selected
-                      ? AppColors.primaryGreen.withValues(alpha: 0.30)
-                      : Colors.white.withValues(alpha: 0.04),
+              color: selected
+                  ? AppColors.primaryGreen.withValues(alpha: 0.30)
+                  : Colors.white.withValues(alpha: 0.04),
             ),
           ),
           child: Row(
@@ -198,10 +191,9 @@ class _NavItem extends StatelessWidget {
                 height: 38,
                 width: 38,
                 decoration: BoxDecoration(
-                  color:
-                      selected
-                          ? AppColors.primaryGreen.withValues(alpha: 0.18)
-                          : Colors.white.withValues(alpha: 0.06),
+                  color: selected
+                      ? AppColors.primaryGreen.withValues(alpha: 0.18)
+                      : Colors.white.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -242,10 +234,9 @@ class _NavItem extends StatelessWidget {
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color:
-                        selected
-                            ? AppColors.primaryGreen
-                            : const Color(0xFF23282D),
+                    color: selected
+                        ? AppColors.primaryGreen
+                        : const Color(0xFF23282D),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
@@ -265,11 +256,11 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-class _ProfileBlock extends StatelessWidget {
+class _ProfileBlock extends ConsumerWidget {
   const _ProfileBlock();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -325,7 +316,7 @@ class _ProfileBlock extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () => Get.find<AdminAuthController>().signOut(),
+            onPressed: () => ref.read(adminAuthProvider.notifier).signOut(),
             icon: const Icon(Icons.logout_rounded, color: Colors.white54),
             tooltip: 'Logout',
           ),

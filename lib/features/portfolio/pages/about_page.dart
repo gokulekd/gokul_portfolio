@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../config/app_colors.dart';
-import '../../../controllers/portfolio_controller.dart';
 import '../../../models/portfolio_models.dart';
+import '../../../providers/portfolio_provider.dart';
 import '../../../utils/responsive_helper.dart';
 import '../../../widgets/shared/available_badge.dart';
 import '../../../widgets/shared/custom_widgets.dart';
@@ -17,8 +17,6 @@ class AboutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
-
     return Scaffold(
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
@@ -26,10 +24,10 @@ class AboutPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _AboutHeroSection(controller: controller),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 48, 24, 0),
-              child: _EducationExperienceSection(controller: controller),
+            const _AboutHeroSection(),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(24, 48, 24, 0),
+              child: _EducationExperienceSection(),
             ),
             const SizedBox(height: 32),
             const SkillsSection(),
@@ -41,16 +39,14 @@ class AboutPage extends StatelessWidget {
   }
 }
 
-class _AboutHeroSection extends StatefulWidget {
-  const _AboutHeroSection({required this.controller});
-
-  final PortfolioController controller;
+class _AboutHeroSection extends ConsumerStatefulWidget {
+  const _AboutHeroSection();
 
   @override
-  State<_AboutHeroSection> createState() => _AboutHeroSectionState();
+  ConsumerState<_AboutHeroSection> createState() => _AboutHeroSectionState();
 }
 
-class _AboutHeroSectionState extends State<_AboutHeroSection>
+class _AboutHeroSectionState extends ConsumerState<_AboutHeroSection>
     with TickerProviderStateMixin {
   late AnimationController _imageController;
   late AnimationController _textController;
@@ -220,7 +216,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
     double socialIconScale,
     String profileImageUrl,
   ) {
-    final controller = widget.controller;
+    final state = ref.watch(portfolioProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,7 +236,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
                   child: Column(
                     children: [
                       Text(
-                        controller.personalInfo.value.name,
+                        state.personalInfo.name,
                         style: GoogleFonts.inter(
                           fontSize: nameFontSize,
                           fontWeight: FontWeight.w700,
@@ -249,7 +245,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        controller.personalInfo.value.title,
+                        state.personalInfo.title,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           fontSize: titleFontSize,
@@ -273,7 +269,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children:
-                        controller.personalInfo.value.socialLinks
+                        state.personalInfo.socialLinks
                             .take(3)
                             .toList()
                             .asMap()
@@ -533,8 +529,9 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
             ? 40.0
             : 80.0;
 
-    final info = widget.controller.personalInfo.value;
-    final githubStats = widget.controller.githubStats.value;
+    final state = ref.watch(portfolioProvider);
+    final info = state.personalInfo;
+    final githubStats = state.githubStats;
     final profileImageUrl =
         githubStats?.avatarUrl.isNotEmpty == true
             ? githubStats!.avatarUrl
@@ -607,7 +604,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
     double socialIconScale,
     String profileImageUrl,
   ) {
-    final controller = widget.controller;
+    final state = ref.watch(portfolioProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -624,7 +621,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
                 child: Column(
                   children: [
                     Text(
-                      controller.personalInfo.value.name,
+                      state.personalInfo.name,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: nameFontSize,
@@ -634,7 +631,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      controller.personalInfo.value.title,
+                      state.personalInfo.title,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: titleFontSize,
@@ -656,7 +653,7 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children:
-                      controller.personalInfo.value.socialLinks
+                      state.personalInfo.socialLinks
                           .take(3)
                           .toList()
                           .asMap()
@@ -797,10 +794,8 @@ class _AboutHeroSectionState extends State<_AboutHeroSection>
   }
 }
 
-class _EducationExperienceSection extends StatelessWidget {
-  const _EducationExperienceSection({required this.controller});
-
-  final PortfolioController controller;
+class _EducationExperienceSection extends ConsumerWidget {
+  const _EducationExperienceSection();
 
   static const List<_EducationEntry> _educationEntries = [
     _EducationEntry(
@@ -830,7 +825,8 @@ class _EducationExperienceSection extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
     final isCompact =
         ResponsiveHelper.isMobile(context) ||
         ResponsiveHelper.isTablet(context);
@@ -840,7 +836,7 @@ class _EducationExperienceSection extends StatelessWidget {
           children: [
             _EducationPanel(entries: _educationEntries),
             const SizedBox(height: 20),
-            _ExperiencePanel(experiences: controller.experiences.toList()),
+            _ExperiencePanel(experiences: state.experiences.toList()),
           ],
         )
         : Row(
@@ -850,7 +846,7 @@ class _EducationExperienceSection extends StatelessWidget {
             const SizedBox(width: 24),
             Expanded(
               child: _ExperiencePanel(
-                experiences: controller.experiences.toList(),
+                experiences: state.experiences.toList(),
               ),
             ),
           ],

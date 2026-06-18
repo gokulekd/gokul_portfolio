@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../config/app_colors.dart';
 import '../../controllers/portfolio_controller.dart';
 import '../../controllers/theme_controller.dart';
 import '../../models/firebase_content_models.dart';
+import '../../routes/app_router.dart';
 import '../../routes/app_routes.dart';
 import '../../utils/responsive_helper.dart';
 
@@ -18,17 +20,17 @@ void _navigateToPage(
   final route = AppRoutes.indexToRoute[index];
   if (route != null) {
     controller.changePage(index);
-    Get.offNamed(route);
+    appRouter.go(route);
   }
 }
 
 void _handleHomeNav(PortfolioController controller) {
   controller.changePage(0);
-  Get.offNamed(AppRoutes.home);
+  appRouter.go(AppRoutes.home);
 }
 
 void _handleResumeNav(PortfolioController controller) {
-  Get.offNamed(AppRoutes.resume);
+  appRouter.go(AppRoutes.resume);
 }
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -80,7 +82,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: InkWell(
             onTap: () {
               controller.changePage(0);
-              Get.offNamed(AppRoutes.home);
+              context.go(AppRoutes.home);
             },
             child: Padding(
               padding: const EdgeInsets.only(left: 24),
@@ -285,7 +287,7 @@ class CustomDrawer extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 controller.changePage(0);
-                Get.offNamed(AppRoutes.home);
+                context.go(AppRoutes.home);
               },
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

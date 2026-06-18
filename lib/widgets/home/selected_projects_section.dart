@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../config/app_colors.dart';
@@ -130,7 +131,7 @@ class SelectedProjectsSection extends StatelessWidget {
                       ElevatedButton(
                         onPressed: () {
                           controller.changePage(3);
-                          Get.offNamed(AppRoutes.projects);
+                          context.go(AppRoutes.projects);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryGreen,

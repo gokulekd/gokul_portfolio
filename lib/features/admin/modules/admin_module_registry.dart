@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../controllers/admin_portal_controller.dart';
 import '../models/admin_portal_models.dart';
 import '../shared/content_list_workspace.dart';
 import 'basic_details/basic_details_workspace.dart';
@@ -23,31 +22,15 @@ class AdminModuleRegistry {
 
   static Widget buildWorkspace({
     required AdminModule module,
-    required AdminPortalController controller,
     required bool isCompact,
   }) {
     return switch (module) {
-      AdminModule.dashboard => DashboardWorkspace(
-        controller: controller,
-        isCompact: isCompact,
-      ),
-      AdminModule.basicDetails => BasicDetailsWorkspace(
-        controller: controller,
-        isCompact: isCompact,
-      ),
-      AdminModule.siteStructure => SiteStructureWorkspace(
-        controller: controller,
-        isCompact: isCompact,
-      ),
+      AdminModule.dashboard => DashboardWorkspace(isCompact: isCompact),
+      AdminModule.basicDetails => BasicDetailsWorkspace(isCompact: isCompact),
+      AdminModule.siteStructure => SiteStructureWorkspace(isCompact: isCompact),
       AdminModule.homeContent => HomeContentWorkspace(isCompact: isCompact),
-      AdminModule.projects => ProjectsWorkspace(
-        controller: controller,
-        isCompact: isCompact,
-      ),
-      AdminModule.skillsExperience => SkillsWorkspace(
-        controller: controller,
-        isCompact: isCompact,
-      ),
+      AdminModule.projects => ProjectsWorkspace(isCompact: isCompact),
+      AdminModule.skillsExperience => SkillsWorkspace(isCompact: isCompact),
       AdminModule.developmentAreas => _contentListWorkspace(
         module: module,
         isCompact: isCompact,
@@ -245,7 +228,7 @@ class AdminModuleRegistry {
           ContentItem(
             title: 'What is your primary tech stack?',
             body:
-                'Flutter & Dart for cross-platform apps, Firebase for backend, GetX for state management.',
+                'Flutter & Dart for cross-platform apps, Firebase for backend, Riverpod for state management.',
             isVisible: true,
           ),
           ContentItem(
@@ -262,43 +245,15 @@ class AdminModuleRegistry {
           ),
         ],
       ),
-      AdminModule.socialContact => SocialContactWorkspace(
-        controller: controller,
-        isCompact: isCompact,
-      ),
+      AdminModule.socialContact => SocialContactWorkspace(isCompact: isCompact),
       AdminModule.blog => BlogWorkspace(isCompact: isCompact),
-      AdminModule.submissions => SubmissionsWorkspace(
-        controller: controller,
-        isCompact: isCompact,
-      ),
-      AdminModule.mediaLibrary => MediaLibraryWorkspace(
-        controller: controller,
-        isCompact: isCompact,
-      ),
-      AdminModule.settings => SettingsWorkspace(
-        controller: controller,
-        isCompact: isCompact,
-      ),
+      AdminModule.submissions => SubmissionsWorkspace(isCompact: isCompact),
+      AdminModule.mediaLibrary => MediaLibraryWorkspace(isCompact: isCompact),
+      AdminModule.settings => SettingsWorkspace(isCompact: isCompact),
       AdminModule.createPost => CreatePostWorkspace(isCompact: isCompact),
-      AdminModule.managePages => ManagePagesWorkspace(
-        controller: controller,
-        isCompact: isCompact,
-      ),
-      AdminModule.resumeManagement => ResumeManagementWorkspace(
-        controller: controller,
-        isCompact: isCompact,
-      ),
+      AdminModule.managePages => ManagePagesWorkspace(isCompact: isCompact),
+      AdminModule.resumeManagement => ResumeManagementWorkspace(isCompact: isCompact),
     };
-  }
-
-  static Widget fallbackWorkspace({
-    required AdminPortalController controller,
-    required bool isCompact,
-  }) {
-    return FallbackModuleWorkspace(
-      controller: controller,
-      isCompact: isCompact,
-    );
   }
 
   static ContentListWorkspace _contentListWorkspace({

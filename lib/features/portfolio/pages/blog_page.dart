@@ -1,64 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../config/app_colors.dart';
-import '../../../controllers/portfolio_controller.dart';
 import '../../../models/portfolio_models.dart';
+import '../../../providers/portfolio_provider.dart';
 import '../../../utils/responsive_helper.dart';
 import '../../../widgets/shared/custom_widgets.dart';
 import '../../../widgets/shared/footer_section.dart';
 
-class BlogPage extends StatelessWidget {
+class BlogPage extends ConsumerWidget {
   const BlogPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final posts = ref.watch(portfolioProvider).blogPosts;
 
     return Scaffold(
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
       body: SingleChildScrollView(
-        child: Obx(() {
-          final posts = controller.blogPosts;
-
-          if (posts.isEmpty) {
-            return const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _BlogHeroSection(),
-                _EmptyBlogState(),
-                FooterSection(),
-              ],
-            );
-          }
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _BlogHeroSection(featuredPost: posts.first),
-              _BlogFeaturedSection(featuredPost: posts.first),
-              _BlogPostsSection(posts: posts),
-              const FooterSection(),
-            ],
-          );
-        }),
+        child: posts.isEmpty
+            ? const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _BlogHeroSection(),
+                  _EmptyBlogState(),
+                  FooterSection(),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _BlogHeroSection(featuredPost: posts.first),
+                  _BlogFeaturedSection(featuredPost: posts.first),
+                  _BlogPostsSection(posts: posts),
+                  const FooterSection(),
+                ],
+              ),
       ),
     );
   }
 }
 
-class _BlogHeroSection extends StatelessWidget {
+class _BlogHeroSection extends ConsumerWidget {
   const _BlogHeroSection({this.featuredPost});
 
   final BlogPost? featuredPost;
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
-    final info = controller.personalInfo.value;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
+    final info = state.personalInfo;
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -170,12 +165,12 @@ class _BlogHeroSection extends StatelessWidget {
                         label: 'Email Me',
                         icon: Icons.north_east_rounded,
                         isPrimary: true,
-                        onPressed: controller.launchEmail,
+                        onPressed: () => ref.read(portfolioProvider.notifier).launchEmail(),
                       ),
                       _HeroActionButton(
                         label: 'Download CV',
                         icon: Icons.download_rounded,
-                        onPressed: controller.launchResume,
+                        onPressed: () => ref.read(portfolioProvider.notifier).launchResume(),
                       ),
                     ],
                   ),
@@ -186,7 +181,7 @@ class _BlogHeroSection extends StatelessWidget {
                     children: [
                       _HeroPill(
                         icon: Icons.article_outlined,
-                        label: '${controller.blogPosts.length}+ Posts',
+                        label: '${state.blogPosts.length}+ Posts',
                       ),
                       _HeroPill(
                         icon: Icons.draw_outlined,
@@ -523,13 +518,13 @@ class _FeaturedPostCard extends StatelessWidget {
   }
 }
 
-class _BlogProfileCard extends StatelessWidget {
+class _BlogProfileCard extends ConsumerWidget {
   const _BlogProfileCard({this.post});
 
   final BlogPost? post;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final isMobile = ResponsiveHelper.isMobile(context);
 
@@ -583,7 +578,7 @@ class _BlogProfileCard extends StatelessWidget {
           const Divider(height: 1),
           const SizedBox(height: 20),
           _ProfileMetric(
-            value: '${Get.find<PortfolioController>().blogPosts.length}+',
+            value: '${ref.watch(portfolioProvider).blogPosts.length}+',
             label: 'Published posts available to read',
           ),
           const SizedBox(height: 14),
@@ -910,8 +905,9 @@ String _formatDate(DateTime date) {
 void _showBlogPost(BuildContext context, BlogPost post) {
   final colorScheme = Theme.of(context).colorScheme;
 
-  Get.dialog(
-    Dialog(
+  showDialog(
+    context: context,
+    builder: (_) => Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 700, maxHeight: 720),
@@ -992,7 +988,7 @@ void _showBlogPost(BuildContext context, BlogPost post) {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () => Get.back(),
+                    onPressed: () => context.pop(),
                     child: Text(
                       'Close',
                       style: GoogleFonts.manrope(
@@ -1010,3 +1006,4 @@ void _showBlogPost(BuildContext context, BlogPost post) {
     ),
   );
 }
+

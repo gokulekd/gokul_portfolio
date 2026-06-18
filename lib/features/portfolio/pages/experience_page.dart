@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../config/app_colors.dart';
-import '../../../controllers/portfolio_controller.dart';
 import '../../../models/portfolio_models.dart';
+import '../../../providers/portfolio_provider.dart';
 import '../../../utils/responsive_helper.dart';
 import '../../../widgets/shared/custom_widgets.dart';
 import '../../../widgets/shared/footer_section.dart';
 
-class ExperiencePage extends StatelessWidget {
+class ExperiencePage extends ConsumerWidget {
   const ExperiencePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
 
     return Scaffold(
       appBar: const CustomAppBar(),
@@ -24,7 +24,7 @@ class ExperiencePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const _ExperienceHeroSection(),
-            _ExperienceTimelineSection(experiences: controller.experiences),
+            _ExperienceTimelineSection(experiences: state.experiences),
             const _ExperienceStrengthsSection(),
             const _ExperienceClosingSection(),
             const FooterSection(),
@@ -35,14 +35,14 @@ class ExperiencePage extends StatelessWidget {
   }
 }
 
-class _ExperienceHeroSection extends StatelessWidget {
+class _ExperienceHeroSection extends ConsumerWidget {
   const _ExperienceHeroSection();
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
-    final info = controller.personalInfo.value;
-    final experiences = controller.experiences;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
+    final info = state.personalInfo;
+    final experiences = state.experiences;
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -154,12 +154,12 @@ class _ExperienceHeroSection extends StatelessWidget {
                         label: 'Contact Me',
                         icon: Icons.north_east_rounded,
                         isPrimary: true,
-                        onPressed: controller.launchEmail,
+                        onPressed: () => ref.read(portfolioProvider.notifier).launchEmail(),
                       ),
                       _HeroActionButton(
                         label: 'Download CV',
                         icon: Icons.download_rounded,
-                        onPressed: controller.launchResume,
+                        onPressed: () => ref.read(portfolioProvider.notifier).launchResume(),
                       ),
                     ],
                   ),
@@ -317,12 +317,11 @@ class _ExperienceStrengthsSection extends StatelessWidget {
   }
 }
 
-class _ExperienceClosingSection extends StatelessWidget {
+class _ExperienceClosingSection extends ConsumerWidget {
   const _ExperienceClosingSection();
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final hPad =
@@ -387,12 +386,12 @@ class _ExperienceClosingSection extends StatelessWidget {
                   label: 'Download CV',
                   icon: Icons.file_download_outlined,
                   isPrimary: true,
-                  onPressed: controller.launchResume,
+                  onPressed: () => ref.read(portfolioProvider.notifier).launchResume(),
                 ),
                 _HeroActionButton(
                   label: 'Get In Touch',
                   icon: Icons.mail_outline_rounded,
-                  onPressed: controller.launchEmail,
+                  onPressed: () => ref.read(portfolioProvider.notifier).launchEmail(),
                 ),
               ],
             ),

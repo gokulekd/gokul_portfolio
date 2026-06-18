@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../admin/modules/projects/models/app_project.dart';
-import '../../../controllers/portfolio_controller.dart';
+import '../../../providers/portfolio_provider.dart';
 import '../../../utils/responsive_helper.dart';
 import '../../../widgets/shared/custom_widgets.dart';
 
@@ -15,16 +16,17 @@ const _kAccents = [
   Color(0xFFFFB347),
 ];
 
-class ProjectDetailPage extends StatelessWidget {
-  const ProjectDetailPage({super.key});
+class ProjectDetailPage extends ConsumerWidget {
+  const ProjectDetailPage({super.key, required this.projectId});
+
+  final String projectId;
 
   @override
-  Widget build(BuildContext context) {
-    final projectId = Get.parameters['id'] ?? '';
-    final controller = Get.find<PortfolioController>();
-
-    final AppProject? project = controller.appProjects
-        .firstWhereOrNull((p) => p.id == projectId);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
+    final AppProject? project = state.appProjects
+        .cast<AppProject?>()
+        .firstWhere((p) => p?.id == projectId, orElse: () => null);
 
     if (project == null) {
       return Scaffold(
@@ -46,7 +48,7 @@ class ProjectDetailPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               TextButton(
-                onPressed: () => Get.back(),
+                onPressed: () => context.pop(),
                 child: Text(
                   'Go back',
                   style: GoogleFonts.manrope(fontSize: 15),
@@ -318,7 +320,7 @@ class _BannerSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               child: InkWell(
                 borderRadius: BorderRadius.circular(24),
-                onTap: () => Get.back(),
+                onTap: () => context.pop(),
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   child: Row(

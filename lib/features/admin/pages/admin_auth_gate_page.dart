@@ -1,31 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../config/app_colors.dart';
-import '../controllers/admin_auth_controller.dart';
+import '../../../providers/admin_auth_provider.dart';
 import 'admin_portal_page.dart';
 
-class AdminAuthGatePage extends StatelessWidget {
-  AdminAuthGatePage({super.key});
-
-  final AdminAuthController controller = Get.put(AdminAuthController());
+class AdminAuthGatePage extends ConsumerWidget {
+  const AdminAuthGatePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    if (!controller.isFirebaseReady) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(adminAuthProvider.notifier);
+
+    if (!notifier.isFirebaseReady) {
       return _AdminSetupState(
-        message: controller.firebaseStatusMessage,
-        allowedEmail: controller.allowedEmail,
+        message: notifier.firebaseStatusMessage,
+        allowedEmail: notifier.allowedEmail,
       );
     }
 
-    return Obx(() {
-      if (controller.hasAccess) {
-        return AdminPortalPage();
-      }
-      return _AdminLoginState(controller: controller);
-    });
+    final authState = ref.watch(adminAuthProvider);
+    if (authState.hasAccess) {
+      return const AdminPortalPage();
+    }
+    return const _AdminLoginState();
   }
 }
 
@@ -118,13 +117,14 @@ class _AdminSetupState extends StatelessWidget {
   }
 }
 
-class _AdminLoginState extends StatelessWidget {
-  const _AdminLoginState({required this.controller});
-
-  final AdminAuthController controller;
+class _AdminLoginState extends ConsumerWidget {
+  const _AdminLoginState();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(adminAuthProvider);
+    final notifier = ref.read(adminAuthProvider.notifier);
+
     return Scaffold(
       backgroundColor: const Color(0xFF0B0C0E),
       body: Container(
@@ -208,95 +208,91 @@ class _AdminLoginState extends StatelessWidget {
                           color: Colors.white.withValues(alpha: 0.08),
                         ),
                       ),
-                      child: Obx(
-                        () => Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Admin Sign-In',
-                              style: GoogleFonts.manrope(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 24,
-                              ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Admin Sign-In',
+                            style: GoogleFonts.manrope(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 24,
                             ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Allowed email: ${controller.allowedEmail}',
-                              style: GoogleFonts.manrope(
-                                color: Colors.white60,
-                                height: 1.6,
-                              ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Allowed email: ${notifier.allowedEmail}',
+                            style: GoogleFonts.manrope(
+                              color: Colors.white60,
+                              height: 1.6,
                             ),
-                            if (controller.errorMessage.value != null) ...[
-                              const SizedBox(height: 18),
-                              Container(
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
+                          ),
+                          if (authState.errorMessage != null) ...[
+                            const SizedBox(height: 18),
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFFFF7C7C,
+                                ).withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
                                   color: const Color(
                                     0xFFFF7C7C,
-                                  ).withValues(alpha: 0.10),
-                                  borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(
-                                    color: const Color(
-                                      0xFFFF7C7C,
-                                    ).withValues(alpha: 0.18),
-                                  ),
-                                ),
-                                child: Text(
-                                  controller.errorMessage.value!,
-                                  style: GoogleFonts.manrope(
-                                    color: Colors.white,
-                                    height: 1.6,
-                                  ),
+                                  ).withValues(alpha: 0.18),
                                 ),
                               ),
-                            ],
-                            const SizedBox(height: 22),
-                            SizedBox(
-                              width: double.infinity,
-                              child: FilledButton.icon(
-                                onPressed:
-                                    controller.isSigningIn.value
-                                        ? null
-                                        : controller.signIn,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: AppColors.primaryGreen,
-                                  foregroundColor: Colors.black,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 18,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                ),
-                                icon:
-                                    controller.isSigningIn.value
-                                        ? const SizedBox(
-                                          width: 18,
-                                          height: 18,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                                  Colors.black,
-                                                ),
-                                          ),
-                                        )
-                                        : const Icon(Icons.login_rounded),
-                                label: Text(
-                                  controller.isSigningIn.value
-                                      ? 'Signing in...'
-                                      : 'Continue with Google',
-                                  style: GoogleFonts.manrope(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 15,
-                                  ),
+                              child: Text(
+                                authState.errorMessage!,
+                                style: GoogleFonts.manrope(
+                                  color: Colors.white,
+                                  height: 1.6,
                                 ),
                               ),
                             ),
                           ],
-                        ),
+                          const SizedBox(height: 22),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: authState.isSigningIn
+                                  ? null
+                                  : () => ref.read(adminAuthProvider.notifier).signIn(),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.primaryGreen,
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 18,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              icon: authState.isSigningIn
+                                  ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor:
+                                          AlwaysStoppedAnimation<Color>(
+                                            Colors.black,
+                                          ),
+                                    ),
+                                  )
+                                  : const Icon(Icons.login_rounded),
+                              label: Text(
+                                authState.isSigningIn
+                                    ? 'Signing in...'
+                                    : 'Continue with Google',
+                                style: GoogleFonts.manrope(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

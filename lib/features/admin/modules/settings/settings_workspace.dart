@@ -1,36 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../config/app_colors.dart';
-import '../../controllers/admin_auth_controller.dart';
-import '../../controllers/admin_portal_controller.dart';
+import '../../../../providers/admin_auth_provider.dart';
+import '../../../../providers/admin_portal_provider.dart';
 import '../../shared/admin_portal_components.dart';
 import '../../shared/dialog_widgets.dart';
 import '../../shared/preview_tile.dart';
 
-class SettingsWorkspace extends StatefulWidget {
+class SettingsWorkspace extends ConsumerStatefulWidget {
   const SettingsWorkspace({
     super.key,
-    required this.controller,
     required this.isCompact,
   });
 
-  final AdminPortalController controller;
   final bool isCompact;
 
   @override
-  State<SettingsWorkspace> createState() => _SettingsWorkspaceState();
+  ConsumerState<SettingsWorkspace> createState() => _SettingsWorkspaceState();
 }
 
-class _SettingsWorkspaceState extends State<SettingsWorkspace> {
+class _SettingsWorkspaceState extends ConsumerState<SettingsWorkspace> {
   bool _notifyNewSubmissions = true;
   bool _notifyProjectUpdates = false;
   bool _notifyBlogSync = true;
   bool _analyticsEnabled = true;
   bool _maintenanceMode = false;
-
-  final _authController = Get.find<AdminAuthController>();
 
   void _confirmDangerAction(
     BuildContext context,
@@ -94,6 +90,11 @@ class _SettingsWorkspaceState extends State<SettingsWorkspace> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(adminAuthProvider);
+    final authNotifier = ref.read(adminAuthProvider.notifier);
+    final portalNotifier = ref.read(adminPortalProvider.notifier);
+    final portalState = ref.watch(adminPortalProvider);
+
     final settingsPanel = AdminSurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,87 +109,83 @@ class _SettingsWorkspaceState extends State<SettingsWorkspace> {
 
           SectionLabel(label: 'ACCOUNT'),
           const SizedBox(height: 12),
-          Obx(() {
-            final user = _authController.currentUser.value;
-            return Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.03),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryGreen.withValues(alpha: 0.14),
-                      shape: BoxShape.circle,
-                    ),
-                    child:
-                        user?.photoURL != null
-                            ? ClipOval(
-                              child: Image.network(
-                                user!.photoURL!,
-                                fit: BoxFit.cover,
-                                errorBuilder:
-                                    (context, error, stackTrace) => const Icon(
-                                      Icons.person_rounded,
-                                      color: AppColors.primaryGreen,
-                                    ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.03),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryGreen.withValues(alpha: 0.14),
+                    shape: BoxShape.circle,
+                  ),
+                  child: authState.currentUser?.photoURL != null
+                      ? ClipOval(
+                        child: Image.network(
+                          authState.currentUser!.photoURL!,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) => const Icon(
+                                Icons.person_rounded,
+                                color: AppColors.primaryGreen,
                               ),
-                            )
-                            : const Icon(
-                              Icons.person_rounded,
-                              color: AppColors.primaryGreen,
-                            ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user?.displayName ?? 'Admin',
-                          style: GoogleFonts.manrope(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                          ),
                         ),
-                        Text(
-                          user?.email ?? _authController.allowedEmail,
-                          style: GoogleFonts.manrope(
-                            color: Colors.white54,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryGreen.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      'Owner',
-                      style: GoogleFonts.manrope(
+                      )
+                      : const Icon(
+                        Icons.person_rounded,
                         color: AppColors.primaryGreen,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
                       ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        authState.currentUser?.displayName ?? 'Admin',
+                        style: GoogleFonts.manrope(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        authState.currentUser?.email ?? authNotifier.allowedEmail,
+                        style: GoogleFonts.manrope(
+                          color: Colors.white54,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryGreen.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    'Owner',
+                    style: GoogleFonts.manrope(
+                      color: AppColors.primaryGreen,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                ],
-              ),
-            );
-          }),
+                ),
+              ],
+            ),
+          ),
 
           const SizedBox(height: 24),
           SectionLabel(label: 'NOTIFICATIONS'),
@@ -278,24 +275,22 @@ class _SettingsWorkspaceState extends State<SettingsWorkspace> {
                     AdminGhostButton(
                       label: 'Sign out',
                       icon: Icons.logout_rounded,
-                      onPressed:
-                          () => _confirmDangerAction(
-                            context,
-                            'Sign out',
-                            'You will be returned to the login screen. Any unsaved changes will be lost.',
-                            _authController.signOut,
-                          ),
+                      onPressed: () => _confirmDangerAction(
+                        context,
+                        'Sign out',
+                        'You will be returned to the login screen. Any unsaved changes will be lost.',
+                        () => authNotifier.signOut(),
+                      ),
                     ),
                     AdminGhostButton(
                       label: 'Re-seed Firestore',
                       icon: Icons.restore_rounded,
-                      onPressed:
-                          () => _confirmDangerAction(
-                            context,
-                            'Re-seed Firestore',
-                            'This will insert default data for any empty collections. Existing data is not overwritten.',
-                            () => widget.controller.reseedFirestore(),
-                          ),
+                      onPressed: () => _confirmDangerAction(
+                        context,
+                        'Re-seed Firestore',
+                        'This will insert default data for any empty collections. Existing data is not overwritten.',
+                        () => portalNotifier.reseedFirestore(),
+                      ),
                     ),
                   ],
                 ),
@@ -316,76 +311,62 @@ class _SettingsWorkspaceState extends State<SettingsWorkspace> {
             description: 'Current state of Firebase and connected services.',
           ),
           const SizedBox(height: 18),
-          Obx(
-            () => PreviewTile(
-              title: 'Firebase',
-              value:
-                  widget.controller.isFirebaseConnected
-                      ? widget.controller.hasFirestoreAccess
-                          ? 'Connected & syncing'
-                          : 'Connected, fallback mode'
-                      : 'Not connected',
-              icon:
-                  widget.controller.hasFirestoreAccess
-                      ? Icons.cloud_done_rounded
-                      : Icons.cloud_off_rounded,
-              color:
-                  widget.controller.isFirebaseConnected
-                      ? widget.controller.hasFirestoreAccess
-                          ? AppColors.primaryGreen
-                          : const Color(0xFFFFB44C)
-                      : const Color(0xFFFF7C7C),
-            ),
+          PreviewTile(
+            title: 'Firebase',
+            value: portalNotifier.isFirebaseConnected
+                ? portalState.firestoreErrorMessage == null
+                    ? 'Connected & syncing'
+                    : 'Connected, fallback mode'
+                : 'Not connected',
+            icon: portalState.firestoreErrorMessage == null && portalNotifier.isFirebaseConnected
+                ? Icons.cloud_done_rounded
+                : Icons.cloud_off_rounded,
+            color: portalNotifier.isFirebaseConnected
+                ? portalState.firestoreErrorMessage == null
+                    ? AppColors.primaryGreen
+                    : const Color(0xFFFFB44C)
+                : const Color(0xFFFF7C7C),
           ),
           const SizedBox(height: 10),
-          Obx(
-            () => PreviewTile(
-              title: 'Auth',
-              value:
-                  _authController.currentUser.value != null
-                      ? 'Signed in as owner'
-                      : 'Not signed in',
-              icon: Icons.verified_user_rounded,
-              color:
-                  _authController.currentUser.value != null
-                      ? AppColors.primaryGreen
-                      : Colors.white38,
-            ),
+          PreviewTile(
+            title: 'Auth',
+            value: authState.currentUser != null
+                ? 'Signed in as owner'
+                : 'Not signed in',
+            icon: Icons.verified_user_rounded,
+            color: authState.currentUser != null
+                ? AppColors.primaryGreen
+                : Colors.white38,
           ),
           const SizedBox(height: 10),
-          Obx(
-            () => PreviewTile(
-              title: 'Live sections',
-              value:
-                  '${widget.controller.sectionConfigs.where((s) => s.isVisible).length} visible',
-              icon: Icons.view_sidebar_rounded,
-              color: const Color(0xFF5CD6FF),
-            ),
+          PreviewTile(
+            title: 'Live sections',
+            value:
+                '${portalNotifier.sectionConfigs.where((s) => s.isVisible).length} visible',
+            icon: Icons.view_sidebar_rounded,
+            color: const Color(0xFF5CD6FF),
           ),
           const SizedBox(height: 10),
-          Obx(
-            () => PreviewTile(
-              title: 'Projects',
-              value: '${widget.controller.projects.length} in collection',
-              icon: Icons.workspaces_rounded,
-              color: const Color(0xFFFFB44C),
-            ),
+          PreviewTile(
+            title: 'Projects',
+            value: '${portalNotifier.projects.length} in collection',
+            icon: Icons.workspaces_rounded,
+            color: const Color(0xFFFFB44C),
           ),
           const SizedBox(height: 10),
           PreviewTile(
             title: 'Notifications',
-            value:
-                [
-                      if (_notifyNewSubmissions) 'Submissions',
-                      if (_notifyBlogSync) 'Blog sync',
-                      if (_notifyProjectUpdates) 'Projects',
-                    ].isEmpty
-                    ? 'All off'
-                    : [
-                      if (_notifyNewSubmissions) 'Submissions',
-                      if (_notifyBlogSync) 'Blog sync',
-                      if (_notifyProjectUpdates) 'Projects',
-                    ].join(', '),
+            value: [
+                  if (_notifyNewSubmissions) 'Submissions',
+                  if (_notifyBlogSync) 'Blog sync',
+                  if (_notifyProjectUpdates) 'Projects',
+                ].isEmpty
+                ? 'All off'
+                : [
+                  if (_notifyNewSubmissions) 'Submissions',
+                  if (_notifyBlogSync) 'Blog sync',
+                  if (_notifyProjectUpdates) 'Projects',
+                ].join(', '),
             icon: Icons.notifications_active_rounded,
             color: const Color(0xFFB57AFF),
           ),

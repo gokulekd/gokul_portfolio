@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../config/app_colors.dart';
-import '../../../controllers/portfolio_controller.dart';
 import '../../../models/portfolio_models.dart';
+import '../../../providers/portfolio_provider.dart';
 import '../../../utils/responsive_helper.dart';
 import '../../../widgets/shared/custom_widgets.dart';
 import '../../../widgets/shared/footer_section.dart';
@@ -28,13 +28,13 @@ class SkillsPage extends StatelessWidget {
   }
 }
 
-class _SkillsHeroSection extends StatelessWidget {
+class _SkillsHeroSection extends ConsumerWidget {
   const _SkillsHeroSection();
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
-    final info = controller.personalInfo.value;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
+    final info = state.personalInfo;
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -146,12 +146,12 @@ class _SkillsHeroSection extends StatelessWidget {
                         label: 'Contact Me',
                         icon: Icons.north_east_rounded,
                         isPrimary: true,
-                        onPressed: controller.launchEmail,
+                        onPressed: () => ref.read(portfolioProvider.notifier).launchEmail(),
                       ),
                       _HeroActionButton(
                         label: 'Download CV',
                         icon: Icons.download_rounded,
-                        onPressed: controller.launchResume,
+                        onPressed: () => ref.read(portfolioProvider.notifier).launchResume(),
                       ),
                     ],
                   ),

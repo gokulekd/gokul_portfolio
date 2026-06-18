@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../controllers/portfolio_controller.dart';
 import '../../../models/firebase_content_models.dart';
+import '../../../providers/portfolio_provider.dart';
 import '../../../widgets/home/contact_section.dart';
 import '../../../widgets/shared/custom_widgets.dart';
 import '../../../widgets/home/faq_section.dart';
@@ -17,14 +17,14 @@ import '../../../widgets/home/skills_section.dart';
 import '../../../widgets/home/stats_marquee.dart';
 import '../../../widgets/home/testimonials_section.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   late ScrollController _scrollController;
 
   @override
@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+    final state = ref.watch(portfolioProvider);
 
     return Scaffold(
       appBar: const CustomAppBar(),
@@ -50,52 +50,41 @@ class _HomePageState extends State<HomePage> {
         children: [
           SingleChildScrollView(
             controller: _scrollController,
-            child: Obx(
-              () => Column(
-                children: [
-                  if (controller.isSectionVisible(SiteSectionKeys.hero))
-                    const HeroSection(),
-                  if (controller.isSectionVisible(SiteSectionKeys.statsTop))
-                    const StatsMarquee(
-                      backgroundColor: Color(0xFF0A0A0A),
-                      padding: EdgeInsets.zero,
-                    ),
-                  if (controller.isSectionVisible(
-                    SiteSectionKeys.skillsExperience,
-                  ))
-                    SkillsSection(scrollController: _scrollController),
-                  if (controller.isSectionVisible(
-                    SiteSectionKeys.featuredProjects,
-                  ))
-                    const SelectedProjectsSection(),
-                  if (controller.isSectionVisible(
-                    SiteSectionKeys.developmentAreas,
-                  ))
-                    const ProjectTypesMarquee(),
-                  if (controller.isSectionVisible(SiteSectionKeys.achievements))
-                    const ProudAchievementsSection(),
-                  if (controller.isSectionVisible(
-                    SiteSectionKeys.freelanceProcess,
-                  ))
-                    const FreelanceProcessSection(),
-                  if (controller.isSectionVisible(SiteSectionKeys.testimonials))
-                    const TestimonialsSectionNew(),
-                  if (controller.isSectionVisible(SiteSectionKeys.faq))
-                    const FAQSection(),
-                  if (controller.isSectionVisible(SiteSectionKeys.contact))
-                    const ContactSection(),
-                  if (controller.isSectionVisible(SiteSectionKeys.statsBottom))
-                    const StatsMarquee(
-                      backgroundColor: Color(0xFF0A0A0A),
-                      padding: EdgeInsets.zero,
-                    ),
-                  if (controller.isSectionVisible(SiteSectionKeys.footer))
-                    const FooterSection(),
-                ],
-              ),
+            child: Column(
+              children: [
+                if (state.isSectionVisible(SiteSectionKeys.hero))
+                  const HeroSection(),
+                if (state.isSectionVisible(SiteSectionKeys.statsTop))
+                  const StatsMarquee(
+                    backgroundColor: Color(0xFF0A0A0A),
+                    padding: EdgeInsets.zero,
+                  ),
+                if (state.isSectionVisible(SiteSectionKeys.skillsExperience))
+                  SkillsSection(scrollController: _scrollController),
+                if (state.isSectionVisible(SiteSectionKeys.featuredProjects))
+                  const SelectedProjectsSection(),
+                if (state.isSectionVisible(SiteSectionKeys.developmentAreas))
+                  const ProjectTypesMarquee(),
+                if (state.isSectionVisible(SiteSectionKeys.achievements))
+                  const ProudAchievementsSection(),
+                if (state.isSectionVisible(SiteSectionKeys.freelanceProcess))
+                  const FreelanceProcessSection(),
+                if (state.isSectionVisible(SiteSectionKeys.testimonials))
+                  const TestimonialsSectionNew(),
+                if (state.isSectionVisible(SiteSectionKeys.faq))
+                  const FAQSection(),
+                if (state.isSectionVisible(SiteSectionKeys.contact))
+                  const ContactSection(),
+                if (state.isSectionVisible(SiteSectionKeys.statsBottom))
+                  const StatsMarquee(
+                    backgroundColor: Color(0xFF0A0A0A),
+                    padding: EdgeInsets.zero,
+                  ),
+                if (state.isSectionVisible(SiteSectionKeys.footer))
+                  const FooterSection(),
+              ],
             ),
           ),
-          // Scroll progress bar overlaid at the very top
           ScrollProgressBar(scrollController: _scrollController),
         ],
       ),

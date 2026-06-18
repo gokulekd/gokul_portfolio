@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../config/app_colors.dart';
-import '../../../controllers/portfolio_controller.dart';
 import '../../../features/admin/modules/projects/models/app_project.dart';
+import '../../../providers/portfolio_provider.dart';
 import '../../../widgets/projects/featured_projects_section.dart';
 import '../../../utils/responsive_helper.dart';
 import '../../../widgets/shared/custom_widgets.dart';
@@ -223,22 +223,21 @@ class _StatPill extends StatelessWidget {
 // 2. Featured Projects
 // ─────────────────────────────────────────────
 
-class _FeaturedProjectsSection extends StatelessWidget {
+class _FeaturedProjectsSection extends ConsumerWidget {
   const _FeaturedProjectsSection();
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final colorScheme = Theme.of(context).colorScheme;
     final hPad = isMobile ? 20.0 : isTablet ? 48.0 : 88.0;
 
-    return Obx(() {
-      final featured = controller.featuredAppProjects;
-      if (featured.isEmpty) return const SizedBox.shrink();
+    final featured = state.featuredAppProjects;
+    if (featured.isEmpty) return const SizedBox.shrink();
 
-      return Padding(
+    return Padding(
         padding: EdgeInsets.fromLTRB(hPad, isMobile ? 48 : 80, hPad, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,7 +317,6 @@ class _FeaturedProjectsSection extends StatelessWidget {
           ],
         ),
       );
-    });
   }
 }
 
@@ -327,28 +325,20 @@ class _FeaturedProjectsSection extends StatelessWidget {
 // 3. All Projects Grid
 // ─────────────────────────────────────────────
 
-class _AllProjectsSection extends StatefulWidget {
+class _AllProjectsSection extends ConsumerWidget {
   const _AllProjectsSection();
 
   @override
-  State<_AllProjectsSection> createState() => _AllProjectsSectionState();
-}
-
-class _AllProjectsSectionState extends State<_AllProjectsSection> {
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(portfolioProvider);
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final colorScheme = Theme.of(context).colorScheme;
     final hPad = isMobile ? 20.0 : isTablet ? 48.0 : 88.0;
 
-    return Obx(() {
-      final all = controller.publishedAppProjects;
-      final filtered = all;
+    final filtered = state.publishedAppProjects;
 
-      return Padding(
+    return Padding(
         padding: EdgeInsets.fromLTRB(hPad, isMobile ? 56 : 88, hPad, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -421,7 +411,6 @@ class _AllProjectsSectionState extends State<_AllProjectsSection> {
           ],
         ),
       );
-    });
   }
 }
 
@@ -600,12 +589,11 @@ class _AppProjectGridCard extends StatelessWidget {
 // 4. CTA Section
 // ─────────────────────────────────────────────
 
-class _ProjectsCTASection extends StatelessWidget {
+class _ProjectsCTASection extends ConsumerWidget {
   const _ProjectsCTASection();
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<PortfolioController>();
+  Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final hPad = isMobile ? 20.0 : isTablet ? 48.0 : 88.0;
@@ -668,7 +656,7 @@ class _ProjectsCTASection extends StatelessWidget {
             ),
             const SizedBox(height: 36),
             ElevatedButton(
-              onPressed: controller.launchEmail,
+              onPressed: () => ref.read(portfolioProvider.notifier).launchEmail(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryGreen,
                 foregroundColor: Colors.black,

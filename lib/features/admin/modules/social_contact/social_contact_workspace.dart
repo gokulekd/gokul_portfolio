@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../config/app_colors.dart';
 import '../../../../models/firebase_content_models.dart';
-import '../../controllers/admin_portal_controller.dart';
+import '../../../../providers/admin_portal_provider.dart';
 import '../../shared/admin_portal_components.dart';
 import '../../shared/dialog_widgets.dart';
 import '../../shared/preview_tile.dart';
 
-class SocialContactWorkspace extends StatelessWidget {
+class SocialContactWorkspace extends ConsumerWidget {
   const SocialContactWorkspace({
     super.key,
-    required this.controller,
     required this.isCompact,
   });
 
-  final AdminPortalController controller;
   final bool isCompact;
 
-  void _openLinkDialog(BuildContext context, {ManagedSocialLink? existing}) {
+  void _openLinkDialog(BuildContext context, WidgetRef ref, {ManagedSocialLink? existing}) {
     final platformCtrl = TextEditingController(text: existing?.platform ?? '');
     final valueCtrl = TextEditingController(text: existing?.value ?? '');
     String type = existing?.type ?? 'url';
@@ -27,134 +25,128 @@ class SocialContactWorkspace extends StatelessWidget {
 
     showDialog<void>(
       context: context,
-      builder:
-          (ctx) => StatefulBuilder(
-            builder:
-                (ctx, setState) => AlertDialog(
-                  backgroundColor: const Color(0xFF1A1C1F),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  title: Text(
-                    existing == null ? 'Add Social Link' : 'Edit Social Link',
-                    style: GoogleFonts.manrope(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  content: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        DialogField(
-                          controller: platformCtrl,
-                          label: 'Platform name',
-                          hint: 'e.g. LinkedIn',
-                        ),
-                        const SizedBox(height: 14),
-                        DialogField(
-                          controller: valueCtrl,
-                          label: type == 'email' ? 'Email address' : 'URL',
-                          hint:
-                              type == 'email'
-                                  ? 'you@example.com'
-                                  : 'https://...',
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Text(
-                              'Type',
-                              style: GoogleFonts.manrope(
-                                color: Colors.white54,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            TypeChip(
-                              label: 'URL',
-                              selected: type == 'url',
-                              onTap: () => setState(() => type = 'url'),
-                            ),
-                            const SizedBox(width: 8),
-                            TypeChip(
-                              label: 'Email',
-                              selected: type == 'email',
-                              onTap: () => setState(() => type = 'email'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Visible on portfolio',
-                              style: GoogleFonts.manrope(
-                                color: Colors.white70,
-                                fontSize: 13,
-                              ),
-                            ),
-                            Switch(
-                              value: isVisible,
-                              onChanged: (v) => setState(() => isVisible = v),
-                              activeThumbColor: AppColors.primaryGreen,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(),
-                      child: Text(
-                        'Cancel',
-                        style: GoogleFonts.manrope(color: Colors.white54),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          backgroundColor: const Color(0xFF1A1C1F),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            existing == null ? 'Add Social Link' : 'Edit Social Link',
+            style: GoogleFonts.manrope(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DialogField(
+                  controller: platformCtrl,
+                  label: 'Platform name',
+                  hint: 'e.g. LinkedIn',
+                ),
+                const SizedBox(height: 14),
+                DialogField(
+                  controller: valueCtrl,
+                  label: type == 'email' ? 'Email address' : 'URL',
+                  hint: type == 'email' ? 'you@example.com' : 'https://...',
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Text(
+                      'Type',
+                      style: GoogleFonts.manrope(
+                        color: Colors.white54,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        final platform = platformCtrl.text.trim();
-                        final value = valueCtrl.text.trim();
-                        if (platform.isEmpty || value.isEmpty) return;
-                        final links = controller.socialLinks;
-                        final nextOrder =
-                            links.isEmpty
-                                ? 1
-                                : links
-                                        .map((l) => l.displayOrder)
-                                        .reduce((a, b) => a > b ? a : b) +
-                                    1;
-                        final link = ManagedSocialLink(
-                          id:
-                              existing?.id ??
-                              platform.toLowerCase().replaceAll(' ', '_'),
-                          platform: platform,
-                          value: value,
-                          type: type,
-                          displayOrder: existing?.displayOrder ?? nextOrder,
-                          isVisible: isVisible,
-                        );
-                        controller.saveSocialLink(link);
-                        Navigator.of(ctx).pop();
-                      },
-                      child: Text(
-                        'Save',
-                        style: GoogleFonts.manrope(
-                          color: AppColors.primaryGreen,
-                        ),
-                      ),
+                    const SizedBox(width: 12),
+                    TypeChip(
+                      label: 'URL',
+                      selected: type == 'url',
+                      onTap: () => setState(() => type = 'url'),
+                    ),
+                    const SizedBox(width: 8),
+                    TypeChip(
+                      label: 'Email',
+                      selected: type == 'email',
+                      onTap: () => setState(() => type = 'email'),
                     ),
                   ],
                 ),
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Visible on portfolio',
+                      style: GoogleFonts.manrope(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
+                    ),
+                    Switch(
+                      value: isVisible,
+                      onChanged: (v) => setState(() => isVisible = v),
+                      activeThumbColor: AppColors.primaryGreen,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.manrope(color: Colors.white54),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                final platform = platformCtrl.text.trim();
+                final value = valueCtrl.text.trim();
+                if (platform.isEmpty || value.isEmpty) return;
+                final links = ref.read(adminPortalProvider.notifier).socialLinks;
+                final nextOrder = links.isEmpty
+                    ? 1
+                    : links.map((l) => l.displayOrder).reduce((a, b) => a > b ? a : b) + 1;
+                final link = ManagedSocialLink(
+                  id: existing?.id ?? platform.toLowerCase().replaceAll(' ', '_'),
+                  platform: platform,
+                  value: value,
+                  type: type,
+                  displayOrder: existing?.displayOrder ?? nextOrder,
+                  isVisible: isVisible,
+                );
+                ref.read(adminPortalProvider.notifier).saveSocialLink(link);
+                Navigator.of(ctx).pop();
+              },
+              child: Text(
+                'Save',
+                style: GoogleFonts.manrope(color: AppColors.primaryGreen),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final links = ref.read(adminPortalProvider.notifier).socialLinks;
+    final notifier = ref.read(adminPortalProvider.notifier);
+    // Watch for rebuild on state changes
+    ref.watch(adminPortalProvider);
+
+    final liveLinks = ref.read(adminPortalProvider.notifier).socialLinks;
+
     final linkList = AdminSurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,13 +159,13 @@ class SocialContactWorkspace extends StatelessWidget {
             action: AdminPrimaryButton(
               label: 'Add link',
               icon: Icons.add_rounded,
-              onPressed: () => _openLinkDialog(context),
+              onPressed: () => _openLinkDialog(context, ref),
             ),
           ),
           const SizedBox(height: 18),
-          Obx(() {
-            final links = controller.socialLinks;
-            if (links.isEmpty) {
+          Builder(builder: (context) {
+            final currentLinks = ref.read(adminPortalProvider.notifier).socialLinks;
+            if (currentLinks.isEmpty) {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
@@ -185,66 +177,60 @@ class SocialContactWorkspace extends StatelessWidget {
               );
             }
             return Column(
-              children:
-                  links
-                      .map(
-                        (link) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: SocialLinkRow(
-                            link: link,
-                            onEdit:
-                                () => _openLinkDialog(context, existing: link),
-                            onDelete: () => controller.deleteSocialLink(link),
-                            onToggleVisibility:
-                                (val) => controller.saveSocialLink(
-                                  link.copyWith(isVisible: val),
-                                ),
-                          ),
-                        ),
-                      )
-                      .toList(),
+              children: currentLinks
+                  .map(
+                    (link) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: SocialLinkRow(
+                        link: link,
+                        onEdit: () => _openLinkDialog(context, ref, existing: link),
+                        onDelete: () => notifier.deleteSocialLink(link),
+                        onToggleVisibility: (val) =>
+                            notifier.saveSocialLink(link.copyWith(isVisible: val)),
+                      ),
+                    ),
+                  )
+                  .toList(),
             );
           }),
         ],
       ),
     );
 
+    final visibleCount = liveLinks.where((l) => l.isVisible).length;
+
     final infoPanel = AdminSurfaceCard(
-      child: Obx(() {
-        final links = controller.socialLinks;
-        final visibleCount = links.where((l) => l.isVisible).length;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const AdminSectionHeader(
-              eyebrow: 'LINK STATS',
-              title: 'Channel overview',
-              description: 'Summary of public contact channels.',
-            ),
-            const SizedBox(height: 18),
-            PreviewTile(
-              title: 'Total links',
-              value: '${links.length} channels configured',
-              icon: Icons.link_rounded,
-              color: AppColors.primaryGreen,
-            ),
-            const SizedBox(height: 12),
-            PreviewTile(
-              title: 'Visible',
-              value: '$visibleCount links shown publicly',
-              icon: Icons.visibility_rounded,
-              color: const Color(0xFF5CD6FF),
-            ),
-            const SizedBox(height: 12),
-            PreviewTile(
-              title: 'Hidden',
-              value: '${links.length - visibleCount} links hidden',
-              icon: Icons.visibility_off_rounded,
-              color: const Color(0xFFFFB44C),
-            ),
-          ],
-        );
-      }),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AdminSectionHeader(
+            eyebrow: 'LINK STATS',
+            title: 'Channel overview',
+            description: 'Summary of public contact channels.',
+          ),
+          const SizedBox(height: 18),
+          PreviewTile(
+            title: 'Total links',
+            value: '${links.length} channels configured',
+            icon: Icons.link_rounded,
+            color: AppColors.primaryGreen,
+          ),
+          const SizedBox(height: 12),
+          PreviewTile(
+            title: 'Visible',
+            value: '$visibleCount links shown publicly',
+            icon: Icons.visibility_rounded,
+            color: const Color(0xFF5CD6FF),
+          ),
+          const SizedBox(height: 12),
+          PreviewTile(
+            title: 'Hidden',
+            value: '${links.length - visibleCount} links hidden',
+            icon: Icons.visibility_off_rounded,
+            color: const Color(0xFFFFB44C),
+          ),
+        ],
+      ),
     );
 
     if (isCompact) {
