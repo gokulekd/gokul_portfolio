@@ -99,10 +99,6 @@
     "mtime": 1777643967.104902,
     "hash": "de8a7e6b21eef4f61e853f3e5bccefcb"
   },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/constants/colors.dart": {
-    "mtime": 1780164883.2385762,
-    "hash": "97085469a1370eb516890c5f29867a09"
-  },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/admin/admin.dart": {
     "mtime": 1777643967.1056159,
     "hash": "28f466562c63aacd72fd327d53cef24f"
@@ -152,12 +148,12 @@
     "hash": "498629a9f07ec936f944e57f580157e0"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/admin/modules/projects/projects_workspace.dart": {
-    "mtime": 1780332735.4623387,
-    "hash": "5669783788ca6cf24526277f7dffb703"
+    "mtime": 1780939334.2359726,
+    "hash": "f7e1aaf5083b925f6b3b843a64c4bcfe"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/admin/modules/projects/models/app_project.dart": {
-    "mtime": 1780323304.368827,
-    "hash": "61cb60158954dab5ccaab25d01b31c31"
+    "mtime": 1780939274.6000276,
+    "hash": "956550ede95dd50dd6b358baf045812f"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/admin/modules/projects/services/supabase_projects_service.dart": {
     "mtime": 1780321511.6453419,
@@ -296,8 +292,8 @@
     "hash": "8346078280e0454d64baea4ff50b9533"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/portfolio/portfolio.dart": {
-    "mtime": 1780164876.5550125,
-    "hash": "3cfd69af80b57528d648e06c02c7ca93"
+    "mtime": 1781805343.845818,
+    "hash": "ff978f896b706f171e4efe3fd6a30db1"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/portfolio/pages/skills_page.dart": {
     "mtime": 1780164906.7736895,
@@ -308,20 +304,24 @@
     "hash": "245f319f2a91d74ac9310b9acc017630"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/portfolio/pages/projects_page.dart": {
-    "mtime": 1780335856.3439631,
-    "hash": "c4b851c5009837c7dee827833aed879a"
+    "mtime": 1780940988.5866168,
+    "hash": "4bab1734dbd7a11298baab9c82e7771b"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/portfolio/pages/resume_page.dart": {
     "mtime": 1780164906.8334424,
     "hash": "7a6639613a1e020c27184ae78e5e7606"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/portfolio/pages/home_page.dart": {
-    "mtime": 1780164859.050713,
-    "hash": "95a8833aca3a2511546cd49564d11f45"
+    "mtime": 1780683720.96347,
+    "hash": "37b54000826dee8940be8db37e37c527"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/portfolio/pages/contact_page.dart": {
     "mtime": 1780164906.8174224,
     "hash": "67ca06d670cdd2bb79d77227372edc58"
+  },
+  "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/portfolio/pages/project_detail_page.dart": {
+    "mtime": 1781805043.505295,
+    "hash": "f7ab9b1da11311175168001002b88d14"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/features/portfolio/pages/about_page.dart": {
     "mtime": 1780336639.4023552,
@@ -355,45 +355,9 @@
     "mtime": 1780336377.4320111,
     "hash": "6094b0c361202f1c672ff8b34b531d02"
   },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/pages/skills_page.dart": {
-    "mtime": 1780164417.7726068,
-    "hash": "d7cb1ed9ccfb19f6b51781de6d7ad33d"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/pages/blog_page.dart": {
-    "mtime": 1780164417.779116,
-    "hash": "b84c67e5da27913897fc98f9c6ae0097"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/pages/projects_page.dart": {
-    "mtime": 1780164417.7698677,
-    "hash": "0f61f7254e911b409e1c76f9971efc1d"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/pages/resume_page.dart": {
-    "mtime": 1780164417.7766893,
-    "hash": "80fd07da4432dbb0a481339f32c6c741"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/pages/home_page.dart": {
-    "mtime": 1780164417.7603703,
-    "hash": "e74ef9181ab45e6542c793668848cde0"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/pages/contact_page.dart": {
-    "mtime": 1780164417.7814152,
-    "hash": "2458a4e5ff1c1ce9ef8b7337e9b23a82"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/pages/about_page.dart": {
-    "mtime": 1780164417.7634423,
-    "hash": "2dc5165cce9fc0f971e30d09abdea1ef"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/pages/experience_page.dart": {
-    "mtime": 1780164417.7669363,
-    "hash": "8c10dae42a0f383f7e243c2cb33e19b6"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/pages/splash_screen.dart": {
-    "mtime": 1780164417.7585614,
-    "hash": "52dd8f02a1902206b05baf3ad7aa8305"
-  },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/routes/app_routes.dart": {
-    "mtime": 1778005599.2962558,
-    "hash": "d2b00e70e986416d22f5a1294734baa4"
+    "mtime": 1781805343.8460226,
+    "hash": "5a6d99ffd56ac137ea575d000e4e856f"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/services/supabase_storage_service.dart": {
     "mtime": 1780328418.0870092,
@@ -411,82 +375,6 @@
     "mtime": 1777643967.1113892,
     "hash": "6b4d12cbf671c15985b3f0a4794f2798"
   },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/hero_section_fixed.dart": {
-    "mtime": 1780164410.8789146,
-    "hash": "f31a0f099183394cb0775d9a038c6b12"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/featured_projects_section.dart": {
-    "mtime": 1780164410.9027665,
-    "hash": "7a67392ded0bf599b31bf30126c6c933"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/stats_marquee.dart": {
-    "mtime": 1780164410.882958,
-    "hash": "d4eca9c07c51df26dc6e4210d9f3cb4f"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/testimonials_section_new.dart": {
-    "mtime": 1780164410.8950994,
-    "hash": "a5cd8cde6ce0624a1959f647db37c7fd"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/freelance_process_section.dart": {
-    "mtime": 1780164410.893032,
-    "hash": "cf2585a5390d6d7a8bcea553ffbe263e"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/page_app_bar.dart": {
-    "mtime": 1780164410.8722987,
-    "hash": "7592c01698093a67cf6679092dd68ad6"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/hero_section.dart": {
-    "mtime": 1780164410.8811324,
-    "hash": "049e804fba3fc869102351c1eb453b34"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/custom_widgets.dart": {
-    "mtime": 1780164410.8767476,
-    "hash": "f6c4da493570f2c2cc8831675bbae674"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/project_types_marquee.dart": {
-    "mtime": 1780164410.8888135,
-    "hash": "622f71e5a641e3eafb4f293c0c6b11f3"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/proud_achievements_section.dart": {
-    "mtime": 1780164410.8910465,
-    "hash": "5a8ef8bbba0094fba0c6bf03189e560f"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/selected_projects_section.dart": {
-    "mtime": 1780164410.8870988,
-    "hash": "d155b4d1c7de87662009081383fc571d"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/about_section.dart": {
-    "mtime": 1780164410.9008527,
-    "hash": "eb77bd5652e7786143512b1c91ca702d"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/skills_section.dart": {
-    "mtime": 1780164410.885099,
-    "hash": "7927b07e70b00d7e1c3ebbbbe465da4d"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/faq_section.dart": {
-    "mtime": 1780164410.8971694,
-    "hash": "13e2c40d860f8dc7c2f09dd564cbe406"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/scroll_progress_bar.dart": {
-    "mtime": 1780164410.8704376,
-    "hash": "6633d5c2d8dd05f8630b406abf704800"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/available_badge.dart": {
-    "mtime": 1780164410.8746142,
-    "hash": "fcb8ffe7eb1848427398c746dff22e5d"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/footer_section.dart": {
-    "mtime": 1780164410.8685315,
-    "hash": "9add5d3c069b71a8d87ae8f818deec6c"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/contact_section.dart": {
-    "mtime": 1780164410.8989394,
-    "hash": "a28f3e643d0aed9df308e37d9721e89d"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/home/hero_section_legacy.dart": {
-    "mtime": 1780164906.9009802,
-    "hash": "e4152568ce1196e8ee1fce300612db13"
-  },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/home/widgets.dart": {
     "mtime": 1780164831.096797,
     "hash": "1b81b3db75795b5c925a40d504cde8e9"
@@ -500,8 +388,8 @@
     "hash": "68698a92e522e08ddcca0c4276015f65"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/home/hero_section.dart": {
-    "mtime": 1780164906.885139,
-    "hash": "2a3e815039efe87b10199f6006d03724"
+    "mtime": 1780946337.7648385,
+    "hash": "c3bddd6d1da771c0b336b5c9bd69d326"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/home/project_types_marquee.dart": {
     "mtime": 1780164906.918329,
@@ -520,8 +408,8 @@
     "hash": "51f791784723cdde4d7b21d3be89238d"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/home/skills_section.dart": {
-    "mtime": 1780164906.9453447,
-    "hash": "45219a9f3455376eb2cd65fde2fb309a"
+    "mtime": 1780683323.1350832,
+    "hash": "3ae791c4d0032e782ea769e642a4e5ec"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/home/faq_section.dart": {
     "mtime": 1780164906.877696,
@@ -536,8 +424,8 @@
     "hash": "d792eb700bbcd6a8bb28ea50ccc3a237"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/projects/featured_projects_section.dart": {
-    "mtime": 1780336058.0758972,
-    "hash": "c1bc6c1b66876c015a9d1634d21d5244"
+    "mtime": 1780941660.6118832,
+    "hash": "4a7500b880a7ce2e2fbbcd59b52611c5"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/shared/widgets.dart": {
     "mtime": 1780164826.5009384,
@@ -560,8 +448,8 @@
     "hash": "beb3ee87e481073fac4db6e7769b0d6a"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/shared/footer_section.dart": {
-    "mtime": 1780164906.9542894,
-    "hash": "e1f0c0c199b7d7df933b1aaa359f450a"
+    "mtime": 1780945975.3409033,
+    "hash": "0f0184d911fcf2f8df2883eaadbf1df9"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/lib/widgets/about/widgets.dart": {
     "mtime": 1780164836.5427768,
@@ -598,10 +486,6 @@
   "/Users/gokul/Personal Projects/gokul_portfolio/prd/admin-app-cms-prd.md": {
     "mtime": 1777643967.121734,
     "hash": "ac173402efec92895c7ad2c4522f8b6b"
-  },
-  "/Users/gokul/Personal Projects/gokul_portfolio/lib/constants/safe_sign_ai_doc.md": {
-    "mtime": 1777643967.1050353,
-    "hash": "7ca427f1c2fdb46d46f760cd84524fc9"
   },
   "/Users/gokul/Personal Projects/gokul_portfolio/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_16.png": {
     "mtime": 1777643967.1203303,

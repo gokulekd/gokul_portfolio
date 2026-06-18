@@ -1,3 +1,6 @@
+# Local secrets (Supabase defines for build.sh)
+.env
+
 # Flutter/Dart
 build/
 .dart_tool/

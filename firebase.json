@@ -33,6 +33,9 @@
   },
   "hosting": {
     "public": "build/web",
+    "predeploy": [
+      "bash ./build.sh"
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",
