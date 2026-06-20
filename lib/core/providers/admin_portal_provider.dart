@@ -5,11 +5,11 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/config/app_colors.dart';
-import '../features/portfolio/models/firebase_content_models.dart';
-import '../features/portfolio/models/portfolio_models.dart';
-import '../features/admin/models/admin_portal_models.dart';
-import '../features/admin/modules/projects/models/app_project.dart';
+import '../config/app_colors.dart';
+import '../../features/portfolio/models/firebase_content_models.dart';
+import '../../features/portfolio/models/portfolio_models.dart';
+import '../../features/admin/models/admin_portal_models.dart';
+import '../../features/admin/modules/projects/models/app_project.dart';
 import 'admin_auth_provider.dart';
 import 'service_providers.dart';
 

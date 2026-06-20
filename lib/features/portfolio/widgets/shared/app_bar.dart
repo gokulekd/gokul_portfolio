@@ -4,10 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../models/firebase_content_models.dart';
-import '../../../../providers/portfolio_provider.dart';
-import '../../../../providers/theme_provider.dart';
-import '../../../../routes/app_router.dart';
-import '../../../../routes/app_routes.dart';
+import '../../../../core/providers/portfolio_provider.dart';
+import '../../../../core/providers/theme_provider.dart';
+import '../../../../core/routes/app_router.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../../../../core/utils/responsive_helper.dart';
 
 void _navigateToPage(Map<String, dynamic> item) {

@@ -4,10 +4,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/config/app_colors.dart';
-import '../../../../services/contact_service.dart';
-import '../../../../providers/portfolio_provider.dart';
+import '../../../../core/providers/portfolio_provider.dart';
+import '../../../../core/providers/service_providers.dart';
 import '../../../../core/utils/responsive_helper.dart';
-import '../../../../routes/app_routes.dart';
+import '../../../../core/routes/app_routes.dart';
 import 'contact_closing_section.dart' show AccentWaveDivider;
 
 IconData _iconForPlatform(String platform) {
@@ -440,7 +440,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
     setState(() { _isSubmitting = true; _hasError = false; });
 
     try {
-      final success = await ContactService().submitContactForm(
+      final success = await ref.read(contactServiceProvider).submitContactForm(
         name: name,
         email: email,
         message: message,

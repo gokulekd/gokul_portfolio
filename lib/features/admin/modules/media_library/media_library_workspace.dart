@@ -7,9 +7,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/supabase/supabase_bootstrap.dart';
 import '../../../portfolio/models/firebase_content_models.dart';
-import '../../../../providers/admin_portal_provider.dart';
-import '../../../../providers/service_providers.dart';
-import '../../../../services/supabase_storage_service.dart';
+import '../../../../core/providers/admin_portal_provider.dart';
+import '../../../../core/providers/service_providers.dart';
+import '../../../../core/services/supabase_storage_service.dart';
 import '../../shared/admin_portal_components.dart';
 import '../../shared/preview_tile.dart';
 

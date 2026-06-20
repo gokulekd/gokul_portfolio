@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
-import '../../../../providers/portfolio_provider.dart';
-import '../../../../routes/app_routes.dart';
+import '../../../../core/providers/portfolio_provider.dart';
+import '../../../../core/routes/app_routes.dart';
 
 class FooterSection extends ConsumerWidget {
   const FooterSection({super.key});
@@ -59,7 +59,7 @@ class FooterSection extends ConsumerWidget {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Text(
-                            '© ${DateTime.now().year} Gokul K S. All rights reserved.',
+                            '© ${DateTime.now().year} ${state.personalInfo.name}. All rights reserved.',
                             style: GoogleFonts.manrope(
                               color: Colors.white.withValues(alpha: 0.35),
                               fontSize: 13,
@@ -87,7 +87,7 @@ class FooterSection extends ConsumerWidget {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Text(
-                            '© ${DateTime.now().year} Gokul K S. All rights reserved.',
+                            '© ${DateTime.now().year} ${state.personalInfo.name}. All rights reserved.',
                             style: GoogleFonts.manrope(
                               color: Colors.white.withValues(alpha: 0.35),
                               fontSize: 13,

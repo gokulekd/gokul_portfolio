@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/config/app_colors.dart';
-import '../../../providers/admin_auth_provider.dart';
+import '../../../core/providers/admin_auth_provider.dart';
 import 'admin_portal_page.dart';
 
 class AdminAuthGatePage extends ConsumerWidget {

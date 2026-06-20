@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/portfolio_provider.dart';
 import '../../shared/admin_portal_components.dart';
 import '../../shared/dialog_widgets.dart';
 import '../../shared/preview_tile.dart';
 
-class HomeContentWorkspace extends StatefulWidget {
+class HomeContentWorkspace extends ConsumerStatefulWidget {
   const HomeContentWorkspace({super.key, required this.isCompact});
   final bool isCompact;
 
   @override
-  State<HomeContentWorkspace> createState() => _HomeContentWorkspaceState();
+  ConsumerState<HomeContentWorkspace> createState() => _HomeContentWorkspaceState();
 }
 
-class _HomeContentWorkspaceState extends State<HomeContentWorkspace> {
-  final _nameCtrl = TextEditingController(text: 'Gokul K S');
+class _HomeContentWorkspaceState extends ConsumerState<HomeContentWorkspace> {
+  final _nameCtrl = TextEditingController();
   final _titleCtrl = TextEditingController(
     text: 'Mobile App Designer & Flutter Developer',
   );
@@ -30,6 +32,15 @@ class _HomeContentWorkspaceState extends State<HomeContentWorkspace> {
   final _ctaSecondaryCtrl = TextEditingController(text: 'Get in touch');
   bool _isAvailable = true;
   bool _saved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final name = ref.read(portfolioProvider).personalInfo.name;
+      if (name.isNotEmpty) _nameCtrl.text = name;
+    });
+  }
 
   @override
   void dispose() {

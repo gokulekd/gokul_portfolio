@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../models/portfolio_models.dart';
-import '../../../../providers/portfolio_provider.dart';
+import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/utils/responsive_helper.dart';
 
 class ContactChannelsSection extends ConsumerWidget {

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../widgets/resume/resume_widgets.dart';
+import '../widgets/resume/widgets.dart';
 import '../widgets/shared/custom_widgets.dart';
-import '../widgets/shared/footer_section.dart';
 
 class ResumePage extends StatelessWidget {
   const ResumePage({super.key});

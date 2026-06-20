@@ -4,8 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'core/firebase/firebase_bootstrap.dart';
 import 'core/supabase/supabase_bootstrap.dart';
-import 'providers/theme_provider.dart';
-import 'routes/app_router.dart';
+import 'core/providers/portfolio_provider.dart';
+import 'core/providers/theme_provider.dart';
+import 'core/routes/app_router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,10 +21,11 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
+    final personalInfo = ref.watch(portfolioProvider.select((s) => s.personalInfo));
     final textTheme = GoogleFonts.manropeTextTheme();
 
     return MaterialApp.router(
-      title: 'Gokul K S — Flutter Developer & Designer',
+      title: '${personalInfo.name} — ${personalInfo.title}',
       debugShowCheckedModeBanner: false,
       theme: buildLightTheme(textTheme),
       darkTheme: buildDarkTheme(textTheme),

@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../portfolio/models/firebase_content_models.dart';
-import '../../../../providers/admin_portal_provider.dart';
+import '../../../../core/providers/admin_portal_provider.dart';
 import '../../models/admin_portal_models.dart';
 import '../../shared/admin_portal_components.dart';
 

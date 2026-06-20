@@ -4,10 +4,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
-import '../../../../providers/portfolio_provider.dart';
+import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import '../shared/custom_widgets.dart';
-import '../shared/available_badge.dart';
 
 class AboutHeroSection extends ConsumerStatefulWidget {
   const AboutHeroSection({super.key});

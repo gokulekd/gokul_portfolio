@@ -6,10 +6,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/config/app_colors.dart';
-import '../../../../providers/portfolio_provider.dart';
-import '../../../../routes/app_routes.dart';
+import '../../../../core/providers/portfolio_provider.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../../../../core/utils/responsive_helper.dart';
-import '../shared/available_badge.dart';
 import '../shared/custom_widgets.dart';
 
 class HeroSection extends ConsumerStatefulWidget {

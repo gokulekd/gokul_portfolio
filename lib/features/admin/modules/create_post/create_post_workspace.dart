@@ -2,20 +2,22 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/portfolio_provider.dart';
 import '../../shared/admin_portal_components.dart';
 
-class CreatePostWorkspace extends StatefulWidget {
+class CreatePostWorkspace extends ConsumerStatefulWidget {
   const CreatePostWorkspace({super.key, required this.isCompact});
   final bool isCompact;
 
   @override
-  State<CreatePostWorkspace> createState() => _CreatePostWorkspaceState();
+  ConsumerState<CreatePostWorkspace> createState() => _CreatePostWorkspaceState();
 }
 
-class _CreatePostWorkspaceState extends State<CreatePostWorkspace> {
+class _CreatePostWorkspaceState extends ConsumerState<CreatePostWorkspace> {
   final _textController = TextEditingController();
   final _hashtagController = TextEditingController();
   String _visibility = 'Public';
@@ -125,7 +127,7 @@ class _CreatePostWorkspaceState extends State<CreatePostWorkspace> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Gokul K S',
+                      ref.watch(portfolioProvider).personalInfo.name,
                       style: GoogleFonts.manrope(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -497,7 +499,7 @@ class _CreatePostWorkspaceState extends State<CreatePostWorkspace> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Gokul K S',
+                              ref.watch(portfolioProvider).personalInfo.name,
                               style: GoogleFonts.manrope(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,

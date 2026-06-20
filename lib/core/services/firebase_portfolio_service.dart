@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../core/firebase/firebase_bootstrap.dart';
-import '../features/admin/models/admin_portal_models.dart';
-import '../features/portfolio/models/firebase_content_models.dart';
-import '../features/portfolio/models/portfolio_models.dart';
+import '../firebase/firebase_bootstrap.dart';
+import '../../features/admin/models/admin_portal_models.dart';
+import '../../features/portfolio/models/firebase_content_models.dart';
+import '../../features/portfolio/models/portfolio_models.dart';
 
 class FirebasePortfolioService {
   bool get isEnabled => FirebaseBootstrap.isReady;

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../providers/portfolio_provider.dart';
-import '../widgets/blog/blog_widgets.dart';
+import '../../../core/providers/portfolio_provider.dart';
+import '../widgets/blog/widgets.dart';
 import '../widgets/shared/custom_widgets.dart';
-import '../widgets/shared/footer_section.dart';
 
 class BlogPage extends ConsumerWidget {
   const BlogPage({super.key});

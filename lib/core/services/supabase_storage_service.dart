@@ -1,8 +1,8 @@
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../core/supabase/supabase_bootstrap.dart';
+import '../supabase/supabase_bootstrap.dart';
 
 class SupabaseStorageService {
   static const String mediaBucket = 'media';
@@ -30,7 +30,7 @@ class SupabaseStorageService {
       return _client.storage.from(bucket).getPublicUrl(path);
     } catch (e) {
       // ignore: avoid_print
-      print('[SupabaseStorage] uploadFile failed — bucket: $bucket, path: $path, error: $e');
+      debugPrint('[SupabaseStorage] uploadFile failed — bucket: $bucket, path: $path, error: $e');
       return null;
     }
   }

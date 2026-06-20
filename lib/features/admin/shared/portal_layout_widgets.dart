@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/config/app_colors.dart';
-import '../../../providers/admin_portal_provider.dart';
+import '../../../core/providers/admin_portal_provider.dart';
 import '../models/admin_portal_models.dart';
 import '../widgets/widgets.dart';
 

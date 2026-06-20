@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../../core/config/app_colors.dart';
-import '../../../routes/app_routes.dart';
+import '../../../core/providers/portfolio_provider.dart';
+import '../../../core/routes/app_routes.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -49,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
             const SizedBox(height: 30),
             // App Title
             Text(
-              'Gokul K S',
+              ref.watch(portfolioProvider).personalInfo.name,
               style: GoogleFonts.manrope(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,

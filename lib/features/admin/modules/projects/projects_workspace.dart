@@ -6,12 +6,16 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/supabase/supabase_bootstrap.dart';
 import '../../../portfolio/models/firebase_content_models.dart';
-import '../../../../providers/admin_portal_provider.dart';
-import '../../../../providers/service_providers.dart';
-import '../../../../services/supabase_storage_service.dart';
+import '../../../../core/providers/admin_portal_provider.dart';
+import '../../../../core/providers/service_providers.dart';
+import '../../../../core/services/supabase_storage_service.dart';
 import '../../models/admin_portal_models.dart';
 import '../../shared/admin_portal_components.dart';
 import 'models/app_project.dart';
+import 'widgets/empty_projects_state.dart';
+import 'widgets/project_chips.dart';
+import 'widgets/upload_widgets.dart';
+import 'widgets/form_widgets.dart';
 
 class ProjectsWorkspace extends ConsumerWidget {
   const ProjectsWorkspace({
@@ -45,7 +49,7 @@ class ProjectsWorkspace extends ConsumerWidget {
           ),
           const SizedBox(height: 18),
           if (projects.isEmpty)
-            const _EmptyProjectsState()
+            const EmptyProjectsState()
           else
             ...projects.map(
               (project) => Padding(
@@ -88,44 +92,6 @@ class ProjectsWorkspace extends ConsumerWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _EmptyProjectsState extends StatelessWidget {
-  const _EmptyProjectsState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 48),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.apps_rounded,
-              size: 40,
-              color: Colors.white.withValues(alpha: 0.2),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              'No projects yet',
-              style: GoogleFonts.manrope(
-                color: Colors.white60,
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Add your first app project to show it on the portfolio.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.manrope(color: Colors.white38, fontSize: 13),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -234,9 +200,9 @@ class AppProjectRow extends StatelessWidget {
                     ],
                   ),
                 ),
-                _IconChip(icon: Icons.edit_rounded, onTap: onEdit),
+                IconChip(icon: Icons.edit_rounded, onTap: onEdit),
                 const SizedBox(width: 6),
-                _IconChip(
+                IconChip(
                     icon: Icons.delete_outline_rounded,
                     onTap: onDelete,
                     destructive: true),
@@ -296,23 +262,23 @@ class AppProjectRow extends StatelessWidget {
               runSpacing: 8,
               children: [
                 if (project.appWebsiteUrl.isNotEmpty)
-                  _ProjectLinkChip(
+                  ProjectLinkChip(
                       label: 'Website', icon: Icons.language_rounded),
                 if (project.githubUrl != null &&
                     project.githubUrl!.isNotEmpty)
-                  _ProjectLinkChip(
+                  ProjectLinkChip(
                       label: 'GitHub',
                       icon: Icons.code_rounded,
                       color: const Color(0xFFE6EDF3)),
                 if (project.playStoreUrl != null &&
                     project.playStoreUrl!.isNotEmpty)
-                  _ProjectLinkChip(
+                  ProjectLinkChip(
                       label: 'Play Store',
                       icon: Icons.shop_rounded,
                       color: const Color(0xFF34A853)),
                 if (project.appStoreUrl != null &&
                     project.appStoreUrl!.isNotEmpty)
-                  _ProjectLinkChip(
+                  ProjectLinkChip(
                       label: 'App Store',
                       icon: Icons.apple_rounded,
                       color: const Color(0xFF5CD6FF)),
@@ -343,77 +309,6 @@ class AppProjectRow extends StatelessWidget {
                   activeThumbColor: AppColors.primaryGreen,
                 ),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _IconChip extends StatelessWidget {
-  const _IconChip({
-    required this.icon,
-    required this.onTap,
-    this.destructive = false,
-  });
-
-  final IconData icon;
-  final VoidCallback onTap;
-  final bool destructive;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-        ),
-        child: Icon(
-          icon,
-          size: 15,
-          color: destructive ? const Color(0xFFFF7C7C) : Colors.white70,
-        ),
-      ),
-    );
-  }
-}
-
-class _ProjectLinkChip extends StatelessWidget {
-  const _ProjectLinkChip({
-    required this.label,
-    required this.icon,
-    this.color = Colors.white54,
-  });
-
-  final String label;
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: color),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: GoogleFonts.manrope(
-              color: Colors.white70,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -570,7 +465,7 @@ Future<void> showAppProjectEditorDialog(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _BannerUploadZone(
+                      BannerUploadZone(
                         bannerPreviewUrl: bannerPreviewUrl,
                         iconPreviewUrl: iconPreviewUrl,
                         isUploading: isUploadingBanner,
@@ -713,22 +608,22 @@ Future<void> showAppProjectEditorDialog(
                               ],
                             ),
                             const SizedBox(height: 24),
-                            _AppProjectFormField(
+                            AppProjectFormField(
                               label: 'App Name',
                               controller: nameController,
                               hint: 'e.g. My Awesome App',
                             ),
                             const SizedBox(height: 14),
-                            _AppProjectFormField(
+                            AppProjectFormField(
                               label: 'Description',
                               controller: descriptionController,
                               maxLines: 6,
                               hint: 'Briefly describe what your app does…',
                             ),
                             const SizedBox(height: 20),
-                            _SectionDivider(label: 'Links'),
+                            SectionDivider(label: 'Links'),
                             const SizedBox(height: 14),
-                            _AppProjectFormField(
+                            AppProjectFormField(
                               label: 'Website URL',
                               controller: websiteController,
                               hint: 'https://yourapp.com',
@@ -747,7 +642,7 @@ Future<void> showAppProjectEditorDialog(
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                _ProjectTypeToggle(
+                                ProjectTypeToggle(
                                   isPersonal: isPersonalProject,
                                   onChanged: (personal) => setState(() {
                                     isPersonalProject = personal;
@@ -757,7 +652,7 @@ Future<void> showAppProjectEditorDialog(
                               ],
                             ),
                             const SizedBox(height: 10),
-                            _AppProjectFormField(
+                            AppProjectFormField(
                               label: 'GitHub Repo',
                               controller: githubController,
                               hint: isPersonalProject
@@ -770,7 +665,7 @@ Future<void> showAppProjectEditorDialog(
                             Row(
                               children: [
                                 Expanded(
-                                  child: _AppProjectFormField(
+                                  child: AppProjectFormField(
                                     label: 'Play Store',
                                     controller: playStoreController,
                                     hint: 'play.google.com/...',
@@ -780,7 +675,7 @@ Future<void> showAppProjectEditorDialog(
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
-                                  child: _AppProjectFormField(
+                                  child: AppProjectFormField(
                                     label: 'App Store',
                                     controller: appStoreController,
                                     hint: 'apps.apple.com/...',
@@ -791,9 +686,9 @@ Future<void> showAppProjectEditorDialog(
                               ],
                             ),
                             const SizedBox(height: 20),
-                            _SectionDivider(label: 'Tech Stack'),
+                            SectionDivider(label: 'Tech Stack'),
                             const SizedBox(height: 14),
-                            _TechStackInput(
+                            TechStackInput(
                               tags: techStack,
                               inputController: techStackInputController,
                               onAdd: (tag) => setState(() => techStack.add(tag)),
@@ -801,10 +696,10 @@ Future<void> showAppProjectEditorDialog(
                                   setState(() => techStack.remove(tag)),
                             ),
                             const SizedBox(height: 20),
-                            _SectionDivider(
+                            SectionDivider(
                                 label: 'Developer Responsibilities'),
                             const SizedBox(height: 14),
-                            _AppProjectFormField(
+                            AppProjectFormField(
                               label: 'What you built & contributed',
                               controller: responsibilitiesController,
                               maxLines: 6,
@@ -812,11 +707,11 @@ Future<void> showAppProjectEditorDialog(
                                   'Describe your role, features you developed, architecture decisions…',
                             ),
                             const SizedBox(height: 20),
-                            _SectionDivider(label: 'Settings'),
+                            SectionDivider(label: 'Settings'),
                             const SizedBox(height: 14),
                             SizedBox(
                               width: 140,
-                              child: _AppProjectFormField(
+                              child: AppProjectFormField(
                                 label: 'Display Order',
                                 controller: orderController,
                                 keyboardType: TextInputType.number,
@@ -954,621 +849,4 @@ Future<void> showAppProjectEditorDialog(
       );
     },
   );
-}
-
-class _BannerUploadZone extends StatelessWidget {
-  const _BannerUploadZone({
-    required this.bannerPreviewUrl,
-    required this.iconPreviewUrl,
-    required this.isUploading,
-    required this.isUploadingIcon,
-    required this.onUploadBanner,
-    required this.onUploadIcon,
-  });
-
-  final String bannerPreviewUrl;
-  final String iconPreviewUrl;
-  final bool isUploading;
-  final bool isUploadingIcon;
-  final VoidCallback onUploadBanner;
-  final VoidCallback onUploadIcon;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasBanner = bannerPreviewUrl.isNotEmpty;
-    final hasIcon = iconPreviewUrl.isNotEmpty;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GestureDetector(
-          onTap: isUploading ? null : onUploadBanner,
-          child: Container(
-            height: 420,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.04),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(32),
-              ),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: hasBanner
-                ? Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.network(
-                        bannerPreviewUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            _BannerPlaceholder(isUploading: isUploading),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.55),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 10,
-                        right: 12,
-                        child: _UploadChip(
-                          label: 'Change banner',
-                          isUploading: isUploading,
-                        ),
-                      ),
-                    ],
-                  )
-                : _BannerPlaceholder(isUploading: isUploading),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: isUploadingIcon ? null : onUploadIcon,
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1A1D21),
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          width: 1.5,
-                        ),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: hasIcon
-                          ? Image.network(
-                              iconPreviewUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  _IconPlaceholder(isUploading: isUploadingIcon),
-                            )
-                          : _IconPlaceholder(isUploading: isUploadingIcon),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          color: isUploadingIcon
-                              ? Colors.black54
-                              : AppColors.primaryGreen,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFF0E1114),
-                            width: 2,
-                          ),
-                        ),
-                        child: isUploadingIcon
-                            ? const Padding(
-                                padding: EdgeInsets.all(4),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 1.5,
-                                  valueColor: AlwaysStoppedAnimation(
-                                    AppColors.primaryGreen,
-                                  ),
-                                ),
-                              )
-                            : const Icon(
-                                Icons.camera_alt_rounded,
-                                size: 11,
-                                color: Colors.black,
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'App Icon',
-                    style: GoogleFonts.manrope(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    'Tap icon to upload · 512 × 512 recommended',
-                    style: GoogleFonts.manrope(
-                      color: Colors.white38,
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _BannerPlaceholder extends StatelessWidget {
-  const _BannerPlaceholder({required this.isUploading});
-  final bool isUploading;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (isUploading)
-          const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation(AppColors.primaryGreen),
-            ),
-          )
-        else ...[
-          Icon(
-            Icons.add_photo_alternate_rounded,
-            size: 30,
-            color: Colors.white.withValues(alpha: 0.2),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Click to upload banner',
-            style: GoogleFonts.manrope(
-              color: Colors.white30,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Text(
-            'Recommended: 1200 × 630',
-            style: GoogleFonts.manrope(
-              color: Colors.white.withValues(alpha: 0.2),
-              fontSize: 11,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _IconPlaceholder extends StatelessWidget {
-  const _IconPlaceholder({required this.isUploading});
-  final bool isUploading;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: isUploading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(AppColors.primaryGreen),
-              ),
-            )
-          : Icon(
-              Icons.apps_rounded,
-              size: 28,
-              color: Colors.white.withValues(alpha: 0.2),
-            ),
-    );
-  }
-}
-
-class _UploadChip extends StatelessWidget {
-  const _UploadChip({required this.label, required this.isUploading});
-  final String label;
-  final bool isUploading;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (isUploading)
-            const SizedBox(
-              width: 10,
-              height: 10,
-              child: CircularProgressIndicator(
-                strokeWidth: 1.5,
-                valueColor: AlwaysStoppedAnimation(AppColors.primaryGreen),
-              ),
-            )
-          else
-            const Icon(
-              Icons.upload_rounded,
-              size: 12,
-              color: Colors.white70,
-            ),
-          const SizedBox(width: 6),
-          Text(
-            isUploading ? 'Uploading…' : label,
-            style: GoogleFonts.manrope(
-              color: Colors.white70,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionDivider extends StatelessWidget {
-  const _SectionDivider({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(
-          label.toUpperCase(),
-          style: GoogleFonts.manrope(
-            color: Colors.white30,
-            fontSize: 10,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.2,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Divider(
-            color: Colors.white.withValues(alpha: 0.07),
-            height: 1,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AppProjectFormField extends StatelessWidget {
-  const _AppProjectFormField({
-    required this.label,
-    required this.controller,
-    this.maxLines = 1,
-    this.keyboardType,
-    this.hint,
-    this.prefixIcon,
-    this.prefixColor = Colors.white38,
-    this.enabled = true,
-  });
-
-  final String label;
-  final TextEditingController controller;
-  final int maxLines;
-  final TextInputType? keyboardType;
-  final String? hint;
-  final IconData? prefixIcon;
-  final Color prefixColor;
-  final bool enabled;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.manrope(
-            color: enabled ? Colors.white54 : Colors.white24,
-            fontWeight: FontWeight.w700,
-            fontSize: 11,
-            letterSpacing: 0.4,
-          ),
-        ),
-        const SizedBox(height: 7),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          keyboardType: keyboardType,
-          enabled: enabled,
-          style: GoogleFonts.manrope(
-            color: enabled ? Colors.white : Colors.white24,
-            fontSize: 14,
-          ),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: enabled
-                ? Colors.white.withValues(alpha: 0.05)
-                : Colors.white.withValues(alpha: 0.02),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: AppColors.primaryGreen.withValues(alpha: 0.5),
-              ),
-            ),
-            disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.04),
-              ),
-            ),
-            hintText: hint,
-            hintStyle: GoogleFonts.manrope(
-              color: enabled ? Colors.white24 : Colors.white12,
-              fontSize: 13,
-            ),
-            prefixIcon: prefixIcon != null
-                ? Icon(
-                    prefixIcon,
-                    size: 16,
-                    color: enabled ? prefixColor : Colors.white12,
-                  )
-                : null,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _TechStackInput extends StatelessWidget {
-  const _TechStackInput({
-    required this.tags,
-    required this.inputController,
-    required this.onAdd,
-    required this.onRemove,
-  });
-
-  final List<String> tags;
-  final TextEditingController inputController;
-  final ValueChanged<String> onAdd;
-  final ValueChanged<String> onRemove;
-
-  void _submit() {
-    final tag = inputController.text.trim();
-    if (tag.isEmpty || tags.contains(tag)) return;
-    onAdd(tag);
-    inputController.clear();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: inputController,
-                style: GoogleFonts.manrope(color: Colors.white, fontSize: 14),
-                onSubmitted: (_) => _submit(),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white.withValues(alpha: 0.05),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: AppColors.primaryGreen.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  hintText: 'e.g. Flutter, Firebase, Riverpod…',
-                  hintStyle:
-                      GoogleFonts.manrope(color: Colors.white24, fontSize: 13),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            GestureDetector(
-              onTap: _submit,
-              child: Container(
-                height: 48,
-                width: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                      color: AppColors.primaryGreen.withValues(alpha: 0.35)),
-                ),
-                child: Icon(Icons.add_rounded,
-                    color: AppColors.primaryGreen, size: 20),
-              ),
-            ),
-          ],
-        ),
-        if (tags.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: tags
-                .map(
-                  (tag) => Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryGreen.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                          color:
-                              AppColors.primaryGreen.withValues(alpha: 0.25)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          tag,
-                          style: GoogleFonts.manrope(
-                            color: AppColors.primaryGreen,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        GestureDetector(
-                          onTap: () => onRemove(tag),
-                          child: Icon(
-                            Icons.close_rounded,
-                            size: 12,
-                            color:
-                                AppColors.primaryGreen.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _ProjectTypeToggle extends StatelessWidget {
-  const _ProjectTypeToggle({
-    required this.isPersonal,
-    required this.onChanged,
-  });
-
-  final bool isPersonal;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _TypeChip(
-            label: 'Personal',
-            icon: Icons.person_rounded,
-            selected: isPersonal,
-            onTap: () => onChanged(true),
-          ),
-          _TypeChip(
-            label: 'Company',
-            icon: Icons.business_rounded,
-            selected: !isPersonal,
-            onTap: () => onChanged(false),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TypeChip extends StatelessWidget {
-  const _TypeChip({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: selected
-              ? AppColors.primaryGreen.withValues(alpha: 0.18)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: selected
-                ? AppColors.primaryGreen.withValues(alpha: 0.45)
-                : Colors.transparent,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 13,
-              color: selected ? AppColors.primaryGreen : Colors.white38,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.manrope(
-                color: selected ? AppColors.primaryGreen : Colors.white38,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../widgets/about/about_hero_section.dart';
-import '../widgets/about/education_experience_section.dart';
+import '../widgets/about/widgets.dart';
 import '../widgets/shared/custom_widgets.dart';
-import '../widgets/shared/footer_section.dart';
 import '../widgets/home/skills_section.dart';
 
 class AboutPage extends StatelessWidget {

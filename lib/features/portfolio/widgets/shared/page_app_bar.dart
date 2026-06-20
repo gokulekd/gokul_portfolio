@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../providers/portfolio_provider.dart';
-import '../../../../routes/app_routes.dart';
+import '../../../../core/providers/portfolio_provider.dart';
+import '../../../../core/routes/app_routes.dart';
 
 class PageAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final String title;

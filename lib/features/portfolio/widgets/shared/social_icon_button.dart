@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../providers/portfolio_provider.dart';
+import '../../../../core/providers/portfolio_provider.dart';
 
 class SocialIconButton extends ConsumerWidget {
   final String platform;

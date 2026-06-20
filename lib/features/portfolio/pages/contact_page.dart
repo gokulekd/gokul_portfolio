@@ -2,14 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/responsive_helper.dart';
-import '../../../providers/portfolio_provider.dart';
-import '../widgets/contact/contact_channels_section.dart';
-import '../widgets/contact/contact_closing_section.dart';
-import '../widgets/contact/contact_form_section.dart';
-import '../widgets/contact/contact_hero_section.dart';
-import '../widgets/contact/contact_social_links_section.dart';
+import '../../../core/providers/portfolio_provider.dart';
+import '../widgets/contact/widgets.dart';
 import '../widgets/shared/custom_widgets.dart';
-import '../widgets/shared/footer_section.dart';
 
 class ContactPage extends ConsumerWidget {
   const ContactPage({super.key});

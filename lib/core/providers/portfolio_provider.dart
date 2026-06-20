@@ -4,9 +4,9 @@ import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../features/admin/modules/projects/models/app_project.dart';
-import '../features/portfolio/models/firebase_content_models.dart';
-import '../features/portfolio/models/portfolio_models.dart';
+import '../../features/admin/modules/projects/models/app_project.dart';
+import '../../features/portfolio/models/firebase_content_models.dart';
+import '../../features/portfolio/models/portfolio_models.dart';
 import '../services/devto_service.dart';
 import '../services/github_service.dart';
 import 'service_providers.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../providers/admin_portal_provider.dart';
+import '../../../core/providers/admin_portal_provider.dart';
 import '../../../core/utils/responsive_helper.dart';
 import '../models/admin_portal_models.dart';
 import '../modules/admin_module_registry.dart';

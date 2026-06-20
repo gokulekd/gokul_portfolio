@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 
-import '../features/admin/admin.dart';
-import '../features/portfolio/portfolio.dart';
+import '../../features/admin/admin.dart';
+import '../../features/portfolio/portfolio.dart';
 import 'app_routes.dart';
 
 final appRouter = GoRouter(

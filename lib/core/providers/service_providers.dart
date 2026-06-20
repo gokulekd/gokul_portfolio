@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../features/admin/modules/projects/services/supabase_projects_service.dart';
-import '../features/admin/services/admin_auth_service.dart';
+import '../../features/admin/modules/projects/services/supabase_projects_service.dart';
+import '../../features/admin/services/admin_auth_service.dart';
+import '../services/contact_service.dart';
 import '../services/firebase_portfolio_service.dart';
 import '../services/supabase_storage_service.dart';
 
@@ -19,4 +20,8 @@ final adminAuthServiceProvider = Provider<AdminAuthService>((ref) {
 
 final supabaseProjectsServiceProvider = Provider<SupabaseProjectsService>((ref) {
   return SupabaseProjectsService();
+});
+
+final contactServiceProvider = Provider<ContactService>((ref) {
+  return ContactService();
 });

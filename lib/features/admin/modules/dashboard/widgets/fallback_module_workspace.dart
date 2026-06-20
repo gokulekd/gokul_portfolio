@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../../providers/admin_portal_provider.dart';
+import '../../../../../core/providers/admin_portal_provider.dart';
 import '../../../shared/preview_tile.dart';
 import '../../../widgets/admin_buttons.dart';
 import '../../../widgets/admin_section_header.dart';

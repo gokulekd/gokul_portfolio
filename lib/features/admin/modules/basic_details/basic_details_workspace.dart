@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../portfolio/models/firebase_content_models.dart';
-import '../../../../providers/admin_portal_provider.dart';
+import '../../../../core/providers/admin_portal_provider.dart';
 import '../../widgets/admin_error_banner.dart';
 import '../../widgets/admin_form_field.dart';
 import '../../widgets/admin_form_row.dart';
