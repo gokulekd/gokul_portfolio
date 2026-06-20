@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../config/app_colors.dart';
-import '../../../../controllers/portfolio_controller.dart';
+import '../../../../core/config/app_colors.dart';
+import '../../../../providers/portfolio_provider.dart';
 import '../../models/admin_portal_models.dart';
 import '../../shared/admin_portal_components.dart';
 import '../../shared/dialog_widgets.dart';
 import '../../shared/preview_tile.dart';
 
-class BlogPost {
-  BlogPost({
+class AdminBlogPost {
+  AdminBlogPost({
     required this.id,
     required this.title,
     required this.excerpt,
@@ -32,13 +32,13 @@ class BlogPost {
   final bool isExternal;
   final String? externalUrl;
 
-  BlogPost copyWith({
+  AdminBlogPost copyWith({
     String? title,
     String? excerpt,
     List<String>? tags,
     int? readingTimeMinutes,
     bool? isPublished,
-  }) => BlogPost(
+  }) => AdminBlogPost(
     id: id,
     title: title ?? this.title,
     excerpt: excerpt ?? this.excerpt,
@@ -51,25 +51,24 @@ class BlogPost {
   );
 }
 
-class BlogWorkspace extends StatefulWidget {
+class BlogWorkspace extends ConsumerStatefulWidget {
   const BlogWorkspace({super.key, required this.isCompact});
   final bool isCompact;
 
   @override
-  State<BlogWorkspace> createState() => _BlogWorkspaceState();
+  ConsumerState<BlogWorkspace> createState() => _BlogWorkspaceState();
 }
 
-class _BlogWorkspaceState extends State<BlogWorkspace> {
-  late final List<BlogPost> _posts;
+class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
+  late final List<AdminBlogPost> _posts;
   String _filter = 'All';
 
   @override
   void initState() {
     super.initState();
-    final portfolioController = Get.find<PortfolioController>();
     _posts = [
-      ...portfolioController.blogPosts.map(
-        (p) => BlogPost(
+      ...ref.read(portfolioProvider).blogPosts.map(
+        (p) => AdminBlogPost(
           id: p.url ?? p.title,
           title: p.title,
           excerpt: p.excerpt,
@@ -84,7 +83,7 @@ class _BlogWorkspaceState extends State<BlogWorkspace> {
     ];
   }
 
-  List<BlogPost> get _filtered {
+  List<AdminBlogPost> get _filtered {
     return switch (_filter) {
       'Published' => _posts.where((p) => p.isPublished).toList(),
       'Draft' => _posts.where((p) => !p.isPublished).toList(),
@@ -93,7 +92,7 @@ class _BlogWorkspaceState extends State<BlogWorkspace> {
     };
   }
 
-  void _openDialog({BlogPost? existing}) {
+  void _openDialog({AdminBlogPost? existing}) {
     final titleCtrl = TextEditingController(text: existing?.title ?? '');
     final excerptCtrl = TextEditingController(text: existing?.excerpt ?? '');
     final tagsCtrl = TextEditingController(
@@ -228,7 +227,7 @@ class _BlogWorkspaceState extends State<BlogWorkspace> {
                           } else {
                             _posts.insert(
                               0,
-                              BlogPost(
+                              AdminBlogPost(
                                 id:
                                     DateTime.now().millisecondsSinceEpoch
                                         .toString(),
@@ -442,7 +441,7 @@ class BlogPostRow extends StatelessWidget {
     required this.onTogglePublish,
   });
 
-  final BlogPost post;
+  final AdminBlogPost post;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final ValueChanged<bool>? onTogglePublish;

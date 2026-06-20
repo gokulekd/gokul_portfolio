@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../models/firebase_content_models.dart';
+import '../models/firebase_content_models.dart';
 import '../../../providers/portfolio_provider.dart';
-import '../../../widgets/home/contact_section.dart';
-import '../../../widgets/shared/custom_widgets.dart';
-import '../../../widgets/home/faq_section.dart';
-import '../../../widgets/shared/footer_section.dart';
-import '../../../widgets/home/freelance_process_section.dart';
-import '../../../widgets/home/hero_section.dart';
-import '../../../widgets/home/project_types_marquee.dart';
-import '../../../widgets/home/proud_achievements_section.dart';
-import '../../../widgets/shared/scroll_progress_bar.dart';
-import '../../../widgets/home/selected_projects_section.dart';
-import '../../../widgets/home/skills_section.dart';
-import '../../../widgets/home/stats_marquee.dart';
-import '../../../widgets/home/testimonials_section.dart';
+import '../widgets/home/contact_section.dart';
+import '../widgets/shared/custom_widgets.dart';
+import '../widgets/home/faq_section.dart';
+import '../widgets/shared/footer_section.dart';
+import '../widgets/home/freelance_process_section.dart';
+import '../widgets/home/hero_section.dart';
+import '../widgets/home/project_types_marquee.dart';
+import '../widgets/home/proud_achievements_section.dart';
+import '../widgets/shared/scroll_progress_bar.dart';
+import '../widgets/home/selected_projects_section.dart';
+import '../widgets/home/skills_section.dart';
+import '../widgets/home/stats_marquee.dart';
+import '../widgets/home/testimonials_section.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});

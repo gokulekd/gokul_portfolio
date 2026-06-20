@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 
-import '../../../config/app_colors.dart';
+import '../../../core/config/app_colors.dart';
 import '../../../routes/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {

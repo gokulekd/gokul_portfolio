@@ -1,93 +1,93 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../config/app_colors.dart';
+import '../../../../core/config/app_colors.dart';
 import '../../../../core/supabase/supabase_bootstrap.dart';
-import '../../../../models/firebase_content_models.dart';
+import '../../../portfolio/models/firebase_content_models.dart';
+import '../../../../providers/admin_portal_provider.dart';
+import '../../../../providers/service_providers.dart';
 import '../../../../services/supabase_storage_service.dart';
-import '../../controllers/admin_portal_controller.dart';
 import '../../models/admin_portal_models.dart';
 import '../../shared/admin_portal_components.dart';
 import 'models/app_project.dart';
 
-class ProjectsWorkspace extends StatelessWidget {
+class ProjectsWorkspace extends ConsumerWidget {
   const ProjectsWorkspace({
     super.key,
-    required this.controller,
     required this.isCompact,
   });
 
-  final AdminPortalController controller;
   final bool isCompact;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final projects = ref.watch(adminPortalProvider).liveAppProjects;
+    final notifier = ref.read(adminPortalProvider.notifier);
+
     return AdminSurfaceCard(
-      child: Obx(
-        () => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AdminSectionHeader(
-              eyebrow: 'APP PROJECTS',
-              title: 'Your portfolio projects',
-              description:
-                  'Projects are saved to Supabase. Add app name, description, icon, banner, store links, and website URL.',
-              action: AdminPrimaryButton(
-                label: 'Add project',
-                onPressed: () => showAppProjectEditorDialog(
-                  context,
-                  controller: controller,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AdminSectionHeader(
+            eyebrow: 'APP PROJECTS',
+            title: 'Your portfolio projects',
+            description:
+                'Projects are saved to Supabase. Add app name, description, icon, banner, store links, and website URL.',
+            action: AdminPrimaryButton(
+              label: 'Add project',
+              onPressed: () => showAppProjectEditorDialog(
+                context,
+                ref: ref,
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          if (projects.isEmpty)
+            const _EmptyProjectsState()
+          else
+            ...projects.map(
+              (project) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: AppProjectRow(
+                  project: project,
+                  onEdit: () => showAppProjectEditorDialog(
+                    context,
+                    ref: ref,
+                    project: project,
+                  ),
+                  onDelete: () async {
+                    final ok = await notifier.deleteAppProject(project);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            ok
+                                ? '${project.appName} was deleted.'
+                                : 'Could not delete. Check Supabase config.',
+                            style: GoogleFonts.manrope(color: Colors.white),
+                          ),
+                          backgroundColor: (ok
+                                  ? const Color(0xFFFF7C7C)
+                                  : Colors.orange)
+                              .withValues(alpha: 0.85),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  onFeatureToggle: (value) =>
+                      notifier.toggleAppProjectFeatured(project, value),
+                  onPublishToggle: (value) =>
+                      notifier.toggleAppProjectPublished(project, value),
                 ),
               ),
             ),
-            const SizedBox(height: 18),
-            if (controller.liveAppProjects.isEmpty)
-              const _EmptyProjectsState()
-            else
-              ...controller.liveAppProjects.map(
-                (project) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: AppProjectRow(
-                    project: project,
-                    onEdit: () => showAppProjectEditorDialog(
-                      context,
-                      controller: controller,
-                      project: project,
-                    ),
-                    onDelete: () async {
-                      final ok = await controller.deleteAppProject(project);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              ok
-                                  ? '${project.appName} was deleted.'
-                                  : 'Could not delete. Check Supabase config.',
-                              style: GoogleFonts.manrope(color: Colors.white),
-                            ),
-                            backgroundColor: (ok
-                                    ? const Color(0xFFFF7C7C)
-                                    : Colors.orange)
-                                .withValues(alpha: 0.85),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    onFeatureToggle: (value) =>
-                        controller.toggleAppProjectFeatured(project, value),
-                    onPublishToggle: (value) =>
-                        controller.toggleAppProjectPublished(project, value),
-                  ),
-                ),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -159,7 +159,6 @@ class AppProjectRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Banner (full size, no fixed height) ───────────────
           if (project.appBannerUrl.isNotEmpty)
             Image.network(
               project.appBannerUrl,
@@ -168,7 +167,8 @@ class AppProjectRow extends StatelessWidget {
               errorBuilder: (_, __, ___) => Container(
                 height: 160,
                 color: Colors.white.withValues(alpha: 0.04),
-                child: const Icon(Icons.image_not_supported_rounded, color: Colors.white24),
+                child: const Icon(Icons.image_not_supported_rounded,
+                    color: Colors.white24),
               ),
             )
           else
@@ -176,35 +176,35 @@ class AppProjectRow extends StatelessWidget {
               height: 160,
               width: double.infinity,
               color: Colors.white.withValues(alpha: 0.04),
-              child: Icon(Icons.image_rounded, size: 36, color: Colors.white.withValues(alpha: 0.1)),
+              child: Icon(Icons.image_rounded,
+                  size: 36, color: Colors.white.withValues(alpha: 0.1)),
             ),
-
-          // ── Icon + Name + Edit/Delete ──────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 12, 0),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // App icon
                 Container(
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: project.appIconUrl.isNotEmpty
                       ? Image.network(
                           project.appIconUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.apps_rounded, color: Colors.white24),
+                          errorBuilder: (_, __, ___) => const Icon(
+                              Icons.apps_rounded,
+                              color: Colors.white24),
                         )
                       : const Icon(Icons.apps_rounded, color: Colors.white24),
                 ),
                 const SizedBox(width: 12),
-                // Name + status chips
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,24 +222,27 @@ class AppProjectRow extends StatelessWidget {
                         spacing: 6,
                         children: [
                           AdminStateChip(
-                            state: project.isPublished ? AdminItemState.live : AdminItemState.draft,
+                            state: project.isPublished
+                                ? AdminItemState.live
+                                : AdminItemState.draft,
                           ),
                           if (project.isFeatured)
-                            const AdminStateChip(state: AdminItemState.live, label: 'Featured'),
+                            const AdminStateChip(
+                                state: AdminItemState.live, label: 'Featured'),
                         ],
                       ),
                     ],
                   ),
                 ),
-                // Edit / Delete at the end
                 _IconChip(icon: Icons.edit_rounded, onTap: onEdit),
                 const SizedBox(width: 6),
-                _IconChip(icon: Icons.delete_outline_rounded, onTap: onDelete, destructive: true),
+                _IconChip(
+                    icon: Icons.delete_outline_rounded,
+                    onTap: onDelete,
+                    destructive: true),
               ],
             ),
           ),
-
-          // ── Description ───────────────────────────────────────
           if (project.appDescription.isNotEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
@@ -254,8 +257,6 @@ class AppProjectRow extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-
-          // ── Tech Stack chips ──────────────────────────────────
           if (project.techStack.isNotEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
@@ -268,7 +269,8 @@ class AppProjectRow extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryGreen.withValues(alpha: 0.08),
+                          color:
+                              AppColors.primaryGreen.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(
                             color: AppColors.primaryGreen.withValues(alpha: 0.2),
@@ -287,8 +289,6 @@ class AppProjectRow extends StatelessWidget {
                     .toList(),
               ),
             ),
-
-          // ── Links ─────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Wrap(
@@ -296,23 +296,36 @@ class AppProjectRow extends StatelessWidget {
               runSpacing: 8,
               children: [
                 if (project.appWebsiteUrl.isNotEmpty)
-                  _ProjectLinkChip(label: 'Website', icon: Icons.language_rounded),
-                if (project.githubUrl != null && project.githubUrl!.isNotEmpty)
-                  _ProjectLinkChip(label: 'GitHub', icon: Icons.code_rounded, color: const Color(0xFFE6EDF3)),
-                if (project.playStoreUrl != null && project.playStoreUrl!.isNotEmpty)
-                  _ProjectLinkChip(label: 'Play Store', icon: Icons.shop_rounded, color: const Color(0xFF34A853)),
-                if (project.appStoreUrl != null && project.appStoreUrl!.isNotEmpty)
-                  _ProjectLinkChip(label: 'App Store', icon: Icons.apple_rounded, color: const Color(0xFF5CD6FF)),
+                  _ProjectLinkChip(
+                      label: 'Website', icon: Icons.language_rounded),
+                if (project.githubUrl != null &&
+                    project.githubUrl!.isNotEmpty)
+                  _ProjectLinkChip(
+                      label: 'GitHub',
+                      icon: Icons.code_rounded,
+                      color: const Color(0xFFE6EDF3)),
+                if (project.playStoreUrl != null &&
+                    project.playStoreUrl!.isNotEmpty)
+                  _ProjectLinkChip(
+                      label: 'Play Store',
+                      icon: Icons.shop_rounded,
+                      color: const Color(0xFF34A853)),
+                if (project.appStoreUrl != null &&
+                    project.appStoreUrl!.isNotEmpty)
+                  _ProjectLinkChip(
+                      label: 'App Store',
+                      icon: Icons.apple_rounded,
+                      color: const Color(0xFF5CD6FF)),
               ],
             ),
           ),
-
-          // ── Toggles ───────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
             child: Row(
               children: [
-                Text('Featured', style: GoogleFonts.manrope(color: Colors.white54, fontSize: 13)),
+                Text('Featured',
+                    style: GoogleFonts.manrope(
+                        color: Colors.white54, fontSize: 13)),
                 const SizedBox(width: 6),
                 Switch(
                   value: project.isFeatured,
@@ -320,7 +333,9 @@ class AppProjectRow extends StatelessWidget {
                   activeThumbColor: AppColors.primaryGreen,
                 ),
                 const SizedBox(width: 14),
-                Text('Published', style: GoogleFonts.manrope(color: Colors.white54, fontSize: 13)),
+                Text('Published',
+                    style: GoogleFonts.manrope(
+                        color: Colors.white54, fontSize: 13)),
                 const SizedBox(width: 6),
                 Switch(
                   value: project.isPublished,
@@ -409,11 +424,14 @@ class _ProjectLinkChip extends StatelessWidget {
 
 Future<void> showAppProjectEditorDialog(
   BuildContext context, {
-  required AdminPortalController controller,
+  required WidgetRef ref,
   AppProject? project,
 }) async {
-  final nameController =
-      TextEditingController(text: project?.appName ?? '');
+  final notifier = ref.read(adminPortalProvider.notifier);
+  final storage = ref.read(supabaseStorageServiceProvider);
+  final currentProjects = ref.read(adminPortalProvider).liveAppProjects;
+
+  final nameController = TextEditingController(text: project?.appName ?? '');
   final descriptionController =
       TextEditingController(text: project?.appDescription ?? '');
   final websiteController =
@@ -429,9 +447,7 @@ Future<void> showAppProjectEditorDialog(
   final githubController =
       TextEditingController(text: project?.githubUrl ?? '');
   final orderController = TextEditingController(
-    text: (project?.displayOrder ??
-            (controller.liveAppProjects.length + 1))
-        .toString(),
+    text: (project?.displayOrder ?? (currentProjects.length + 1)).toString(),
   );
   final techStackInputController = TextEditingController();
   final responsibilitiesController =
@@ -439,8 +455,8 @@ Future<void> showAppProjectEditorDialog(
 
   var isFeatured = project?.isFeatured ?? false;
   var isPublished = project?.isPublished ?? true;
-  // Personal = GitHub visible & editable; Company = GitHub disabled/hidden
-  var isPersonalProject = (project?.githubUrl?.isNotEmpty ?? false) || project == null;
+  var isPersonalProject =
+      (project?.githubUrl?.isNotEmpty ?? false) || project == null;
   var isUploadingIcon = false;
   var isUploadingBanner = false;
   var iconPreviewUrl = project?.appIconUrl ?? '';
@@ -491,7 +507,6 @@ Future<void> showAppProjectEditorDialog(
 
     setDlgState(() => setUploading(true));
 
-    final storage = Get.find<SupabaseStorageService>();
     final uploadResult = await storage.uploadFromBytes(
       bucket: SupabaseStorageService.mediaBucket,
       folder: 'media/$folder',
@@ -515,7 +530,7 @@ Future<void> showAppProjectEditorDialog(
         assetType: MediaAssetType.image,
         uploadedAt: DateTime.now(),
       );
-      await controller.saveMediaAsset(asset);
+      await notifier.saveMediaAsset(asset);
     } else {
       setDlgState(() => setUploading(false));
       if (ctx.mounted) {
@@ -555,7 +570,6 @@ Future<void> showAppProjectEditorDialog(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // ── Banner upload zone ──────────────────────────────
                       _BannerUploadZone(
                         bannerPreviewUrl: bannerPreviewUrl,
                         iconPreviewUrl: iconPreviewUrl,
@@ -578,14 +592,11 @@ Future<void> showAppProjectEditorDialog(
                           setPreview: (url) => iconPreviewUrl = url,
                         ),
                       ),
-
-                      // ── Form fields ─────────────────────────────────────
                       Padding(
                         padding: const EdgeInsets.fromLTRB(28, 20, 28, 28),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Title row
                             Row(
                               children: [
                                 Expanded(
@@ -600,7 +611,6 @@ Future<void> showAppProjectEditorDialog(
                                     ),
                                   ),
                                 ),
-                                // Publish toggle pill
                                 GestureDetector(
                                   onTap: () => setState(
                                     () => isPublished = !isPublished,
@@ -621,8 +631,7 @@ Future<void> showAppProjectEditorDialog(
                                         color: isPublished
                                             ? AppColors.primaryGreen
                                                 .withValues(alpha: 0.4)
-                                            : Colors.white
-                                                .withValues(alpha: 0.1),
+                                            : Colors.white.withValues(alpha: 0.1),
                                       ),
                                     ),
                                     child: Row(
@@ -653,7 +662,6 @@ Future<void> showAppProjectEditorDialog(
                                   ),
                                 ),
                                 const SizedBox(width: 10),
-                                // Featured toggle pill
                                 GestureDetector(
                                   onTap: () => setState(
                                     () => isFeatured = !isFeatured,
@@ -674,8 +682,7 @@ Future<void> showAppProjectEditorDialog(
                                         color: isFeatured
                                             ? const Color(0xFFFFB44C)
                                                 .withValues(alpha: 0.4)
-                                            : Colors.white
-                                                .withValues(alpha: 0.1),
+                                            : Colors.white.withValues(alpha: 0.1),
                                       ),
                                     ),
                                     child: Row(
@@ -706,7 +713,6 @@ Future<void> showAppProjectEditorDialog(
                               ],
                             ),
                             const SizedBox(height: 24),
-
                             _AppProjectFormField(
                               label: 'App Name',
                               controller: nameController,
@@ -717,12 +723,9 @@ Future<void> showAppProjectEditorDialog(
                               label: 'Description',
                               controller: descriptionController,
                               maxLines: 6,
-                              hint:
-                                  'Briefly describe what your app does…',
+                              hint: 'Briefly describe what your app does…',
                             ),
                             const SizedBox(height: 20),
-
-                            // ── Links section ─────────────────────────────
                             _SectionDivider(label: 'Links'),
                             const SizedBox(height: 14),
                             _AppProjectFormField(
@@ -732,7 +735,6 @@ Future<void> showAppProjectEditorDialog(
                               prefixIcon: Icons.language_rounded,
                             ),
                             const SizedBox(height: 12),
-                            // ── Project type toggle ────────────────────────
                             Row(
                               children: [
                                 Text(
@@ -789,8 +791,6 @@ Future<void> showAppProjectEditorDialog(
                               ],
                             ),
                             const SizedBox(height: 20),
-
-                            // ── Tech Stack section ────────────────────────
                             _SectionDivider(label: 'Tech Stack'),
                             const SizedBox(height: 14),
                             _TechStackInput(
@@ -801,9 +801,8 @@ Future<void> showAppProjectEditorDialog(
                                   setState(() => techStack.remove(tag)),
                             ),
                             const SizedBox(height: 20),
-
-                            // ── Developer Responsibilities section ─────────
-                            _SectionDivider(label: 'Developer Responsibilities'),
+                            _SectionDivider(
+                                label: 'Developer Responsibilities'),
                             const SizedBox(height: 14),
                             _AppProjectFormField(
                               label: 'What you built & contributed',
@@ -813,8 +812,6 @@ Future<void> showAppProjectEditorDialog(
                                   'Describe your role, features you developed, architecture decisions…',
                             ),
                             const SizedBox(height: 20),
-
-                            // ── Settings section ──────────────────────────
                             _SectionDivider(label: 'Settings'),
                             const SizedBox(height: 14),
                             SizedBox(
@@ -827,8 +824,6 @@ Future<void> showAppProjectEditorDialog(
                               ),
                             ),
                             const SizedBox(height: 28),
-
-                            // ── Actions ───────────────────────────────────
                             Row(
                               children: [
                                 Expanded(
@@ -848,22 +843,18 @@ Future<void> showAppProjectEditorDialog(
                                         : 'Save changes',
                                     icon: Icons.check_rounded,
                                     onPressed: () async {
-                                      if (nameController.text
-                                          .trim()
-                                          .isEmpty) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
+                                      if (nameController.text.trim().isEmpty) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           SnackBar(
                                             content: Text(
                                               'App name is required.',
                                               style: GoogleFonts.manrope(
-                                                color: Colors.white,
-                                              ),
+                                                  color: Colors.white),
                                             ),
                                             backgroundColor: const Color(
-                                              0xFFFFB44C,
-                                            ).withValues(alpha: 0.85),
+                                                    0xFFFFB44C)
+                                                .withValues(alpha: 0.85),
                                             behavior:
                                                 SnackBarBehavior.floating,
                                             shape: RoundedRectangleBorder(
@@ -877,11 +868,9 @@ Future<void> showAppProjectEditorDialog(
 
                                       final savedProject = AppProject(
                                         id: project?.id ?? '',
-                                        appName:
-                                            nameController.text.trim(),
+                                        appName: nameController.text.trim(),
                                         appDescription:
-                                            descriptionController.text
-                                                .trim(),
+                                            descriptionController.text.trim(),
                                         appIconUrl:
                                             iconUrlController.text.trim(),
                                         appBannerUrl:
@@ -893,29 +882,23 @@ Future<void> showAppProjectEditorDialog(
                                                 .isEmpty
                                             ? null
                                             : githubController.text.trim(),
-                                        playStoreUrl: playStoreController
-                                                .text
+                                        playStoreUrl: playStoreController.text
                                                 .trim()
                                                 .isEmpty
                                             ? null
-                                            : playStoreController.text
-                                                .trim(),
-                                        appStoreUrl: appStoreController
-                                                .text
+                                            : playStoreController.text.trim(),
+                                        appStoreUrl: appStoreController.text
                                                 .trim()
                                                 .isEmpty
                                             ? null
-                                            : appStoreController.text
-                                                .trim(),
+                                            : appStoreController.text.trim(),
                                         isFeatured: isFeatured,
                                         isPublished: isPublished,
                                         displayOrder: int.tryParse(
                                               orderController.text.trim(),
                                             ) ??
                                             (project?.displayOrder ??
-                                                controller.liveAppProjects
-                                                        .length +
-                                                    1),
+                                                currentProjects.length + 1),
                                         createdAt: project?.createdAt ??
                                             DateTime.now(),
                                         techStack: List.from(techStack),
@@ -924,27 +907,26 @@ Future<void> showAppProjectEditorDialog(
                                                 .trim(),
                                       );
 
-                                      final ok = await controller
+                                      final ok = await notifier
                                           .saveAppProject(savedProject);
 
                                       if (context.mounted) {
                                         Navigator.of(context).pop();
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           SnackBar(
                                             content: Text(
                                               ok
                                                   ? '${savedProject.appName} was saved to Supabase.'
                                                   : 'Could not save. Check Supabase config.',
                                               style: GoogleFonts.manrope(
-                                                color: Colors.white,
-                                              ),
+                                                  color: Colors.white),
                                             ),
-                                            backgroundColor: (ok
-                                                    ? AppColors.primaryGreen
-                                                    : Colors.orange)
-                                                .withValues(alpha: 0.85),
+                                            backgroundColor:
+                                                (ok
+                                                        ? AppColors.primaryGreen
+                                                        : Colors.orange)
+                                                    .withValues(alpha: 0.85),
                                             behavior:
                                                 SnackBarBehavior.floating,
                                             shape: RoundedRectangleBorder(
@@ -999,7 +981,6 @@ class _BannerUploadZone extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Banner
         GestureDetector(
           onTap: isUploading ? null : onUploadBanner,
           child: Container(
@@ -1047,8 +1028,6 @@ class _BannerUploadZone extends StatelessWidget {
                 : _BannerPlaceholder(isUploading: isUploading),
           ),
         ),
-
-        // App icon row below the banner
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
           child: Row(
@@ -1227,8 +1206,7 @@ class _UploadChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(999),
-        border:
-            Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1239,8 +1217,7 @@ class _UploadChip extends StatelessWidget {
               height: 10,
               child: CircularProgressIndicator(
                 strokeWidth: 1.5,
-                valueColor:
-                    AlwaysStoppedAnimation(AppColors.primaryGreen),
+                valueColor: AlwaysStoppedAnimation(AppColors.primaryGreen),
               ),
             )
           else
@@ -1407,7 +1384,6 @@ class _TechStackInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Input row
         Row(
           children: [
             Expanded(
@@ -1428,7 +1404,7 @@ class _TechStackInput extends StatelessWidget {
                       color: AppColors.primaryGreen.withValues(alpha: 0.5),
                     ),
                   ),
-                  hintText: 'e.g. Flutter, Firebase, GetX…',
+                  hintText: 'e.g. Flutter, Firebase, Riverpod…',
                   hintStyle:
                       GoogleFonts.manrope(color: Colors.white24, fontSize: 13),
                   contentPadding: const EdgeInsets.symmetric(
@@ -1488,7 +1464,8 @@ class _TechStackInput extends StatelessWidget {
                           child: Icon(
                             Icons.close_rounded,
                             size: 12,
-                            color: AppColors.primaryGreen.withValues(alpha: 0.7),
+                            color:
+                                AppColors.primaryGreen.withValues(alpha: 0.7),
                           ),
                         ),
                       ],

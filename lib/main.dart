@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'controllers/theme_controller.dart';
 import 'core/firebase/firebase_bootstrap.dart';
 import 'core/supabase/supabase_bootstrap.dart';
 import 'providers/theme_provider.dart';

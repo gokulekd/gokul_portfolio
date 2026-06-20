@@ -1,22 +1,21 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../config/app_colors.dart';
-import '../../../../models/firebase_content_models.dart';
-import '../../controllers/admin_portal_controller.dart';
+import '../../../../core/config/app_colors.dart';
+import '../../../portfolio/models/firebase_content_models.dart';
+import '../../../../providers/admin_portal_provider.dart';
 import '../../models/admin_portal_models.dart';
 import '../../shared/admin_portal_components.dart';
 import '../../shared/preview_tile.dart';
 
-class ManagePagesWorkspace extends StatelessWidget {
+class ManagePagesWorkspace extends ConsumerWidget {
   const ManagePagesWorkspace({
     super.key,
-    required this.controller,
     required this.isCompact,
   });
 
-  final AdminPortalController controller;
   final bool isCompact;
 
   static const _pages = [
@@ -120,100 +119,84 @@ class ManagePagesWorkspace extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sections = ref.watch(adminPortalProvider).liveSections;
+    final notifier = ref.read(adminPortalProvider.notifier);
+
+    int getLiveCount() => _pages.where((p) {
+          if (p.sectionKey == null) return p.defaultLive;
+          final section = sections.firstWhereOrNull((s) => s.key == p.sectionKey);
+          return section?.isVisible ?? p.defaultLive;
+        }).length;
+
+    final liveCount = getLiveCount();
+
     final pageList = AdminSurfaceCard(
-      child: Obx(() {
-        final sections = controller.liveSections;
-        final liveCount =
-            _pages.where((p) {
-              if (p.sectionKey == null) return p.defaultLive;
-              final section = sections.firstWhereOrNull(
-                (s) => s.key == p.sectionKey,
-              );
-              return section?.isVisible ?? p.defaultLive;
-            }).length;
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AdminSectionHeader(
+            eyebrow: 'PORTFOLIO PAGES',
+            title: 'All pages across your site',
+            description:
+                '$liveCount of ${_pages.length} pages are currently live. Toggle visibility to show or hide sections.',
+          ),
+          const SizedBox(height: 18),
+          ..._pages.map((page) {
+            final section = page.sectionKey != null
+                ? sections.firstWhereOrNull((s) => s.key == page.sectionKey)
+                : null;
+            final isLive = section?.isVisible ?? page.defaultLive;
+            final canToggle = section != null;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AdminSectionHeader(
-              eyebrow: 'PORTFOLIO PAGES',
-              title: 'All pages across your site',
-              description:
-                  '$liveCount of ${_pages.length} pages are currently live. Toggle visibility to show or hide sections.',
-            ),
-            const SizedBox(height: 18),
-            ..._pages.map((page) {
-              final section =
-                  page.sectionKey != null
-                      ? sections.firstWhereOrNull(
-                        (s) => s.key == page.sectionKey,
-                      )
-                      : null;
-              final isLive = section?.isVisible ?? page.defaultLive;
-              final canToggle = section != null;
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _PageRow(
-                  page: page,
-                  controller: controller,
-                  section: section,
-                  isLive: isLive,
-                  canToggle: canToggle,
-                ),
-              );
-            }),
-          ],
-        );
-      }),
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _PageRow(
+                page: page,
+                notifier: notifier,
+                section: section,
+                isLive: isLive,
+                canToggle: canToggle,
+              ),
+            );
+          }),
+        ],
+      ),
     );
 
     final statsPanel = AdminSurfaceCard(
-      child: Obx(() {
-        final sections = controller.liveSections;
-        final liveCount =
-            _pages.where((p) {
-              if (p.sectionKey == null) return p.defaultLive;
-              final section = sections.firstWhereOrNull(
-                (s) => s.key == p.sectionKey,
-              );
-              return section?.isVisible ?? p.defaultLive;
-            }).length;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const AdminSectionHeader(
-              eyebrow: 'PAGE STATS',
-              title: 'Site overview',
-              description:
-                  'Summary of all pages and their current publish status.',
-            ),
-            const SizedBox(height: 18),
-            PreviewTile(
-              title: 'Total pages',
-              value: '${_pages.length} pages configured',
-              icon: Icons.web_rounded,
-              color: AppColors.primaryGreen,
-            ),
-            const SizedBox(height: 12),
-            PreviewTile(
-              title: 'Live pages',
-              value: '$liveCount pages published',
-              icon: Icons.visibility_rounded,
-              color: const Color(0xFF5CD6FF),
-            ),
-            const SizedBox(height: 12),
-            PreviewTile(
-              title: 'Draft pages',
-              value: '${_pages.length - liveCount} hidden from public',
-              icon: Icons.visibility_off_rounded,
-              color: const Color(0xFFFF7C7C),
-            ),
-          ],
-        );
-      }),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AdminSectionHeader(
+            eyebrow: 'PAGE STATS',
+            title: 'Site overview',
+            description:
+                'Summary of all pages and their current publish status.',
+          ),
+          const SizedBox(height: 18),
+          PreviewTile(
+            title: 'Total pages',
+            value: '${_pages.length} pages configured',
+            icon: Icons.web_rounded,
+            color: AppColors.primaryGreen,
+          ),
+          const SizedBox(height: 12),
+          PreviewTile(
+            title: 'Live pages',
+            value: '$liveCount pages published',
+            icon: Icons.visibility_rounded,
+            color: const Color(0xFF5CD6FF),
+          ),
+          const SizedBox(height: 12),
+          PreviewTile(
+            title: 'Draft pages',
+            value: '${_pages.length - liveCount} hidden from public',
+            icon: Icons.visibility_off_rounded,
+            color: const Color(0xFFFF7C7C),
+          ),
+        ],
+      ),
     );
 
     if (isCompact) {
@@ -255,14 +238,14 @@ class _PageEntry {
 class _PageRow extends StatelessWidget {
   const _PageRow({
     required this.page,
-    required this.controller,
+    required this.notifier,
     required this.section,
     required this.isLive,
     required this.canToggle,
   });
 
   final _PageEntry page;
-  final AdminPortalController controller;
+  final AdminPortalNotifier notifier;
   final SiteSectionConfig? section;
   final bool isLive;
   final bool canToggle;
@@ -342,13 +325,12 @@ class _PageRow extends StatelessWidget {
                       scale: 0.82,
                       child: Switch(
                         value: isLive,
-                        onChanged:
-                            canToggle
-                                ? (val) => controller.updateSectionVisibility(
+                        onChanged: canToggle
+                            ? (val) => notifier.updateSectionVisibility(
                                   section!,
                                   val,
                                 )
-                                : null,
+                            : null,
                         activeThumbColor: AppColors.primaryGreen,
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),

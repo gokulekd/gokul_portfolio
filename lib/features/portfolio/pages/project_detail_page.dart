@@ -6,8 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../admin/modules/projects/models/app_project.dart';
 import '../../../providers/portfolio_provider.dart';
-import '../../../utils/responsive_helper.dart';
-import '../../../widgets/shared/custom_widgets.dart';
+import '../../../core/utils/responsive_helper.dart';
+import '../widgets/shared/custom_widgets.dart';
 
 const _kAccents = [
   Color(0xFF6C63FF),

@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../config/app_colors.dart';
+import '../../../core/config/app_colors.dart';
 import '../../../features/admin/modules/projects/models/app_project.dart';
 import '../../../providers/portfolio_provider.dart';
-import '../../../widgets/projects/featured_projects_section.dart';
-import '../../../utils/responsive_helper.dart';
-import '../../../widgets/shared/custom_widgets.dart';
-import '../../../widgets/shared/footer_section.dart';
+import '../widgets/projects/featured_projects_section.dart';
+import '../../../core/utils/responsive_helper.dart';
+import '../widgets/shared/custom_widgets.dart';
+import '../widgets/shared/footer_section.dart';
 
 class ProjectsPage extends StatelessWidget {
   const ProjectsPage({super.key});

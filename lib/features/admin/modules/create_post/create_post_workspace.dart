@@ -2,10 +2,9 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../config/app_colors.dart';
+import '../../../../core/config/app_colors.dart';
 import '../../shared/admin_portal_components.dart';
 
 class CreatePostWorkspace extends StatefulWidget {
@@ -72,13 +71,19 @@ class _CreatePostWorkspaceState extends State<CreatePostWorkspace> {
       _hashtags.clear();
       _visibility = 'Public';
     });
-    Get.snackbar(
-      'Post published',
-      'Your post is now live.',
-      backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.16),
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Post published — Your post is now live.',
+            style: GoogleFonts.manrope(color: Colors.white),
+          ),
+          backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.85),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+      );
+    }
   }
 
   bool get _canPost =>
@@ -384,12 +389,18 @@ class _CreatePostWorkspaceState extends State<CreatePostWorkspace> {
                   label: 'Save Draft',
                   icon: Icons.save_rounded,
                   onPressed: () {
-                    Get.snackbar(
-                      'Draft saved',
-                      'Your draft has been saved.',
-                      backgroundColor: Colors.white.withValues(alpha: 0.08),
-                      colorText: Colors.white,
-                      snackPosition: SnackPosition.BOTTOM,
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Draft saved — Your draft has been saved.',
+                          style: GoogleFonts.manrope(color: Colors.white),
+                        ),
+                        backgroundColor: Colors.white.withValues(alpha: 0.6),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
                     );
                   },
                 ),

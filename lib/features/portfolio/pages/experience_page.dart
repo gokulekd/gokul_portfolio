@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../config/app_colors.dart';
-import '../../../models/portfolio_models.dart';
+import '../../../core/config/app_colors.dart';
+import '../models/portfolio_models.dart';
 import '../../../providers/portfolio_provider.dart';
-import '../../../utils/responsive_helper.dart';
-import '../../../widgets/shared/custom_widgets.dart';
-import '../../../widgets/shared/footer_section.dart';
+import '../../../core/utils/responsive_helper.dart';
+import '../widgets/shared/custom_widgets.dart';
+import '../widgets/shared/footer_section.dart';
 
 class ExperiencePage extends ConsumerWidget {
   const ExperiencePage({super.key});

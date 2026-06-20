@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../config/app_colors.dart';
-import '../../../../models/firebase_content_models.dart';
-import '../../controllers/admin_portal_controller.dart';
+import '../../../../core/config/app_colors.dart';
+import '../../../portfolio/models/firebase_content_models.dart';
+import '../../../../providers/admin_portal_provider.dart';
 import '../../models/admin_portal_models.dart';
 import '../../shared/admin_portal_components.dart';
 
-class SiteStructureWorkspace extends StatelessWidget {
+class SiteStructureWorkspace extends ConsumerWidget {
   const SiteStructureWorkspace({
     super.key,
-    required this.controller,
     required this.isCompact,
   });
 
-  final AdminPortalController controller;
   final bool isCompact;
 
   static const _pageIcons = <String, IconData>{
@@ -35,36 +33,35 @@ class SiteStructureWorkspace extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(adminPortalProvider.notifier);
+    final pages = notifier.pageConfigs;
+    final liveCount = pages.where((p) => p.isVisible).length;
+
     return AdminSurfaceCard(
-      child: Obx(() {
-        final pages = controller.pageConfigs;
-        final liveCount = pages.where((p) => p.isVisible).length;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AdminSectionHeader(
-              eyebrow: 'SITE STRUCTURE',
-              title: 'Page visibility',
-              description:
-                  '$liveCount of ${pages.length} pages are visible. Toggling updates Firestore immediately.',
-            ),
-            const SizedBox(height: 18),
-            ...pages.map(
-              (page) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _PageRow(
-                  page: page,
-                  icon: _pageIcons[page.key] ?? Icons.web_rounded,
-                  color: _pageColors[page.key] ?? AppColors.primaryGreen,
-                  onChanged: (val) =>
-                      controller.updatePageVisibility(page, val),
-                ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AdminSectionHeader(
+            eyebrow: 'SITE STRUCTURE',
+            title: 'Page visibility',
+            description:
+                '$liveCount of ${pages.length} pages are visible. Toggling updates Firestore immediately.',
+          ),
+          const SizedBox(height: 18),
+          ...pages.map(
+            (page) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _PageRow(
+                page: page,
+                icon: _pageIcons[page.key] ?? Icons.web_rounded,
+                color: _pageColors[page.key] ?? AppColors.primaryGreen,
+                onChanged: (val) => notifier.updatePageVisibility(page, val),
               ),
             ),
-          ],
-        );
-      }),
+          ),
+        ],
+      ),
     );
   }
 }

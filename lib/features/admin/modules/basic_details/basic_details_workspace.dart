@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../models/firebase_content_models.dart';
-import '../../controllers/admin_portal_controller.dart';
+import '../../../portfolio/models/firebase_content_models.dart';
+import '../../../../providers/admin_portal_provider.dart';
 import '../../widgets/admin_error_banner.dart';
 import '../../widgets/admin_form_field.dart';
 import '../../widgets/admin_form_row.dart';
@@ -11,21 +11,20 @@ import '../../widgets/admin_section_header.dart';
 import '../../widgets/admin_section_label.dart';
 import '../../widgets/admin_surface_card.dart';
 
-class BasicDetailsWorkspace extends StatefulWidget {
+class BasicDetailsWorkspace extends ConsumerStatefulWidget {
   const BasicDetailsWorkspace({
     super.key,
-    required this.controller,
     required this.isCompact,
   });
 
-  final AdminPortalController controller;
   final bool isCompact;
 
   @override
-  State<BasicDetailsWorkspace> createState() => _BasicDetailsWorkspaceState();
+  ConsumerState<BasicDetailsWorkspace> createState() =>
+      _BasicDetailsWorkspaceState();
 }
 
-class _BasicDetailsWorkspaceState extends State<BasicDetailsWorkspace> {
+class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _designationCtrl;
   late final TextEditingController _linkedinCtrl;
@@ -42,7 +41,7 @@ class _BasicDetailsWorkspaceState extends State<BasicDetailsWorkspace> {
   @override
   void initState() {
     super.initState();
-    final d = widget.controller.basicDetails;
+    final d = ref.read(adminPortalProvider.notifier).basicDetails;
     _nameCtrl = TextEditingController(text: d.name);
     _designationCtrl = TextEditingController(text: d.designation);
     _linkedinCtrl = TextEditingController(text: d.linkedinUrl);
@@ -51,11 +50,6 @@ class _BasicDetailsWorkspaceState extends State<BasicDetailsWorkspace> {
     _mediumCtrl = TextEditingController(text: d.mediumUrl);
     _instagramCtrl = TextEditingController(text: d.instagramUrl);
     _emailCtrl = TextEditingController(text: d.email);
-
-    ever(widget.controller.liveBasicDetails, (details) {
-      if (details == null) return;
-      if (!_isSaving) _populate(details);
-    });
   }
 
   void _populate(BasicDetails d) {
@@ -104,7 +98,8 @@ class _BasicDetailsWorkspaceState extends State<BasicDetailsWorkspace> {
       email: _emailCtrl.text.trim(),
     );
 
-    final success = await widget.controller.saveBasicDetails(details);
+    final success =
+        await ref.read(adminPortalProvider.notifier).saveBasicDetails(details);
 
     if (mounted) {
       if (success) {
@@ -117,8 +112,7 @@ class _BasicDetailsWorkspaceState extends State<BasicDetailsWorkspace> {
       } else {
         setState(() {
           _isSaving = false;
-          _saveError =
-              widget.controller.firestoreErrorMessage.value ??
+          _saveError = ref.read(adminPortalProvider).firestoreErrorMessage ??
               'Save failed. Check Firestore rules for the site_config collection.';
         });
       }
@@ -127,6 +121,14 @@ class _BasicDetailsWorkspaceState extends State<BasicDetailsWorkspace> {
 
   @override
   Widget build(BuildContext context) {
+    // Listen for remote updates to liveBasicDetails and repopulate form
+    ref.listen(
+      adminPortalProvider.select((s) => s.liveBasicDetails),
+      (prev, next) {
+        if (next != null && !_isSaving) _populate(next);
+      },
+    );
+
     return AdminSurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

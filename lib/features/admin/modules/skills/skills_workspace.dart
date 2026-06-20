@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../config/app_colors.dart';
-import '../../controllers/admin_portal_controller.dart';
+import '../../../../core/config/app_colors.dart';
 import '../../shared/dialog_widgets.dart';
 import '../../shared/preview_tile.dart';
 import '../../widgets/admin_buttons.dart';
@@ -17,11 +16,9 @@ export 'widgets/skill_row.dart';
 class SkillsWorkspace extends StatefulWidget {
   const SkillsWorkspace({
     super.key,
-    required this.controller,
     required this.isCompact,
   });
 
-  final AdminPortalController controller;
   final bool isCompact;
 
   @override

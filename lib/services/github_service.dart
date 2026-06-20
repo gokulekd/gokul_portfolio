@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/portfolio_models.dart';
+import '../features/portfolio/models/portfolio_models.dart';
 
 class GitHubService {
   static const String _baseUrl = 'https://api.github.com';

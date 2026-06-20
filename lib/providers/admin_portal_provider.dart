@@ -5,9 +5,9 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../config/app_colors.dart';
-import '../models/firebase_content_models.dart';
-import '../models/portfolio_models.dart';
+import '../core/config/app_colors.dart';
+import '../features/portfolio/models/firebase_content_models.dart';
+import '../features/portfolio/models/portfolio_models.dart';
 import '../features/admin/models/admin_portal_models.dart';
 import '../features/admin/modules/projects/models/app_project.dart';
 import 'admin_auth_provider.dart';
@@ -326,7 +326,7 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
   Future<void> saveSocialLink(ManagedSocialLink link) async {
     final links = [...state.liveSocialLinks];
     final i = links.indexWhere((l) => l.id == link.id);
-    if (i != -1) links[i] = link; else links.add(link);
+    if (i != -1) { links[i] = link; } else { links.add(link); }
     links.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
     state = state.copyWith(liveSocialLinks: links);
     try {
@@ -346,7 +346,7 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
   Future<void> saveProject(Project project) async {
     final projects = [...state.liveProjects];
     final i = projects.indexWhere((p) => p.id == project.id);
-    if (i != -1) projects[i] = project; else projects.add(project);
+    if (i != -1) { projects[i] = project; } else { projects.add(project); }
     projects.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
     state = state.copyWith(liveProjects: projects);
     try {
@@ -414,7 +414,7 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
       if (saved == null) return false;
       final list = [...state.liveAppProjects];
       final i = list.indexWhere((p) => p.id == saved.id);
-      if (i != -1) list[i] = saved; else list.add(saved);
+      if (i != -1) { list[i] = saved; } else { list.add(saved); }
       list.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
       state = state.copyWith(liveAppProjects: list);
       return true;

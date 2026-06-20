@@ -1,44 +1,55 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../config/app_colors.dart';
+import '../../../../core/config/app_colors.dart';
 import '../../../../core/supabase/supabase_bootstrap.dart';
-import '../../../../models/firebase_content_models.dart';
+import '../../../portfolio/models/firebase_content_models.dart';
+import '../../../../providers/admin_portal_provider.dart';
+import '../../../../providers/service_providers.dart';
 import '../../../../services/supabase_storage_service.dart';
-import '../../controllers/admin_portal_controller.dart';
 import '../../shared/admin_portal_components.dart';
 
-class ResumeManagementWorkspace extends StatefulWidget {
+class ResumeManagementWorkspace extends ConsumerStatefulWidget {
   const ResumeManagementWorkspace({
     super.key,
-    required this.controller,
     required this.isCompact,
   });
-  final AdminPortalController controller;
+
   final bool isCompact;
 
   @override
-  State<ResumeManagementWorkspace> createState() =>
+  ConsumerState<ResumeManagementWorkspace> createState() =>
       _ResumeManagementWorkspaceState();
 }
 
-class _ResumeManagementWorkspaceState extends State<ResumeManagementWorkspace> {
+class _ResumeManagementWorkspaceState
+    extends ConsumerState<ResumeManagementWorkspace> {
   bool _isDragTarget = false;
   bool _isUploading = false;
 
-  SupabaseStorageService get _storage => Get.find<SupabaseStorageService>();
+  SupabaseStorageService get _storage =>
+      ref.read(supabaseStorageServiceProvider);
+
+  void _showSnack(String message, Color color) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: GoogleFonts.manrope(color: Colors.white)),
+        backgroundColor: color.withValues(alpha: 0.85),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+    );
+  }
 
   Future<void> _pickResume() async {
     if (!SupabaseBootstrap.isReady) {
-      Get.snackbar(
-        'Storage not configured',
+      _showSnack(
         'Add SUPABASE_URL and SUPABASE_ANON_KEY via --dart-define to enable uploads.',
-        backgroundColor: Colors.orange.withValues(alpha: 0.16),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 5),
+        Colors.orange,
       );
       return;
     }
@@ -65,16 +76,14 @@ class _ResumeManagementWorkspaceState extends State<ResumeManagementWorkspace> {
 
     if (uploadResult == null) {
       setState(() => _isUploading = false);
-      Get.snackbar(
-        'Upload failed',
+      _showSnack(
         'Could not upload to Supabase. Check bucket permissions.',
-        backgroundColor: const Color(0xFFFF7C7C).withValues(alpha: 0.16),
-        colorText: Colors.white,
+        const Color(0xFFFF7C7C),
       );
       return;
     }
 
-    final current = widget.controller.liveResumeConfig.value;
+    final current = ref.read(adminPortalProvider).liveResumeConfig;
     final newConfig = (current ?? const ResumeConfig()).withNewActive(
       url: uploadResult.url,
       fileName: file.name,
@@ -82,23 +91,21 @@ class _ResumeManagementWorkspaceState extends State<ResumeManagementWorkspace> {
       supabasePath: uploadResult.path,
     );
 
-    final saved = await widget.controller.saveResumeConfig(newConfig);
+    final saved =
+        await ref.read(adminPortalProvider.notifier).saveResumeConfig(newConfig);
 
     setState(() => _isUploading = false);
 
     if (saved) {
-      Get.snackbar(
-        'Resume uploaded',
+      _showSnack(
         '${file.name} is now your active resume.',
-        backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.16),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
+        AppColors.primaryGreen,
       );
     }
   }
 
   Future<void> _deleteActiveResume() async {
-    final config = widget.controller.liveResumeConfig.value;
+    final config = ref.read(adminPortalProvider).liveResumeConfig;
     if (config == null || !config.hasResume) return;
 
     if (config.activeSupabasePath != null &&
@@ -111,18 +118,13 @@ class _ResumeManagementWorkspaceState extends State<ResumeManagementWorkspace> {
     }
 
     final cleared = ResumeConfig(versions: config.versions);
-    await widget.controller.saveResumeConfig(cleared);
+    await ref.read(adminPortalProvider.notifier).saveResumeConfig(cleared);
 
-    Get.snackbar(
-      'Resume removed',
-      'Active resume deleted.',
-      backgroundColor: const Color(0xFFFF7C7C).withValues(alpha: 0.16),
-      colorText: Colors.white,
-    );
+    _showSnack('Active resume deleted.', const Color(0xFFFF7C7C));
   }
 
   Future<void> _restoreVersion(ResumeVersion version) async {
-    final current = widget.controller.liveResumeConfig.value;
+    final current = ref.read(adminPortalProvider).liveResumeConfig;
     if (current == null) return;
 
     final updatedVersions = current.versions
@@ -148,196 +150,182 @@ class _ResumeManagementWorkspaceState extends State<ResumeManagementWorkspace> {
       activeSupabasePath: version.supabasePath,
       versions: updatedVersions,
     );
-    await widget.controller.saveResumeConfig(restored);
+    await ref.read(adminPortalProvider.notifier).saveResumeConfig(restored);
 
-    Get.snackbar(
-      'Version restored',
+    _showSnack(
       '${version.fileName} is now your active resume.',
-      backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.16),
-      colorText: Colors.white,
+      AppColors.primaryGreen,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final uploadPanel = AdminSurfaceCard(
-      child: Obx(() {
-        final config = widget.controller.liveResumeConfig.value;
-        final hasResume = config?.hasResume ?? false;
+    final config = ref.watch(adminPortalProvider).liveResumeConfig;
+    final hasResume = config?.hasResume ?? false;
+    final versions = config?.versions ?? [];
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AdminSectionHeader(
-              eyebrow: 'RESUME MANAGEMENT',
-              title: 'Upload & manage your CV',
-              description:
-                  'The latest version is stored in Supabase and linked across your portfolio. The public resume button uses this URL.',
-              action:
-                  hasResume
-                      ? AdminGhostButton(
-                        label: 'Replace',
-                        icon: Icons.swap_horiz_rounded,
-                        onPressed: _pickResume,
-                      )
-                      : null,
-            ),
-            const SizedBox(height: 20),
-            if (!SupabaseBootstrap.isReady)
-              _SupabaseBanner()
-            else ...[
-              if (hasResume) ...[
-                ActiveResumeCard(
-                  fileName: config!.activeFileName ?? 'resume',
-                  fileSize: config.activeSizeLabel,
-                  resumeUrl: config.activeUrl!,
-                  onReplace: _pickResume,
-                  onDelete: _deleteActiveResume,
-                ),
-                const SizedBox(height: 20),
-              ],
-              DragTarget<Object>(
-                onWillAcceptWithDetails: (_) {
-                  setState(() => _isDragTarget = true);
-                  return true;
-                },
-                onLeave: (_) => setState(() => _isDragTarget = false),
-                onAcceptWithDetails: (_) {
-                  setState(() => _isDragTarget = false);
-                  _pickResume();
-                },
-                builder: (context, candidates, rejected) {
-                  return GestureDetector(
-                    onTap: _pickResume,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 40),
-                      decoration: BoxDecoration(
-                        color:
-                            _isDragTarget
-                                ? AppColors.primaryGreen.withValues(alpha: 0.10)
-                                : Colors.white.withValues(alpha: 0.02),
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(
-                          color:
-                              _isDragTarget
-                                  ? AppColors.primaryGreen.withValues(
-                                    alpha: 0.45,
-                                  )
-                                  : Colors.white.withValues(alpha: 0.08),
-                          style: BorderStyle.solid,
-                          width: 1.5,
-                        ),
-                      ),
-                      child:
-                          _isUploading
-                              ? Column(
-                                children: [
-                                  const CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.primaryGreen,
-                                    ),
-                                    strokeWidth: 2.5,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'Uploading to Supabase…',
-                                    style: GoogleFonts.manrope(
-                                      color: Colors.white70,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              )
-                              : Column(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primaryGreen.withValues(
-                                        alpha: 0.12,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.upload_rounded,
-                                      color: AppColors.primaryGreen,
-                                      size: 28,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    hasResume
-                                        ? 'Drop new file to replace'
-                                        : 'Click to upload or drag & drop',
-                                    style: GoogleFonts.manrope(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'Supported formats: PDF, DOC, DOCX · Max 10 MB',
-                                    style: GoogleFonts.manrope(
-                                      color: Colors.white54,
-                                      fontSize: 12.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                    ),
-                  );
-                },
+    final uploadPanel = AdminSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AdminSectionHeader(
+            eyebrow: 'RESUME MANAGEMENT',
+            title: 'Upload & manage your CV',
+            description:
+                'The latest version is stored in Supabase and linked across your portfolio. The public resume button uses this URL.',
+            action: hasResume
+                ? AdminGhostButton(
+                    label: 'Replace',
+                    icon: Icons.swap_horiz_rounded,
+                    onPressed: _pickResume,
+                  )
+                : null,
+          ),
+          const SizedBox(height: 20),
+          if (!SupabaseBootstrap.isReady)
+            _SupabaseBanner()
+          else ...[
+            if (hasResume) ...[
+              ActiveResumeCard(
+                fileName: config!.activeFileName ?? 'resume',
+                fileSize: config.activeSizeLabel,
+                resumeUrl: config.activeUrl!,
+                onReplace: _pickResume,
+                onDelete: _deleteActiveResume,
               ),
+              const SizedBox(height: 20),
             ],
+            DragTarget<Object>(
+              onWillAcceptWithDetails: (_) {
+                setState(() => _isDragTarget = true);
+                return true;
+              },
+              onLeave: (_) => setState(() => _isDragTarget = false),
+              onAcceptWithDetails: (_) {
+                setState(() => _isDragTarget = false);
+                _pickResume();
+              },
+              builder: (context, candidates, rejected) {
+                return GestureDetector(
+                  onTap: _pickResume,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    decoration: BoxDecoration(
+                      color: _isDragTarget
+                          ? AppColors.primaryGreen.withValues(alpha: 0.10)
+                          : Colors.white.withValues(alpha: 0.02),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: _isDragTarget
+                            ? AppColors.primaryGreen.withValues(alpha: 0.45)
+                            : Colors.white.withValues(alpha: 0.08),
+                        style: BorderStyle.solid,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: _isUploading
+                        ? Column(
+                            children: [
+                              const CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.primaryGreen,
+                                ),
+                                strokeWidth: 2.5,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Uploading to Supabase…',
+                                style: GoogleFonts.manrope(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryGreen.withValues(
+                                    alpha: 0.12,
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.upload_rounded,
+                                  color: AppColors.primaryGreen,
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                hasResume
+                                    ? 'Drop new file to replace'
+                                    : 'Click to upload or drag & drop',
+                                style: GoogleFonts.manrope(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Supported formats: PDF, DOC, DOCX · Max 10 MB',
+                                style: GoogleFonts.manrope(
+                                  color: Colors.white54,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                );
+              },
+            ),
           ],
-        );
-      }),
+        ],
+      ),
     );
 
     final historyPanel = AdminSurfaceCard(
-      child: Obx(() {
-        final config = widget.controller.liveResumeConfig.value;
-        final versions = config?.versions ?? [];
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const AdminSectionHeader(
-              eyebrow: 'VERSION HISTORY',
-              title: 'Previous resume versions',
-              description:
-                  'Previous uploads are kept in Supabase. Restore any version to make it active.',
-            ),
-            const SizedBox(height: 18),
-            if (versions.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Center(
-                  child: Text(
-                    'No previous versions yet.',
-                    style: GoogleFonts.manrope(
-                      color: Colors.white38,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              )
-            else
-              ...versions.map(
-                (v) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _VersionRow(
-                    version: v,
-                    onRestore: () => _restoreVersion(v),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AdminSectionHeader(
+            eyebrow: 'VERSION HISTORY',
+            title: 'Previous resume versions',
+            description:
+                'Previous uploads are kept in Supabase. Restore any version to make it active.',
+          ),
+          const SizedBox(height: 18),
+          if (versions.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'No previous versions yet.',
+                  style: GoogleFonts.manrope(
+                    color: Colors.white38,
+                    fontSize: 13,
                   ),
                 ),
               ),
-          ],
-        );
-      }),
+            )
+          else
+            ...versions.map(
+              (v) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _VersionRow(
+                  version: v,
+                  onRestore: () => _restoreVersion(v),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
 
     if (widget.isCompact) {
@@ -509,7 +497,6 @@ class ActiveResumeCard extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _VersionRow extends StatelessWidget {

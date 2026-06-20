@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../config/app_colors.dart';
+import '../../../core/config/app_colors.dart';
 
 /// Save button with loading and success states.
 class AdminSaveButton extends StatelessWidget {

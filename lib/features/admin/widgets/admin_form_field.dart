@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../config/app_colors.dart';
+import '../../../core/config/app_colors.dart';
 
 /// A labelled text field styled for the admin portal.
 class AdminFormField extends StatelessWidget {
