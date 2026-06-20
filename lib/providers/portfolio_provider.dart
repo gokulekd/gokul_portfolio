@@ -208,9 +208,11 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
       });
     }
 
-    _fetchGitHubData();
-    _fetchBlogPosts();
-    _loadAppProjects(projectsService);
+    Future.microtask(() {
+      _fetchGitHubData();
+      _fetchBlogPosts();
+      _loadAppProjects(projectsService);
+    });
 
     return PortfolioState.initial();
   }
