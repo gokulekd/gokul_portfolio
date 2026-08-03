@@ -1,23 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/portfolio_provider.dart';
+import '../../models/firebase_content_models.dart';
 
-class StatsMarquee extends StatefulWidget {
+class StatsMarquee extends ConsumerStatefulWidget {
   final Color backgroundColor;
   final EdgeInsetsGeometry padding;
+
+  /// Which marquee this is — [StatItemPlacement.top] or
+  /// [StatItemPlacement.bottom]. Stats tagged 'both' (the default) show in
+  /// either; stats tagged specifically for one show only there.
+  final String placement;
 
   const StatsMarquee({
     super.key,
     this.backgroundColor = Colors.white,
     this.padding = const EdgeInsets.only(top: 40),
+    this.placement = StatItemPlacement.both,
   });
 
   @override
-  State<StatsMarquee> createState() => _StatsMarqueeState();
+  ConsumerState<StatsMarquee> createState() => _StatsMarqueeState();
 }
 
-class _StatsMarqueeState extends State<StatsMarquee>
+class _StatsMarqueeState extends ConsumerState<StatsMarquee>
     with SingleTickerProviderStateMixin {
   late ScrollController _scrollController;
   late AnimationController _animationController;
@@ -60,6 +69,11 @@ class _StatsMarqueeState extends State<StatsMarquee>
 
   @override
   Widget build(BuildContext context) {
+    final stats = ref
+        .watch(portfolioProvider.select((s) => s.visibleStats))
+        .where((s) => s.placement == StatItemPlacement.both || s.placement == widget.placement)
+        .toList();
+
     return Container(
       width: double.infinity,
       color: widget.backgroundColor,
@@ -75,14 +89,10 @@ class _StatsMarqueeState extends State<StatsMarquee>
             children: List.generate(10, (index) {
               return Row(
                 children: [
-                  _buildStatItem("2+", "Years Experience"),
-                  _buildSeparator(),
-                  _buildStatItem("20+", "Projects Completed"),
-                  _buildSeparator(),
-                  _buildStatItem("95%", "Client Satisfaction"),
-                  _buildSeparator(),
-                  _buildStatItem("100%", "On-Time Delivery"),
-                  _buildSeparator(),
+                  for (final stat in stats) ...[
+                    _buildStatItem(stat.value, stat.label),
+                    _buildSeparator(),
+                  ],
                 ],
               );
             }),

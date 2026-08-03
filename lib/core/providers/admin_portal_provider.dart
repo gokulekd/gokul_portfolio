@@ -91,6 +91,7 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
     AdminModuleItem(module: AdminModule.resumeManagement, group: AdminModuleGroup.control, title: 'Resume Management', subtitle: 'Upload & manage CV', icon: Icons.description_rounded),
     AdminModuleItem(module: AdminModule.settings, group: AdminModuleGroup.control, title: 'Settings', subtitle: 'Auth and config', icon: Icons.settings_rounded),
     AdminModuleItem(module: AdminModule.homeContent, group: AdminModuleGroup.content, title: 'Home Content', subtitle: 'Hero and headlines', icon: Icons.home_work_rounded),
+    AdminModuleItem(module: AdminModule.homeStats, group: AdminModuleGroup.content, title: 'Stats Marquee', subtitle: 'Scrolling trust numbers', icon: Icons.bar_chart_rounded),
     AdminModuleItem(module: AdminModule.skillsExperience, group: AdminModuleGroup.content, title: 'Skills & Experience', subtitle: 'Skills and timeline', icon: Icons.stacked_line_chart_rounded),
     AdminModuleItem(module: AdminModule.developmentAreas, group: AdminModuleGroup.content, title: 'Development Areas', subtitle: 'Scrolling specialities', icon: Icons.apps_rounded),
     AdminModuleItem(module: AdminModule.achievements, group: AdminModuleGroup.content, title: 'Achievements', subtitle: 'Proof and metrics', icon: Icons.workspace_premium_rounded),
@@ -247,6 +248,7 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
         AdminModule.basicDetails => 'Basic Details',
         AdminModule.siteStructure => 'Site Structure',
         AdminModule.homeContent => 'Homepage Content',
+        AdminModule.homeStats => 'Stats Marquee',
         AdminModule.projects => 'Project Management',
         AdminModule.skillsExperience => 'Skills & Experience',
         AdminModule.developmentAreas => 'Development Areas',
@@ -270,6 +272,7 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
         AdminModule.basicDetails => 'Your name, designation, and social profile URLs. Update once and every page that uses this data updates automatically.',
         AdminModule.siteStructure => 'Toggle visibility, control order, and audit the sections that shape your homepage.',
         AdminModule.homeContent => 'Refine hero messaging, CTA copy, and section intros without touching source code.',
+        AdminModule.homeStats => 'Edit the value/label pairs shown in the scrolling stats strips above and below the fold.',
         AdminModule.projects => 'Curate featured work, control ordering, and prepare project cards for the public site.',
         AdminModule.skillsExperience => 'Manage stack percentages, marquee content, and experience timeline entries.',
         AdminModule.developmentAreas => 'Keep the scrolling service and specialisation content aligned with current offerings.',
@@ -460,6 +463,188 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
   Future<void> _loadAppProjects(dynamic projectsService) async {
     final list = await projectsService.fetchProjects();
     state = state.copyWith(liveAppProjects: list);
+  }
+
+  // ─── Generic content-list writes ─────────────────────────────────────────
+  //
+  // These collections are read by admin workspaces straight off
+  // `portfolioProvider` (it already streams every one of them for the public
+  // site), so there's no separate `liveX` mirror to keep in sync here — just
+  // the write path, with the same error handling as everything else above.
+
+  Future<void> saveHomeHero(HomeHeroContent content) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveHomeHero(content);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> saveSkill(SkillItem item) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveSkill(item);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> deleteSkill(String id) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteSkill(id);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> saveEducation(EducationItem item) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveEducation(item);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> deleteEducation(String id) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteEducation(id);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> saveExperience(Experience item) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveExperience(item);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> deleteExperience(String id) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteExperience(id);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> saveExperienceStrength(ExperienceStrengthItem item) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveExperienceStrength(item);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> deleteExperienceStrength(String id) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteExperienceStrength(id);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> saveAchievement(AchievementItem item) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveAchievement(item);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> deleteAchievement(String id) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteAchievement(id);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> saveProcessStep(ProcessStepItem item) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveProcessStep(item);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> deleteProcessStep(String id) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteProcessStep(id);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> saveTestimonial(TestimonialItem item) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveTestimonial(item);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> deleteTestimonial(String id) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteTestimonial(id);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> saveFaqItem(FaqItem item) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveFaqItem(item);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> deleteFaqItem(String id) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteFaqItem(id);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> saveDevArea(DevAreaItem item) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveDevArea(item);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> deleteDevArea(String id) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteDevArea(id);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> saveStat(StatItem item) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveStat(item);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> deleteStat(String id) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteStat(id);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> saveResumeHighlight(ResumeHighlightGroup item) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveResumeHighlight(item);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> deleteResumeHighlight(String id) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteResumeHighlight(id);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> saveBlogPost(BlogPostRecord item) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveBlogPost(item);
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
+  Future<void> deleteBlogPost(String id) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteBlogPost(id);
+      _clearError();
+    } catch (e) { _handleError(e); }
   }
 
   void _clearError() {

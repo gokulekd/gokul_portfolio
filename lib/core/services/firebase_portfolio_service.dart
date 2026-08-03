@@ -4,11 +4,24 @@ import '../firebase/firebase_bootstrap.dart';
 import '../../features/admin/models/admin_portal_models.dart';
 import '../../features/portfolio/models/firebase_content_models.dart';
 import '../../features/portfolio/models/portfolio_models.dart';
+import 'firestore_list_repository.dart';
 
 class FirebasePortfolioService {
   bool get isEnabled => FirebaseBootstrap.isReady;
 
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
+
+  FirestoreListRepository<T> _repo<T>({
+    required String collectionPath,
+    required T Function(DocumentSnapshot<Map<String, dynamic>>) fromFirestore,
+    required Map<String, dynamic> Function(T) toFirestore,
+  }) {
+    return FirestoreListRepository<T>(
+      collection: _firestore.collection(collectionPath),
+      fromFirestore: fromFirestore,
+      toFirestore: toFirestore,
+    );
+  }
 
   Stream<List<SiteSectionConfig>> streamSiteSections() {
     if (!isEnabled) {
@@ -208,6 +221,8 @@ class FirebasePortfolioService {
       return;
     }
 
+    await ensureContentSeedData();
+
     final sectionsRef = _firestore.collection('site_sections');
     final socialRef = _firestore.collection('social_links');
     final projectsRef = _firestore.collection('projects');
@@ -292,6 +307,273 @@ class FirebasePortfolioService {
   Future<void> deleteMediaAsset(String id) async {
     if (!isEnabled || id.isEmpty) return;
     await _firestore.collection('media_assets').doc(id).delete();
+  }
+
+  // ─── Home Hero (singleton) ──────────────────────────────────────────────
+
+  Stream<HomeHeroContent?> streamHomeHero() {
+    if (!isEnabled) return Stream.value(null);
+    return _firestore
+        .collection('site_sections')
+        .doc('home_hero')
+        .snapshots()
+        .map((doc) => doc.exists ? HomeHeroContent.fromFirestore(doc) : null);
+  }
+
+  Future<void> saveHomeHero(HomeHeroContent content) async {
+    if (!isEnabled) return;
+    await _firestore
+        .collection('site_sections')
+        .doc('home_hero')
+        .set(content.toFirestore(), SetOptions(merge: true));
+  }
+
+  // ─── Generic content lists ───────────────────────────────────────────────
+  //
+  // Every list below (skills, education, experience, ...) is a straight
+  // ordered Firestore collection edited via the admin workspace. They all
+  // share the same repository shape, so each block is just wiring a model's
+  // fromFirestore/toFirestore into FirestoreListRepository<T>.
+
+  FirestoreListRepository<SkillItem> get _skillsRepo => _repo(
+    collectionPath: 'skills',
+    fromFirestore: SkillItem.fromFirestore,
+    toFirestore: (item) => item.toFirestore(),
+  );
+
+  Stream<List<SkillItem>> streamSkills() =>
+      isEnabled ? _skillsRepo.stream() : Stream.value(const []);
+  Future<void> saveSkill(SkillItem item) =>
+      isEnabled ? _skillsRepo.save(item.id, item) : Future.value();
+  Future<void> deleteSkill(String id) =>
+      isEnabled ? _skillsRepo.delete(id) : Future.value();
+
+  FirestoreListRepository<EducationItem> get _educationRepo => _repo(
+    collectionPath: 'education',
+    fromFirestore: EducationItem.fromFirestore,
+    toFirestore: (item) => item.toFirestore(),
+  );
+
+  Stream<List<EducationItem>> streamEducation() =>
+      isEnabled ? _educationRepo.stream() : Stream.value(const []);
+  Future<void> saveEducation(EducationItem item) =>
+      isEnabled ? _educationRepo.save(item.id, item) : Future.value();
+  Future<void> deleteEducation(String id) =>
+      isEnabled ? _educationRepo.delete(id) : Future.value();
+
+  FirestoreListRepository<Experience> get _experienceRepo => _repo(
+    collectionPath: 'experience',
+    fromFirestore: Experience.fromFirestore,
+    toFirestore: (item) => item.toFirestore(),
+  );
+
+  Stream<List<Experience>> streamExperience() =>
+      isEnabled ? _experienceRepo.stream() : Stream.value(const []);
+  Future<void> saveExperience(Experience item) =>
+      isEnabled ? _experienceRepo.save(item.id, item) : Future.value();
+  Future<void> deleteExperience(String id) =>
+      isEnabled ? _experienceRepo.delete(id) : Future.value();
+
+  FirestoreListRepository<ExperienceStrengthItem> get _strengthsRepo => _repo(
+    collectionPath: 'experience_strengths',
+    fromFirestore: ExperienceStrengthItem.fromFirestore,
+    toFirestore: (item) => item.toFirestore(),
+  );
+
+  Stream<List<ExperienceStrengthItem>> streamExperienceStrengths() =>
+      isEnabled ? _strengthsRepo.stream() : Stream.value(const []);
+  Future<void> saveExperienceStrength(ExperienceStrengthItem item) =>
+      isEnabled ? _strengthsRepo.save(item.id, item) : Future.value();
+  Future<void> deleteExperienceStrength(String id) =>
+      isEnabled ? _strengthsRepo.delete(id) : Future.value();
+
+  FirestoreListRepository<AchievementItem> get _achievementsRepo => _repo(
+    collectionPath: 'achievements',
+    fromFirestore: AchievementItem.fromFirestore,
+    toFirestore: (item) => item.toFirestore(),
+  );
+
+  Stream<List<AchievementItem>> streamAchievements() =>
+      isEnabled ? _achievementsRepo.stream() : Stream.value(const []);
+  Future<void> saveAchievement(AchievementItem item) =>
+      isEnabled ? _achievementsRepo.save(item.id, item) : Future.value();
+  Future<void> deleteAchievement(String id) =>
+      isEnabled ? _achievementsRepo.delete(id) : Future.value();
+
+  FirestoreListRepository<ProcessStepItem> get _processStepsRepo => _repo(
+    collectionPath: 'freelance_process',
+    fromFirestore: ProcessStepItem.fromFirestore,
+    toFirestore: (item) => item.toFirestore(),
+  );
+
+  Stream<List<ProcessStepItem>> streamProcessSteps() =>
+      isEnabled ? _processStepsRepo.stream() : Stream.value(const []);
+  Future<void> saveProcessStep(ProcessStepItem item) =>
+      isEnabled ? _processStepsRepo.save(item.id, item) : Future.value();
+  Future<void> deleteProcessStep(String id) =>
+      isEnabled ? _processStepsRepo.delete(id) : Future.value();
+
+  FirestoreListRepository<TestimonialItem> get _testimonialsRepo => _repo(
+    collectionPath: 'testimonials',
+    fromFirestore: TestimonialItem.fromFirestore,
+    toFirestore: (item) => item.toFirestore(),
+  );
+
+  Stream<List<TestimonialItem>> streamTestimonials() =>
+      isEnabled ? _testimonialsRepo.stream() : Stream.value(const []);
+  Future<void> saveTestimonial(TestimonialItem item) =>
+      isEnabled ? _testimonialsRepo.save(item.id, item) : Future.value();
+  Future<void> deleteTestimonial(String id) =>
+      isEnabled ? _testimonialsRepo.delete(id) : Future.value();
+
+  FirestoreListRepository<FaqItem> get _faqRepo => _repo(
+    collectionPath: 'faq',
+    fromFirestore: FaqItem.fromFirestore,
+    toFirestore: (item) => item.toFirestore(),
+  );
+
+  Stream<List<FaqItem>> streamFaq() =>
+      isEnabled ? _faqRepo.stream() : Stream.value(const []);
+  Future<void> saveFaqItem(FaqItem item) =>
+      isEnabled ? _faqRepo.save(item.id, item) : Future.value();
+  Future<void> deleteFaqItem(String id) =>
+      isEnabled ? _faqRepo.delete(id) : Future.value();
+
+  FirestoreListRepository<DevAreaItem> get _devAreasRepo => _repo(
+    collectionPath: 'dev_areas',
+    fromFirestore: DevAreaItem.fromFirestore,
+    toFirestore: (item) => item.toFirestore(),
+  );
+
+  Stream<List<DevAreaItem>> streamDevAreas() =>
+      isEnabled ? _devAreasRepo.stream() : Stream.value(const []);
+  Future<void> saveDevArea(DevAreaItem item) =>
+      isEnabled ? _devAreasRepo.save(item.id, item) : Future.value();
+  Future<void> deleteDevArea(String id) =>
+      isEnabled ? _devAreasRepo.delete(id) : Future.value();
+
+  FirestoreListRepository<StatItem> get _statsRepo => _repo(
+    collectionPath: 'stats',
+    fromFirestore: StatItem.fromFirestore,
+    toFirestore: (item) => item.toFirestore(),
+  );
+
+  Stream<List<StatItem>> streamStats() =>
+      isEnabled ? _statsRepo.stream() : Stream.value(const []);
+  Future<void> saveStat(StatItem item) =>
+      isEnabled ? _statsRepo.save(item.id, item) : Future.value();
+  Future<void> deleteStat(String id) =>
+      isEnabled ? _statsRepo.delete(id) : Future.value();
+
+  FirestoreListRepository<ResumeHighlightGroup> get _resumeHighlightsRepo =>
+      _repo(
+        collectionPath: 'resume_highlights',
+        fromFirestore: ResumeHighlightGroup.fromFirestore,
+        toFirestore: (item) => item.toFirestore(),
+      );
+
+  Stream<List<ResumeHighlightGroup>> streamResumeHighlights() =>
+      isEnabled ? _resumeHighlightsRepo.stream() : Stream.value(const []);
+  Future<void> saveResumeHighlight(ResumeHighlightGroup item) =>
+      isEnabled ? _resumeHighlightsRepo.save(item.id, item) : Future.value();
+  Future<void> deleteResumeHighlight(String id) =>
+      isEnabled ? _resumeHighlightsRepo.delete(id) : Future.value();
+
+  FirestoreListRepository<BlogPostRecord> get _blogPostsRepo => _repo(
+    collectionPath: 'blog_posts',
+    fromFirestore: BlogPostRecord.fromFirestore,
+    toFirestore: (item) => item.toFirestore(),
+  );
+
+  Stream<List<BlogPostRecord>> streamBlogPosts() =>
+      isEnabled ? _blogPostsRepo.stream() : Stream.value(const []);
+  Future<void> saveBlogPost(BlogPostRecord item) =>
+      isEnabled ? _blogPostsRepo.save(item.id, item) : Future.value();
+  Future<void> deleteBlogPost(String id) =>
+      isEnabled ? _blogPostsRepo.delete(id) : Future.value();
+
+  // ─── Content list seeding ────────────────────────────────────────────────
+  //
+  // Seeds every collection above with the content that is (or was) hardcoded
+  // in the public widgets, so admin lists never start empty and the public
+  // site never visibly changes the moment Firestore starts driving it.
+
+  Future<void> ensureContentSeedData() async {
+    if (!isEnabled) return;
+
+    Map<String, Map<String, dynamic>> seedOf<T>(
+      List<T> items,
+      String Function(T) idOf,
+      Map<String, dynamic> Function(T) toFirestore,
+    ) => {for (final item in items) idOf(item): toFirestore(item)};
+
+    await Future.wait([
+      _skillsRepo.seedIfEmpty(
+        seedOf(SkillItem.defaults(), (i) => i.id, (i) => i.toFirestore()),
+      ),
+      _educationRepo.seedIfEmpty(
+        seedOf(
+          EducationItem.defaults(),
+          (i) => i.id,
+          (i) => i.toFirestore(),
+        ),
+      ),
+      _experienceRepo.seedIfEmpty(
+        seedOf(Experience.defaults(), (i) => i.id, (i) => i.toFirestore()),
+      ),
+      _strengthsRepo.seedIfEmpty(
+        seedOf(
+          ExperienceStrengthItem.defaults(),
+          (i) => i.id,
+          (i) => i.toFirestore(),
+        ),
+      ),
+      _achievementsRepo.seedIfEmpty(
+        seedOf(
+          AchievementItem.defaults(),
+          (i) => i.id,
+          (i) => i.toFirestore(),
+        ),
+      ),
+      _processStepsRepo.seedIfEmpty(
+        seedOf(
+          ProcessStepItem.defaults(),
+          (i) => i.id,
+          (i) => i.toFirestore(),
+        ),
+      ),
+      _testimonialsRepo.seedIfEmpty(
+        seedOf(
+          TestimonialItem.defaults(),
+          (i) => i.id,
+          (i) => i.toFirestore(),
+        ),
+      ),
+      _faqRepo.seedIfEmpty(
+        seedOf(FaqItem.defaults(), (i) => i.id, (i) => i.toFirestore()),
+      ),
+      _devAreasRepo.seedIfEmpty(
+        seedOf(DevAreaItem.defaults(), (i) => i.id, (i) => i.toFirestore()),
+      ),
+      _statsRepo.seedIfEmpty(
+        seedOf(StatItem.defaults(), (i) => i.id, (i) => i.toFirestore()),
+      ),
+      _resumeHighlightsRepo.seedIfEmpty(
+        seedOf(
+          ResumeHighlightGroup.defaults(),
+          (i) => i.id,
+          (i) => i.toFirestore(),
+        ),
+      ),
+    ]);
+
+    final heroDoc = await _firestore
+        .collection('site_sections')
+        .doc('home_hero')
+        .get();
+    if (!heroDoc.exists) {
+      await saveHomeHero(HomeHeroContent.defaults());
+    }
   }
 
   Project _projectFromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {

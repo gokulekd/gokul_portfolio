@@ -35,6 +35,69 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
 
+    // Admin-editable content lists (Day 1/2 buildout) — public read,
+    // authenticated write. Every one of these is a straight ordered
+    // collection with displayOrder/isVisible fields.
+    match /skills/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /education/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /experience/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /experience_strengths/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /achievements/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /freelance_process/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /testimonials/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /faq/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /dev_areas/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /stats/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /resume_highlights/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /blog_posts/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
     // Contact form — public write (visitors), authenticated read (admin)
     match /submissions/{docId} {
       allow read: if request.auth != null;

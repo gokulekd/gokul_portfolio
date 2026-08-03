@@ -1,56 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/portfolio_provider.dart';
+import '../../models/firebase_content_models.dart';
 
-class FAQItem {
-  final String number;
-  final String question;
-  final String answer;
-
-  const FAQItem({
-    required this.number,
-    required this.question,
-    required this.answer,
-  });
-}
-
-class FAQSection extends StatefulWidget {
+class FAQSection extends ConsumerStatefulWidget {
   const FAQSection({super.key});
 
   @override
-  State<FAQSection> createState() => _FAQSectionState();
+  ConsumerState<FAQSection> createState() => _FAQSectionState();
 }
 
-class _FAQSectionState extends State<FAQSection> {
+class _FAQSectionState extends ConsumerState<FAQSection> {
   int? _expandedIndex;
-
-  static const List<FAQItem> _faqItems = [
-    FAQItem(
-      number: "01",
-      question: "What is your typical project timeline?",
-      answer:
-          "Project timelines vary depending on the scope and complexity. A typical website project takes 2-4 weeks from discovery to launch. This includes design, development, content integration, and testing phases. I'll provide a detailed timeline during our initial consultation based on your specific requirements.",
-    ),
-    FAQItem(
-      number: "02",
-      question: "Do you offer ongoing maintenance and support?",
-      answer:
-          "Yes, I offer ongoing maintenance and support packages to keep your website running smoothly. This includes regular updates, security patches, content updates, and technical support. We can discuss a maintenance plan that fits your needs and budget.",
-    ),
-    FAQItem(
-      number: "03",
-      question: "Can you work with existing brand guidelines?",
-      answer:
-          "Absolutely! I can work with your existing brand guidelines, including colors, fonts, logos, and design elements. I'll ensure your new website aligns perfectly with your brand identity while bringing fresh, modern design solutions to enhance your online presence.",
-    ),
-    FAQItem(
-      number: "04",
-      question: "How do you handle revisions and feedback?",
-      answer:
-          "I believe in collaborative design and development. During the project, I'll share work-in-progress updates and incorporate your feedback. Each project includes a set number of revision rounds to ensure we get everything just right. Additional revisions can be arranged if needed.",
-    ),
-  ];
 
   void _toggleExpansion(int index) {
     setState(() {
@@ -60,6 +24,9 @@ class _FAQSectionState extends State<FAQSection> {
 
   @override
   Widget build(BuildContext context) {
+    final faqItems = ref.watch(
+      portfolioProvider.select((s) => s.visibleFaqItems),
+    );
     final isMobile = MediaQuery.of(context).size.width < 768;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -120,11 +87,11 @@ class _FAQSectionState extends State<FAQSection> {
                       const SizedBox(height: 60),
                       // FAQ Items
                       ...List.generate(
-                        _faqItems.length,
+                        faqItems.length,
                         (index) => Padding(
                           padding: const EdgeInsets.only(bottom: 16),
                           child: _buildFAQItem(
-                            _faqItems[index],
+                            faqItems[index],
                             index,
                             isMobile,
                           ),
@@ -141,7 +108,7 @@ class _FAQSectionState extends State<FAQSection> {
     );
   }
 
-  Widget _buildFAQItem(FAQItem item, int index, bool isMobile) {
+  Widget _buildFAQItem(FaqItem item, int index, bool isMobile) {
     final isExpanded = _expandedIndex == index;
     final colorScheme = Theme.of(context).colorScheme;
 

@@ -28,6 +28,19 @@ class PortfolioState {
     required this.projects,
     required this.blogPosts,
     this.currentPageIndex = 0,
+    this.heroTagline = '',
+    this.ctaPrimaryLabel = 'See what I can do',
+    required this.skills,
+    required this.education,
+    required this.experienceStrengths,
+    required this.achievements,
+    required this.processSteps,
+    required this.testimonials,
+    required this.faqItems,
+    required this.devAreas,
+    required this.stats,
+    required this.resumeHighlights,
+    this.adminBlogPosts = const [],
   });
 
   final List<AppProject> appProjects;
@@ -43,6 +56,19 @@ class PortfolioState {
   final List<Project> projects;
   final List<BlogPost> blogPosts;
   final int currentPageIndex;
+  final String heroTagline;
+  final String ctaPrimaryLabel;
+  final List<SkillItem> skills;
+  final List<EducationItem> education;
+  final List<ExperienceStrengthItem> experienceStrengths;
+  final List<AchievementItem> achievements;
+  final List<ProcessStepItem> processSteps;
+  final List<TestimonialItem> testimonials;
+  final List<FaqItem> faqItems;
+  final List<DevAreaItem> devAreas;
+  final List<StatItem> stats;
+  final List<ResumeHighlightGroup> resumeHighlights;
+  final List<BlogPostRecord> adminBlogPosts;
 
   // ─── Computed ──────────────────────────────────────────────────────────────
 
@@ -75,6 +101,40 @@ class PortfolioState {
       .where((s) => s.platform.toLowerCase() == platform.toLowerCase())
       .firstOrNull;
 
+  List<Experience> get visibleExperiences =>
+      experiences.where((e) => e.isVisible).toList();
+
+  List<SkillItem> get visibleSkills =>
+      skills.where((s) => s.isVisible).toList();
+
+  List<EducationItem> get visibleEducation =>
+      education.where((e) => e.isVisible).toList();
+
+  List<ExperienceStrengthItem> get visibleExperienceStrengths =>
+      experienceStrengths.where((e) => e.isVisible).toList();
+
+  List<AchievementItem> get visibleAchievements =>
+      achievements.where((a) => a.isVisible).toList();
+
+  List<ProcessStepItem> get visibleProcessSteps =>
+      processSteps.where((p) => p.isVisible).toList();
+
+  List<TestimonialItem> get visibleTestimonials =>
+      testimonials.where((t) => t.isVisible).toList();
+
+  List<FaqItem> get visibleFaqItems => faqItems.where((f) => f.isVisible).toList();
+
+  List<DevAreaItem> get visibleDevAreas =>
+      devAreas.where((d) => d.isVisible).toList();
+
+  List<StatItem> get visibleStats => stats.where((s) => s.isVisible).toList();
+
+  List<ResumeHighlightGroup> get visibleResumeHighlights =>
+      resumeHighlights.where((r) => r.isVisible).toList();
+
+  List<BlogPostRecord> get publishedAdminBlogPosts =>
+      adminBlogPosts.where((p) => p.isPublished).toList();
+
   PortfolioState copyWith({
     List<AppProject>? appProjects,
     ResumeConfig? Function()? resumeConfig,
@@ -89,6 +149,19 @@ class PortfolioState {
     List<Project>? projects,
     List<BlogPost>? blogPosts,
     int? currentPageIndex,
+    String? heroTagline,
+    String? ctaPrimaryLabel,
+    List<SkillItem>? skills,
+    List<EducationItem>? education,
+    List<ExperienceStrengthItem>? experienceStrengths,
+    List<AchievementItem>? achievements,
+    List<ProcessStepItem>? processSteps,
+    List<TestimonialItem>? testimonials,
+    List<FaqItem>? faqItems,
+    List<DevAreaItem>? devAreas,
+    List<StatItem>? stats,
+    List<ResumeHighlightGroup>? resumeHighlights,
+    List<BlogPostRecord>? adminBlogPosts,
   }) {
     return PortfolioState(
       appProjects: appProjects ?? this.appProjects,
@@ -102,6 +175,19 @@ class PortfolioState {
       personalInfo: personalInfo ?? this.personalInfo,
       experiences: experiences ?? this.experiences,
       projects: projects ?? this.projects,
+      heroTagline: heroTagline ?? this.heroTagline,
+      ctaPrimaryLabel: ctaPrimaryLabel ?? this.ctaPrimaryLabel,
+      skills: skills ?? this.skills,
+      education: education ?? this.education,
+      experienceStrengths: experienceStrengths ?? this.experienceStrengths,
+      achievements: achievements ?? this.achievements,
+      processSteps: processSteps ?? this.processSteps,
+      testimonials: testimonials ?? this.testimonials,
+      faqItems: faqItems ?? this.faqItems,
+      devAreas: devAreas ?? this.devAreas,
+      stats: stats ?? this.stats,
+      resumeHighlights: resumeHighlights ?? this.resumeHighlights,
+      adminBlogPosts: adminBlogPosts ?? this.adminBlogPosts,
       blogPosts: blogPosts ?? this.blogPosts,
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
     );
@@ -124,26 +210,21 @@ class PortfolioState {
             SocialLink(platform: 'Facebook', url: 'https://facebook.com/gokulks', icon: 'facebook'),
           ],
         ),
-        experiences: [
-          Experience(
-            company: 'Sowedane IT Solutions Pvt.',
-            position: 'Flutter Developer',
-            duration: 'Oct 2022 – Oct 2025',
-            description:
-                'Collaborated with cross-functional teams to deliver user-focused designs using Figma, increasing app engagement by 30%. Integrated Firebase services for real-time data syncing, push notifications, and analytics. Delivered multiple projects on time, maintaining high client satisfaction rates.',
-            technologies: ['Flutter', 'Dart', 'Firebase', 'Figma', 'GetX', 'Bloc', 'REST APIs'],
-          ),
-          Experience(
-            company: 'Brototype – Kochi',
-            position: 'Flutter Developer Intern',
-            duration: 'Oct 2021 – Oct 2022',
-            description:
-                'Transformed Figma prototypes into functional, visually appealing UIs. Spearheaded Google Maps integration for precise location tracking. Implemented GetX state management to streamline app navigation and reduce complexity.',
-            technologies: ['Flutter', 'Dart', 'GetX', 'Google Maps', 'Figma', 'Firebase'],
-          ),
-        ],
+        experiences: Experience.defaults(),
         projects: Project.defaultPortfolioProjects(),
         blogPosts: _defaultBlogPosts,
+        heroTagline: HomeHeroContent.defaults().tagline,
+        ctaPrimaryLabel: HomeHeroContent.defaults().ctaPrimaryLabel,
+        skills: SkillItem.defaults(),
+        education: EducationItem.defaults(),
+        experienceStrengths: ExperienceStrengthItem.defaults(),
+        achievements: AchievementItem.defaults(),
+        processSteps: ProcessStepItem.defaults(),
+        testimonials: TestimonialItem.defaults(),
+        faqItems: FaqItem.defaults(),
+        devAreas: DevAreaItem.defaults(),
+        stats: StatItem.defaults(),
+        resumeHighlights: ResumeHighlightGroup.defaults(),
       );
 
   static const List<BlogPost> _defaultBlogPosts = [];
@@ -198,13 +279,102 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
         state = state.copyWith(resumeConfig: () => config);
       });
 
+      final s7 = firebaseService.streamHomeHero().listen((hero) {
+        if (hero == null) return;
+        state = state.copyWith(
+          heroTagline: hero.tagline,
+          ctaPrimaryLabel: hero.ctaPrimaryLabel,
+          isAvailableForWork: hero.isAvailableForWork,
+        );
+      });
+
+      final s8 = firebaseService.streamExperience().listen((list) {
+        if (list.isEmpty) return;
+        state = state.copyWith(
+          experiences: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
+        );
+      });
+
+      final s9 = firebaseService.streamSkills().listen((list) {
+        if (list.isEmpty) return;
+        state = state.copyWith(
+          skills: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
+        );
+      });
+
+      final s10 = firebaseService.streamEducation().listen((list) {
+        if (list.isEmpty) return;
+        state = state.copyWith(
+          education: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
+        );
+      });
+
+      final s11 = firebaseService.streamExperienceStrengths().listen((list) {
+        if (list.isEmpty) return;
+        state = state.copyWith(
+          experienceStrengths: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
+        );
+      });
+
+      final s12 = firebaseService.streamAchievements().listen((list) {
+        if (list.isEmpty) return;
+        state = state.copyWith(
+          achievements: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
+        );
+      });
+
+      final s13 = firebaseService.streamProcessSteps().listen((list) {
+        if (list.isEmpty) return;
+        state = state.copyWith(
+          processSteps: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
+        );
+      });
+
+      final s14 = firebaseService.streamTestimonials().listen((list) {
+        if (list.isEmpty) return;
+        state = state.copyWith(
+          testimonials: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
+        );
+      });
+
+      final s15 = firebaseService.streamFaq().listen((list) {
+        if (list.isEmpty) return;
+        state = state.copyWith(
+          faqItems: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
+        );
+      });
+
+      final s16 = firebaseService.streamDevAreas().listen((list) {
+        if (list.isEmpty) return;
+        state = state.copyWith(
+          devAreas: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
+        );
+      });
+
+      final s17 = firebaseService.streamStats().listen((list) {
+        if (list.isEmpty) return;
+        state = state.copyWith(
+          stats: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
+        );
+      });
+
+      final s18 = firebaseService.streamResumeHighlights().listen((list) {
+        if (list.isEmpty) return;
+        state = state.copyWith(
+          resumeHighlights: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
+        );
+      });
+
+      final s19 = firebaseService.streamBlogPosts().listen((list) {
+        state = state.copyWith(
+          adminBlogPosts: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
+        );
+      });
+
       ref.onDispose(() {
-        s1.cancel();
-        s2.cancel();
-        s3.cancel();
-        s4.cancel();
-        s5.cancel();
-        s6.cancel();
+        for (final s in [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19]) {
+          s.cancel();
+        }
       });
     }
 
@@ -234,8 +404,8 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
         name: details.name.isNotEmpty ? details.name : current.name,
         title: details.designation.isNotEmpty ? details.designation : current.title,
         email: details.email.isNotEmpty ? details.email : current.email,
-        location: current.location,
-        bio: current.bio,
+        location: details.location.isNotEmpty ? details.location : current.location,
+        bio: details.bio.isNotEmpty ? details.bio : current.bio,
         profileImageUrl: current.profileImageUrl,
         socialLinks: socialLinks.isNotEmpty ? socialLinks : current.socialLinks,
       ),

@@ -5,6 +5,7 @@ enum AdminModule {
   basicDetails,
   siteStructure,
   homeContent,
+  homeStats,
   projects,
   skillsExperience,
   developmentAreas,

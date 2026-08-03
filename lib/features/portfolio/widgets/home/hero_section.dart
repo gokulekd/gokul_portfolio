@@ -118,7 +118,7 @@ class _HeroSectionState extends ConsumerState<HeroSection>
     final state = ref.read(portfolioProvider);
     _fullName = state.personalInfo.name;
     _fullTitle = state.personalInfo.title;
-    _fullTagline = "turning your ideas into pixel-perfect realities";
+    _fullTagline = state.heroTagline;
 
     // Set initial displayed text immediately
     _displayedName = _fullName;
@@ -596,9 +596,9 @@ class _HeroSectionState extends ConsumerState<HeroSection>
             return Opacity(
               opacity: _taglineOpacity.value,
               child: _buildLargeButton(
-                "See what I can do",
+                state.ctaPrimaryLabel,
                 () {
-                  
+
                   ref.read(portfolioProvider.notifier).changePage(3);
                   context.go(AppRoutes.projects);
                 },

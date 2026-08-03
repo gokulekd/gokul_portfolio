@@ -205,6 +205,8 @@ class BasicDetails {
     this.mediumUrl = '',
     this.instagramUrl = '',
     this.email = '',
+    this.bio = '',
+    this.location = '',
     this.updatedAt,
   });
 
@@ -216,6 +218,8 @@ class BasicDetails {
   final String mediumUrl;
   final String instagramUrl;
   final String email;
+  final String bio;
+  final String location;
   final DateTime? updatedAt;
 
   factory BasicDetails.fromFirestore(
@@ -231,6 +235,8 @@ class BasicDetails {
       mediumUrl: data['mediumUrl'] as String? ?? '',
       instagramUrl: data['instagramUrl'] as String? ?? '',
       email: data['email'] as String? ?? '',
+      bio: data['bio'] as String? ?? '',
+      location: data['location'] as String? ?? '',
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
   }
@@ -245,6 +251,8 @@ class BasicDetails {
       'mediumUrl': mediumUrl,
       'instagramUrl': instagramUrl,
       'email': email,
+      'bio': bio,
+      'location': location,
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }
@@ -258,6 +266,8 @@ class BasicDetails {
     String? mediumUrl,
     String? instagramUrl,
     String? email,
+    String? bio,
+    String? location,
   }) {
     return BasicDetails(
       name: name ?? this.name,
@@ -268,6 +278,8 @@ class BasicDetails {
       mediumUrl: mediumUrl ?? this.mediumUrl,
       instagramUrl: instagramUrl ?? this.instagramUrl,
       email: email ?? this.email,
+      bio: bio ?? this.bio,
+      location: location ?? this.location,
     );
   }
 
@@ -281,6 +293,9 @@ class BasicDetails {
       mediumUrl: '',
       instagramUrl: '',
       email: 'gokulofficialcommunication@gmail.com',
+      bio:
+          "I'm dedicated to crafting apps that bring your ideas to life, combining design and development to deliver fast, impactful results.",
+      location: 'India',
     );
   }
 }

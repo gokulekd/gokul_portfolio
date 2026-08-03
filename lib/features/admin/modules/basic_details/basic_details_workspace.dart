@@ -33,6 +33,8 @@ class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
   late final TextEditingController _mediumCtrl;
   late final TextEditingController _instagramCtrl;
   late final TextEditingController _emailCtrl;
+  late final TextEditingController _bioCtrl;
+  late final TextEditingController _locationCtrl;
 
   bool _isSaving = false;
   bool _saved = false;
@@ -50,6 +52,8 @@ class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
     _mediumCtrl = TextEditingController(text: d.mediumUrl);
     _instagramCtrl = TextEditingController(text: d.instagramUrl);
     _emailCtrl = TextEditingController(text: d.email);
+    _bioCtrl = TextEditingController(text: d.bio);
+    _locationCtrl = TextEditingController(text: d.location);
   }
 
   void _populate(BasicDetails d) {
@@ -61,6 +65,8 @@ class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
     _mediumCtrl.text = d.mediumUrl;
     _instagramCtrl.text = d.instagramUrl;
     _emailCtrl.text = d.email;
+    _bioCtrl.text = d.bio;
+    _locationCtrl.text = d.location;
   }
 
   @override
@@ -73,6 +79,8 @@ class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
     _mediumCtrl.dispose();
     _instagramCtrl.dispose();
     _emailCtrl.dispose();
+    _bioCtrl.dispose();
+    _locationCtrl.dispose();
     super.dispose();
   }
 
@@ -96,6 +104,8 @@ class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
       mediumUrl: _mediumCtrl.text.trim(),
       instagramUrl: _instagramCtrl.text.trim(),
       email: _emailCtrl.text.trim(),
+      bio: _bioCtrl.text.trim(),
+      location: _locationCtrl.text.trim(),
     );
 
     final success =
@@ -158,6 +168,26 @@ class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
                 icon: Icons.work_outline_rounded,
               ),
             ],
+          ),
+          const SizedBox(height: 14),
+          AdminFormRow(
+            compact: widget.isCompact,
+            children: [
+              AdminFormField(
+                controller: _locationCtrl,
+                label: 'Location',
+                hint: 'e.g. India',
+                icon: Icons.location_on_outlined,
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          AdminFormField(
+            controller: _bioCtrl,
+            label: 'Bio',
+            hint: 'Short intro shown on the hero, about, and contact sections.',
+            icon: Icons.notes_rounded,
+            maxLines: 4,
           ),
           const SizedBox(height: 28),
           const AdminSectionLabel(label: 'Social Profiles'),

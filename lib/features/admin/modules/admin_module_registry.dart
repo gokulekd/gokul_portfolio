@@ -6,7 +6,9 @@ import 'basic_details/basic_details_workspace.dart';
 import 'blog/blog_workspace.dart';
 import 'create_post/create_post_workspace.dart';
 import 'dashboard/dashboard_workspace.dart';
+import 'faq/faq_workspace.dart';
 import 'home_content/home_content_workspace.dart';
+import 'home_content/stats_workspace.dart';
 import 'manage_pages/manage_pages_workspace.dart';
 import 'media_library/media_library_workspace.dart';
 import 'projects/projects_workspace.dart';
@@ -29,6 +31,7 @@ class AdminModuleRegistry {
       AdminModule.basicDetails => BasicDetailsWorkspace(isCompact: isCompact),
       AdminModule.siteStructure => SiteStructureWorkspace(isCompact: isCompact),
       AdminModule.homeContent => HomeContentWorkspace(isCompact: isCompact),
+      AdminModule.homeStats => StatsWorkspace(isCompact: isCompact),
       AdminModule.projects => ProjectsWorkspace(isCompact: isCompact),
       AdminModule.skillsExperience => SkillsWorkspace(isCompact: isCompact),
       AdminModule.developmentAreas => _contentListWorkspace(
@@ -212,39 +215,7 @@ class AdminModuleRegistry {
           ),
         ],
       ),
-      AdminModule.faq => _contentListWorkspace(
-        module: module,
-        isCompact: isCompact,
-        eyebrow: 'FAQ',
-        title: 'Frequently asked questions',
-        description:
-            'Manage questions and answers shown on the portfolio contact section.',
-        itemLabel: 'FAQ item',
-        fieldOneLabel: 'Question',
-        fieldOneHint: 'e.g. What is your tech stack?',
-        fieldTwoLabel: 'Answer',
-        fieldTwoHint: 'Clear, concise answer…',
-        defaultItems: const [
-          ContentItem(
-            title: 'What is your primary tech stack?',
-            body:
-                'Flutter & Dart for cross-platform apps, Firebase for backend, Riverpod for state management.',
-            isVisible: true,
-          ),
-          ContentItem(
-            title: 'Do you take freelance projects?',
-            body:
-                'Yes — I take select freelance projects. Reach out via the contact form with your brief.',
-            isVisible: true,
-          ),
-          ContentItem(
-            title: 'What is your typical turnaround?',
-            body:
-                'A standard MVP takes 4–8 weeks depending on scope. Complex apps may take longer.',
-            isVisible: false,
-          ),
-        ],
-      ),
+      AdminModule.faq => FaqWorkspace(isCompact: isCompact),
       AdminModule.socialContact => SocialContactWorkspace(isCompact: isCompact),
       AdminModule.blog => BlogWorkspace(isCompact: isCompact),
       AdminModule.submissions => SubmissionsWorkspace(isCompact: isCompact),

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/admin_portal_provider.dart';
 import '../../../../core/providers/portfolio_provider.dart';
+import '../../../portfolio/models/firebase_content_models.dart';
 import '../../shared/admin_portal_components.dart';
 import '../../shared/dialog_widgets.dart';
 import '../../shared/preview_tile.dart';
@@ -13,51 +15,49 @@ class HomeContentWorkspace extends ConsumerStatefulWidget {
   final bool isCompact;
 
   @override
-  ConsumerState<HomeContentWorkspace> createState() => _HomeContentWorkspaceState();
+  ConsumerState<HomeContentWorkspace> createState() =>
+      _HomeContentWorkspaceState();
 }
 
 class _HomeContentWorkspaceState extends ConsumerState<HomeContentWorkspace> {
-  final _nameCtrl = TextEditingController();
-  final _titleCtrl = TextEditingController(
-    text: 'Mobile App Designer & Flutter Developer',
-  );
-  final _taglineCtrl = TextEditingController(
-    text: 'turning your ideas into pixel-perfect realities',
-  );
-  final _bioCtrl = TextEditingController(
-    text:
-        "I'm dedicated to crafting apps that bring your ideas to life, combining design and development to deliver fast, impactful results.",
-  );
-  final _ctaPrimaryCtrl = TextEditingController(text: 'View my work');
-  final _ctaSecondaryCtrl = TextEditingController(text: 'Get in touch');
-  bool _isAvailable = true;
+  late final TextEditingController _taglineCtrl;
+  late final TextEditingController _ctaPrimaryCtrl;
+  late bool _isAvailable;
+
+  bool _isSaving = false;
   bool _saved = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final name = ref.read(portfolioProvider).personalInfo.name;
-      if (name.isNotEmpty) _nameCtrl.text = name;
-    });
+    final state = ref.read(portfolioProvider);
+    _taglineCtrl = TextEditingController(text: state.heroTagline);
+    _ctaPrimaryCtrl = TextEditingController(text: state.ctaPrimaryLabel);
+    _isAvailable = state.isAvailableForWork;
   }
 
   @override
   void dispose() {
-    _nameCtrl.dispose();
-    _titleCtrl.dispose();
     _taglineCtrl.dispose();
-    _bioCtrl.dispose();
     _ctaPrimaryCtrl.dispose();
-    _ctaSecondaryCtrl.dispose();
     super.dispose();
   }
 
-  void _save() {
-    setState(() => _saved = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _saved = false);
+  Future<void> _save() async {
+    setState(() => _isSaving = true);
+    final content = HomeHeroContent(
+      tagline: _taglineCtrl.text.trim(),
+      ctaPrimaryLabel: _ctaPrimaryCtrl.text.trim(),
+      isAvailableForWork: _isAvailable,
+    );
+    await ref.read(adminPortalProvider.notifier).saveHomeHero(content);
+    if (!mounted) return;
+    setState(() {
+      _isSaving = false;
+      _saved = true;
     });
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) setState(() => _saved = false);
   }
 
   @override
@@ -68,30 +68,20 @@ class _HomeContentWorkspaceState extends ConsumerState<HomeContentWorkspace> {
         children: [
           AdminSectionHeader(
             eyebrow: 'HOME CONTENT',
-            title: 'Hero & headline copy',
+            title: 'Hero copy',
             description:
-                'Edit the name, title, tagline, and bio shown in the hero section. Changes will sync to the live portfolio.',
+                'Name, title, and bio live in Basic Details (they\'re shared across every page). This is just the hero-specific copy: the '
+                'animated tagline, the call-to-action button, and availability status.',
             action: AdminPrimaryButton(
-              label: _saved ? 'Saved!' : 'Save changes',
+              label:
+                  _isSaving
+                      ? 'Saving…'
+                      : _saved
+                      ? 'Saved!'
+                      : 'Save changes',
               icon: _saved ? Icons.check_rounded : Icons.save_rounded,
-              onPressed: _save,
+              onPressed: _isSaving ? null : _save,
             ),
-          ),
-          const SizedBox(height: 24),
-          SectionLabel(label: 'IDENTITY'),
-          const SizedBox(height: 12),
-          LimitedField(
-            controller: _nameCtrl,
-            label: 'Display name',
-            hint: 'e.g. Gokul K S',
-            maxLength: 40,
-          ),
-          const SizedBox(height: 14),
-          LimitedField(
-            controller: _titleCtrl,
-            label: 'Professional title',
-            hint: 'e.g. Flutter Developer & UI Designer',
-            maxLength: 70,
           ),
           const SizedBox(height: 22),
           SectionLabel(label: 'HERO COPY'),
@@ -99,40 +89,17 @@ class _HomeContentWorkspaceState extends ConsumerState<HomeContentWorkspace> {
           LimitedField(
             controller: _taglineCtrl,
             label: 'Animated tagline',
-            hint: 'The typewriter text shown below your title',
+            hint: 'The large heading shown below your title',
             maxLength: 100,
-          ),
-          const SizedBox(height: 14),
-          LimitedField(
-            controller: _bioCtrl,
-            label: 'Bio paragraph',
-            hint: 'Short bio shown in the hero section',
-            maxLength: 220,
-            maxLines: 4,
           ),
           const SizedBox(height: 22),
           SectionLabel(label: 'CALL TO ACTION'),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: LimitedField(
-                  controller: _ctaPrimaryCtrl,
-                  label: 'Primary CTA',
-                  hint: 'e.g. View my work',
-                  maxLength: 30,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: LimitedField(
-                  controller: _ctaSecondaryCtrl,
-                  label: 'Secondary CTA',
-                  hint: 'e.g. Get in touch',
-                  maxLength: 30,
-                ),
-              ),
-            ],
+          LimitedField(
+            controller: _ctaPrimaryCtrl,
+            label: 'CTA button label',
+            hint: 'e.g. See what I can do',
+            maxLength: 30,
           ),
           const SizedBox(height: 22),
           SectionLabel(label: 'AVAILABILITY'),
@@ -193,66 +160,47 @@ class _HomeContentWorkspaceState extends ConsumerState<HomeContentWorkspace> {
           ),
           const SizedBox(height: 18),
           ValueListenableBuilder(
-            valueListenable: _nameCtrl,
+            valueListenable: _taglineCtrl,
             builder:
                 (_, __, ___) => ValueListenableBuilder(
-                  valueListenable: _titleCtrl,
+                  valueListenable: _ctaPrimaryCtrl,
                   builder:
-                      (_, __, ___) => ValueListenableBuilder(
-                        valueListenable: _taglineCtrl,
-                        builder:
-                            (_, __, ___) => ValueListenableBuilder(
-                              valueListenable: _bioCtrl,
-                              builder:
-                                  (_, __, ___) => Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      PreviewTile(
-                                        title: 'Name',
-                                        value:
-                                            _nameCtrl.text.isEmpty
-                                                ? '—'
-                                                : _nameCtrl.text,
-                                        icon: Icons.person_rounded,
-                                        color: AppColors.primaryGreen,
-                                      ),
-                                      const SizedBox(height: 10),
-                                      PreviewTile(
-                                        title: 'Title',
-                                        value:
-                                            _titleCtrl.text.isEmpty
-                                                ? '—'
-                                                : _titleCtrl.text,
-                                        icon: Icons.work_rounded,
-                                        color: const Color(0xFF5CD6FF),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      PreviewTile(
-                                        title: 'Tagline',
-                                        value:
-                                            _taglineCtrl.text.isEmpty
-                                                ? '—'
-                                                : _taglineCtrl.text,
-                                        icon: Icons.format_quote_rounded,
-                                        color: const Color(0xFFFFB44C),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      PreviewTile(
-                                        title: 'Availability',
-                                        value:
-                                            _isAvailable
-                                                ? 'Open for projects'
-                                                : 'Not available',
-                                        icon: Icons.circle,
-                                        color:
-                                            _isAvailable
-                                                ? AppColors.primaryGreen
-                                                : Colors.white38,
-                                      ),
-                                    ],
-                                  ),
-                            ),
+                      (_, __, ___) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PreviewTile(
+                            title: 'Tagline',
+                            value:
+                                _taglineCtrl.text.isEmpty
+                                    ? '—'
+                                    : _taglineCtrl.text,
+                            icon: Icons.format_quote_rounded,
+                            color: const Color(0xFFFFB44C),
+                          ),
+                          const SizedBox(height: 10),
+                          PreviewTile(
+                            title: 'CTA button',
+                            value:
+                                _ctaPrimaryCtrl.text.isEmpty
+                                    ? '—'
+                                    : _ctaPrimaryCtrl.text,
+                            icon: Icons.smart_button_rounded,
+                            color: const Color(0xFF5CD6FF),
+                          ),
+                          const SizedBox(height: 10),
+                          PreviewTile(
+                            title: 'Availability',
+                            value:
+                                _isAvailable
+                                    ? 'Open for projects'
+                                    : 'Not available',
+                            icon: Icons.circle,
+                            color:
+                                _isAvailable
+                                    ? AppColors.primaryGreen
+                                    : Colors.white38,
+                          ),
+                        ],
                       ),
                 ),
           ),

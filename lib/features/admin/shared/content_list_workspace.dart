@@ -9,23 +9,27 @@ import 'preview_tile.dart';
 
 class ContentItem {
   const ContentItem({
+    this.id = '',
     required this.title,
     required this.body,
     this.meta,
     this.isVisible = true,
   });
 
+  final String id;
   final String title;
   final String body;
   final String? meta;
   final bool isVisible;
 
   ContentItem copyWith({
+    String? id,
     String? title,
     String? body,
     String? meta,
     bool? isVisible,
   }) => ContentItem(
+    id: id ?? this.id,
     title: title ?? this.title,
     body: body ?? this.body,
     meta: meta ?? this.meta,
@@ -49,6 +53,9 @@ class ContentListWorkspace extends StatefulWidget {
     this.fieldThreeLabel,
     this.fieldThreeHint,
     required this.defaultItems,
+    this.liveItems,
+    this.onSave,
+    this.onDelete,
   });
 
   final AdminModule module;
@@ -65,17 +72,41 @@ class ContentListWorkspace extends StatefulWidget {
   final String? fieldThreeHint;
   final List<ContentItem> defaultItems;
 
+  /// When provided, this is the source of truth (typically a Firestore
+  /// stream from `portfolioProvider`) and overrides [defaultItems]. The
+  /// widget still keeps its own `_items` copy for snappy optimistic edits;
+  /// it resyncs whenever a new [liveItems] list arrives.
+  final List<ContentItem>? liveItems;
+
+  /// Called with the edited/added item and its position when the admin
+  /// saves. If null, edits stay local-only (legacy facade behavior).
+  final Future<void> Function(ContentItem item, int index)? onSave;
+
+  /// Called with the item's id when the admin deletes it.
+  final Future<void> Function(String id)? onDelete;
+
   @override
   State<ContentListWorkspace> createState() => _ContentListWorkspaceState();
 }
 
 class _ContentListWorkspaceState extends State<ContentListWorkspace> {
-  late final List<ContentItem> _items;
+  late List<ContentItem> _items;
 
   @override
   void initState() {
     super.initState();
-    _items = List.of(widget.defaultItems);
+    _items = List.of(widget.liveItems ?? widget.defaultItems);
+  }
+
+  @override
+  void didUpdateWidget(covariant ContentListWorkspace oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Parents pass `liveItems` via `ref.watch(...select(...))`, so this only
+    // rebuilds when the underlying Firestore data actually changes.
+    final live = widget.liveItems;
+    if (live != null) {
+      setState(() => _items = List.of(live));
+    }
   }
 
   void _openDialog({ContentItem? existing, int? index}) {
@@ -162,11 +193,13 @@ class _ContentListWorkspaceState extends State<ContentListWorkspace> {
                         final body = f2.text.trim();
                         if (title.isEmpty || body.isEmpty) return;
                         final item = ContentItem(
+                          id: existing?.id ?? '',
                           title: title,
                           body: body,
                           meta: f3.text.trim().isEmpty ? null : f3.text.trim(),
                           isVisible: isVisible,
                         );
+                        final savedIndex = index ?? _items.length;
                         setState(() {
                           if (index != null) {
                             _items[index] = item;
@@ -174,6 +207,7 @@ class _ContentListWorkspaceState extends State<ContentListWorkspace> {
                             _items.add(item);
                           }
                         });
+                        widget.onSave?.call(item, savedIndex);
                         Navigator.of(ctx).pop();
                       },
                       child: Text(
@@ -225,11 +259,15 @@ class _ContentListWorkspaceState extends State<ContentListWorkspace> {
                 child: ContentItemRow(
                   item: e.value,
                   onEdit: () => _openDialog(existing: e.value, index: e.key),
-                  onDelete: () => setState(() => _items.removeAt(e.key)),
-                  onToggle:
-                      (val) => setState(
-                        () => _items[e.key] = e.value.copyWith(isVisible: val),
-                      ),
+                  onDelete: () {
+                    setState(() => _items.removeAt(e.key));
+                    widget.onDelete?.call(e.value.id);
+                  },
+                  onToggle: (val) {
+                    final updated = e.value.copyWith(isVisible: val);
+                    setState(() => _items[e.key] = updated);
+                    widget.onSave?.call(updated, e.key);
+                  },
                 ),
               ),
             ),

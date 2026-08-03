@@ -56,6 +56,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   const StatsMarquee(
                     backgroundColor: Color(0xFF0A0A0A),
                     padding: EdgeInsets.zero,
+                    placement: StatItemPlacement.top,
                   ),
                 if (state.isSectionVisible(SiteSectionKeys.skillsExperience))
                   SkillsSection(scrollController: _scrollController),
@@ -77,6 +78,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   const StatsMarquee(
                     backgroundColor: Color(0xFF0A0A0A),
                     padding: EdgeInsets.zero,
+                    placement: StatItemPlacement.bottom,
                   ),
                 if (state.isSectionVisible(SiteSectionKeys.footer))
                   const FooterSection(),
