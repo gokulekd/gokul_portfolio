@@ -32,3 +32,6 @@ macos/.symlinks/
 *.log
 *.class
 .DS_Store
+
+# Graphify knowledge graph (local-only)
+graphify-out/
