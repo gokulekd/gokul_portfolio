@@ -111,12 +111,6 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
     AdminModuleItem(module: AdminModule.mediaLibrary, group: AdminModuleGroup.operations, title: 'Media Library', subtitle: 'Images and assets', icon: Icons.perm_media_rounded),
   ];
 
-  static const fallbackCollections = <AdminCollectionItem>[
-    AdminCollectionItem(title: 'Featured Projects', subtitle: 'Curate the most visible work on the homepage.', state: AdminItemState.live, lastEdited: 'Waiting for Firestore content', highlight: 'Collection'),
-    AdminCollectionItem(title: 'Testimonials', subtitle: 'Control trust signals, client quotes, and featured reviews.', state: AdminItemState.draft, lastEdited: 'Waiting for Firestore content', highlight: 'Collection'),
-    AdminCollectionItem(title: 'Blog Content', subtitle: 'Manage editorial posts, tags, publish states, and covers.', state: AdminItemState.live, lastEdited: 'Waiting for Firestore content', highlight: 'Collection'),
-  ];
-
   static const recentLeads = <AdminLeadItem>[
     AdminLeadItem(name: 'Aarav Studios', company: 'aarav.design', summary: 'Need a Flutter product site and admin dashboard in 3 weeks.', status: 'New', receivedAt: '6 min ago', unread: true),
     AdminLeadItem(name: 'Mira Health', company: 'mirahealth.io', summary: 'Asked for mobile app redesign, Firebase workflow, and support.', status: 'Reviewing', receivedAt: '48 min ago', unread: true),
@@ -223,29 +217,16 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
   List<AdminMetricItem> get dashboardMetrics {
     final visiblePagesCount = sectionConfigs.where((s) => s.isVisible).length;
     final featuredProjectCount = projects.where((p) => p.isFeatured).length;
+    final publishedPostCount = ref.read(portfolioProvider).publishedAdminBlogPosts.length;
     final newLeadsCount = state.liveSubmissions.isNotEmpty
         ? state.liveSubmissions.where((s) => s.isUnread).length
         : recentLeads.where((l) => l.unread).length;
     return [
       AdminMetricItem(label: 'Live Pages', value: visiblePagesCount.toString().padLeft(2, '0'), change: isFirebaseConnected ? 'Synced from Firestore' : 'Using local fallback content', icon: Icons.visibility_rounded, color: AppColors.primaryGreen),
       AdminMetricItem(label: 'Featured Projects', value: featuredProjectCount.toString().padLeft(2, '0'), change: isFirebaseConnected ? 'Live Firestore collection' : 'Using local fallback projects', icon: Icons.folder_special_rounded, color: const Color(0xFF5CD6FF)),
-      const AdminMetricItem(label: 'Published Posts', value: '14', change: 'Blog CMS wiring started', icon: Icons.library_books_rounded, color: Color(0xFFFFB44C)),
+      AdminMetricItem(label: 'Published Posts', value: publishedPostCount.toString().padLeft(2, '0'), change: 'Supabase-backed blog posts', icon: Icons.library_books_rounded, color: const Color(0xFFFFB44C)),
       AdminMetricItem(label: 'New Leads', value: newLeadsCount.toString().padLeft(2, '0'), change: state.liveSubmissions.isNotEmpty ? 'Unread submissions in inbox' : 'Using dashboard fallback inbox', icon: Icons.campaign_rounded, color: const Color(0xFFFF7C7C)),
     ];
-  }
-
-  List<AdminCollectionItem> get activeCollections {
-    switch (state.selectedModule) {
-      case AdminModule.socialContact:
-        return socialLinks.map((link) => AdminCollectionItem(title: link.platform, subtitle: link.value, state: link.isVisible ? AdminItemState.live : AdminItemState.hidden, lastEdited: isFirebaseConnected ? 'Backed by Firestore' : 'Fallback configuration', highlight: link.type.toUpperCase())).toList(growable: false);
-      case AdminModule.siteStructure:
-      case AdminModule.homeContent:
-        return sectionConfigs.map((section) => AdminCollectionItem(title: section.title, subtitle: section.description, state: section.isVisible ? AdminItemState.live : AdminItemState.hidden, lastEdited: _updatedLabel(section), highlight: section.key)).toList(growable: false);
-      case AdminModule.projects:
-        return projects.map((project) => AdminCollectionItem(title: project.title, subtitle: project.description, state: project.isPublished ? AdminItemState.live : AdminItemState.draft, lastEdited: isFirebaseConnected ? 'Project collection linked' : 'Local fallback', highlight: project.isFeatured ? 'Featured' : project.category)).toList(growable: false);
-      default:
-        return fallbackCollections;
-    }
   }
 
   String get pageTitle => switch (state.selectedModule) {
@@ -708,14 +689,6 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
     state = state.copyWith(firestoreErrorMessage: () => 'Admin data sync failed: $error');
   }
 
-  String _updatedLabel(SiteSectionConfig section) {
-    if (section.updatedAt == null) return isFirebaseConnected ? 'Synced document' : 'Local fallback';
-    final diff = DateTime.now().difference(section.updatedAt!);
-    if (diff.inMinutes < 1) return 'Updated just now';
-    if (diff.inMinutes < 60) return 'Updated ${diff.inMinutes} min ago';
-    if (diff.inHours < 24) return 'Updated ${diff.inHours} hr ago';
-    return 'Updated ${diff.inDays} day ago';
-  }
 }
 
 final adminPortalProvider = NotifierProvider<AdminPortalNotifier, AdminPortalState>(

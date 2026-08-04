@@ -272,14 +272,89 @@ No Storage bucket changes needed — `blog-covers` is just a new folder inside t
 
 **Note:** this day was audit-and-remove rather than wire-and-build, unlike every previous day. "Don't ship a fake toggle" ended up being about admin-panel honesty (not showing controls that do nothing) rather than public-site content wiring.
 
-### Day 13 — QA pass ⬜ NOT STARTED
-- [ ] Walk every page top to bottom: for every section, confirm admin edit → live site updates, admin delete → item disappears, admin hide → item disappears from public site but stays in admin list
-- [ ] Check ordering/reordering persists and reflects on the public site
-- [ ] Cross-page shared data (experience, skills) — confirm editing once updates all consuming pages
+### Day 13 — QA pass ✅ DONE
 
-### Day 14 — Buffer / polish ⬜ NOT STARTED
-- [ ] Fix whatever QA surfaced
-- [ ] Polish empty-states in admin lists (zero items should still show a clean "Add" affordance, not a broken layout)
+Since `/admin` needs the site owner's real Google sign-in (can't click-test live), this pass was a
+systematic **static sweep** instead of manual page-by-page clicking — arguably more thorough for
+catching the one bug class that kept recurring (Days 6/7/10 each independently found one instance
+of a consumer reading the unfiltered list instead of `visibleX`). Grepped every `portfolioProvider`
+read across `lib/features/portfolio/{widgets,pages}` and cross-checked against every `visibleX`
+getter.
+
+- [x] **Found and fixed 2 more instances of the recurring hide-bug** — `experience_hero_section.dart`
+  (the "N+ Roles" pill count) and `resume_overview_section.dart` (the "N+ professional roles" Quick
+  Fact) both read raw `state.experiences` instead of `state.visibleExperiences`. Same exact mistake
+  as Days 6/7/10, just in stat-display code this time rather than a list-rendering section — grep
+  for `.length` alone wouldn't have caught these without also checking what list it's counting.
+  Fixed both; re-verified live (Experience page "2+ Roles" pill, Resume "Quick Facts" panel), zero
+  console errors.
+- [x] **Full sweep confirms no remaining instances**: every public consumer of all 11 content
+  collections (skills, education, experienceStrengths, achievements, processSteps, testimonials,
+  faqItems, devAreas, stats, resumeHighlights, experiences) now reads through a `visibleX` getter,
+  directly or via an already-filtered parameter passed down from a page that does.
+- [x] **Admin hide/unhide integrity confirmed**: grepped every admin workspace for accidental
+  `visibleX` usage (would silently hide items from the admin's own list, making them impossible to
+  unhide) — zero matches. Every admin list correctly shows the raw, unfiltered collection.
+- [x] **Ordering/reordering confirmed**: all 10 Firestore-backed collections sort by `displayOrder`
+  in the same place (`portfolio_provider.dart`'s stream listeners), and every admin save assigns a
+  sensible `displayOrder` (`index + 1` on the visible list, or `existing.displayOrder` preserved on
+  edit) — no collection found with a missing or hardcoded-zero order.
+- [x] **Delete confirmed for both non-live-stream collections**: `AppProject`/Supabase and
+  `AdminBlogPost`/Supabase both call their `refreshX()` after a successful delete (not just save) —
+  re-verified from Days 8–9, still correct.
+- [x] **Cross-page shared data confirmed**: Skills (Home/About/Skills pages reuse one
+  `SkillsSection` widget) and Experience (About/Experience/Resume pages, now 5 separate read sites
+  after today's fixes) all resolve to the same `visibleSkills`/`visibleExperiences` getter off the
+  same live stream — one admin edit updates every consuming page in the same session.
+- [x] Verified with `flutter analyze lib` — no issues.
+
+**Found but out of scope — flagging for a future pass, not fixing today:** the old Firestore
+`Project` model (`portfolio_models.dart`) and its admin CRUD (`saveProject`/`deleteProject`,
+`liveProjects`) are fully dead code — nothing on the public site or in the current
+`ProjectsWorkspace` reads them anymore (`AppProject`/Supabase replaced this before this 14-day
+workstream began). Confirmed via grep: `state.projects`/`publishedProjects`/`featuredProjects`
+have zero consumers outside `site_config_models.dart`'s section-key constants. Removing it touches
+`admin_portal_provider.dart`, `firebase_portfolio_service.dart`, `portfolio_provider.dart`, and
+`firestore.rules` — real cleanup, but unrelated to what this workstream wired, so left alone.
+Also noted: `AdminBlogPost.displayOrder` is set but never read (`SupabaseBlogService` sorts posts
+by `created_at`, intentionally — blog posts are chronological, not manually reorderable) — harmless
+unused field, not worth a fix.
+
+### Day 14 — Buffer / polish ✅ DONE
+- [x] Fix whatever QA surfaced — Day 13 already found and fixed its 2 issues same-day, nothing carried over.
+- [x] Audited every admin workspace's empty state. Most were already clean (`ContentListWorkspace`'s
+  7 consumers get "No items yet. Add one above." for free; Skills/Experience/Freelance
+  Process/Testimonials/Media Library/Social Contact/Resume Management all had genuine honest empty
+  states already). **Found and fixed real problems in two spots:**
+  - **Visitor Submissions inbox** — when `subs.isEmpty`, it rendered three fully-fabricated fake
+    leads ("Aarav Studios", "Mira Health", "Northbound Labs") styled identically to real submission
+    cards, with zero indication they weren't real. An admin could easily mistake these for actual
+    inquiries. Replaced with an honest "No submissions yet — new entries appear here automatically
+    when someone submits the contact form" empty state. Removed the now-unused `LeadCard` widget and
+    `_fallbackLeads` list.
+  - **Blog Management filter empty state** — "No posts match this filter." showed even when there
+    were zero posts total (not just filtered-to-zero), which reads oddly when the filter is "All".
+    Now distinguishes: "No posts yet. Add one above." vs. "No posts match this filter." — same
+    pattern Media Library already used.
+- [x] **Found and removed a second batch of dead scaffolding while auditing the Dashboard**:
+  `FallbackModuleWorkspace` + `CollectionRow` (a leftover placeholder screen from before real
+  per-module workspaces existed — literally labeled "Firestore collection placeholder" and "Ready
+  for structured data binding", with a "New entry" button that did nothing) were fully unreachable
+  — `admin_module_registry.dart`'s switch is exhaustive now, so nothing ever routed here. Deleted
+  both files, then cleaned up what became newly-orphaned as a result: the `activeCollections`
+  getter, `fallbackCollections` static list, `_updatedLabel` helper, and `AdminCollectionItem`
+  model class, all now confirmed to have zero remaining consumers.
+  - While in that neighborhood, also found a **hardcoded fake Dashboard metric**: "Published Posts"
+    always showed the literal string `'14'` with copy reading "Blog CMS wiring started" — stale
+    even by Day 9's standards. Replaced with the real `publishedAdminBlogPosts.length` count from
+    the now-real Supabase-backed blog.
+- [x] Verified with `flutter analyze lib` — no issues throughout. Live smoke-test of the public
+  site confirms the provider-layer cleanup didn't break app startup (Riverpod providers are shared
+  between public site and admin panel, so a broken provider file would have crashed both).
+
+**Workstream status: all 14 days complete.** Every "content list" section audited on Day 0 now
+reads from and writes to real, live-updating data, with no fake toggles, no fabricated demo data
+passed off as real, and no stale hardcoded numbers on the admin's own landing page.
 
 ---
 

@@ -16,31 +16,6 @@ class SubmissionsWorkspace extends ConsumerWidget {
 
   final bool isCompact;
 
-  static const _fallbackLeads = <AdminLeadItem>[
-    AdminLeadItem(
-      name: 'Aarav Studios',
-      company: 'aarav.design',
-      summary: 'Need a Flutter product site and admin dashboard in 3 weeks.',
-      status: 'Unread',
-      receivedAt: '6 min ago',
-      unread: true,
-    ),
-    AdminLeadItem(
-      name: 'Mira Health',
-      company: 'mirahealth.io',
-      summary: 'Asked for mobile app redesign, Firebase workflow, and support.',
-      status: 'Reviewing',
-      receivedAt: '48 min ago',
-    ),
-    AdminLeadItem(
-      name: 'Northbound Labs',
-      company: 'northboundlabs.com',
-      summary: 'Requested portfolio-style case study site with blog migration.',
-      status: 'Replied',
-      receivedAt: '2 hrs ago',
-    ),
-  ];
-
   void _showAddNoteDialog(BuildContext context, WidgetRef ref) {
     final noteController = TextEditingController();
     showDialog<void>(
@@ -130,15 +105,36 @@ class SubmissionsWorkspace extends ConsumerWidget {
           ),
           const SizedBox(height: 18),
           if (subs.isEmpty)
-            Column(
-              children: _fallbackLeads
-                  .map(
-                    (lead) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: LeadCard(lead: lead),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.inbox_rounded,
+                      size: 40,
+                      color: Colors.white.withValues(alpha: 0.15),
                     ),
-                  )
-                  .toList(),
+                    const SizedBox(height: 14),
+                    Text(
+                      'No submissions yet.',
+                      style: GoogleFonts.manrope(
+                        color: Colors.white54,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'New entries appear here automatically when someone submits the contact form.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.manrope(
+                        color: Colors.white38,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             )
           else
             Column(
@@ -363,107 +359,6 @@ class SubmissionCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class LeadCard extends StatelessWidget {
-  const LeadCard({super.key, required this.lead});
-
-  final AdminLeadItem lead;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: lead.unread
-            ? AppColors.primaryGreen.withValues(alpha: 0.08)
-            : Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: lead.unread
-              ? AppColors.primaryGreen.withValues(alpha: 0.16)
-              : Colors.white.withValues(alpha: 0.06),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  lead.name,
-                  style: GoogleFonts.manrope(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              if (lead.unread)
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryGreen,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            lead.company,
-            style: GoogleFonts.manrope(
-              color: Colors.white54,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            lead.summary,
-            style: GoogleFonts.manrope(
-              color: Colors.white70,
-              fontSize: 12.5,
-              height: 1.6,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  lead.status,
-                  style: GoogleFonts.manrope(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const Spacer(),
-              Text(
-                lead.receivedAt,
-                style: GoogleFonts.manrope(
-                  color: Colors.white54,
-                  fontSize: 11.5,
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

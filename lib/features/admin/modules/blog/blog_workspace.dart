@@ -388,7 +388,10 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Text('No posts match this filter.', style: GoogleFonts.manrope(color: Colors.white38)),
+                child: Text(
+                  posts.isEmpty ? 'No posts yet. Add one above.' : 'No posts match this filter.',
+                  style: GoogleFonts.manrope(color: Colors.white38),
+                ),
               ),
             )
           else

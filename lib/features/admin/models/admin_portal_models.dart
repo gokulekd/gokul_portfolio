@@ -92,22 +92,6 @@ class AdminSectionItem {
   final String updatedAt;
 }
 
-class AdminCollectionItem {
-  const AdminCollectionItem({
-    required this.title,
-    required this.subtitle,
-    required this.state,
-    required this.lastEdited,
-    this.highlight,
-  });
-
-  final String title;
-  final String subtitle;
-  final AdminItemState state;
-  final String lastEdited;
-  final String? highlight;
-}
-
 class AdminLeadItem {
   const AdminLeadItem({
     required this.name,
