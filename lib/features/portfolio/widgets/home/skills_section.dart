@@ -1,21 +1,25 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/portfolio_provider.dart';
+import '../../../../core/utils/skill_icons.dart';
+import '../../models/firebase_content_models.dart';
 import 'skills_components.dart';
 
-class SkillsSection extends StatefulWidget {
+class SkillsSection extends ConsumerStatefulWidget {
   final ScrollController? scrollController;
 
   const SkillsSection({super.key, this.scrollController});
 
   @override
-  State<SkillsSection> createState() => _SkillsSectionState();
+  ConsumerState<SkillsSection> createState() => _SkillsSectionState();
 }
 
-class _SkillsSectionState extends State<SkillsSection>
+class _SkillsSectionState extends ConsumerState<SkillsSection>
     with TickerProviderStateMixin {
   late AnimationController _skillsController;
   final List<AnimationController> _cardControllers = [];
@@ -28,11 +32,26 @@ class _SkillsSectionState extends State<SkillsSection>
   Timer? _visibilityCheckTimer;
   bool _isSectionVisible = false;
   final Set<int> _visibleCards = {};
+  int _cardCount = 0;
 
   @override
   void initState() {
     super.initState();
-    _initializeAnimations();
+    _skillsController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    );
+    _skillsOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _skillsController, curve: Curves.easeIn));
+    _skillsSlide = Tween<Offset>(
+      begin: const Offset(0.0, 1.0),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _skillsController, curve: Curves.easeOutCubic),
+    );
+
     // Start the animation after a short delay
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
@@ -54,6 +73,32 @@ class _SkillsSectionState extends State<SkillsSection>
         }
       });
     }
+  }
+
+  /// Card controllers are sized to the skills list, which can change once
+  /// the admin edits it. Rebuild the pool whenever the count changes instead
+  /// of assuming a fixed length like the old hardcoded 6-item list did.
+  void _ensureCardControllers(int count) {
+    if (count == _cardCount) return;
+    for (final controller in _cardControllers) {
+      controller.dispose();
+    }
+    _cardControllers.clear();
+    _cardAnimations.clear();
+    _visibleCards.clear();
+    for (int i = 0; i < count; i++) {
+      final controller = AnimationController(
+        duration: const Duration(milliseconds: 600),
+        vsync: this,
+      );
+      final animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(parent: controller, curve: Curves.easeOutCubic),
+      );
+      _cardControllers.add(controller);
+      _cardAnimations.add(animation);
+    }
+    _cardCount = count;
+    if (_isSectionVisible) _animateCardsSequentially();
   }
 
   void _startVisibilityCheck() {
@@ -128,10 +173,10 @@ class _SkillsSectionState extends State<SkillsSection>
   }
 
   void _animateCardsSequentially() {
-    for (int i = 0; i < _skills.length; i++) {
+    for (int i = 0; i < _cardCount; i++) {
       if (!_visibleCards.contains(i)) {
         Future.delayed(Duration(milliseconds: 100 * i), () {
-          if (mounted) {
+          if (mounted && i < _cardControllers.length) {
             setState(() {
               _visibleCards.add(i);
             });
@@ -139,37 +184,6 @@ class _SkillsSectionState extends State<SkillsSection>
           }
         });
       }
-    }
-  }
-
-  void _initializeAnimations() {
-    // Skills section animations
-    _skillsController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
-    );
-    _skillsOpacity = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _skillsController, curve: Curves.easeIn));
-    _skillsSlide = Tween<Offset>(
-      begin: const Offset(0.0, 1.0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _skillsController, curve: Curves.easeOutCubic),
-    );
-
-    // Initialize card animations
-    for (int i = 0; i < _skills.length; i++) {
-      final controller = AnimationController(
-        duration: const Duration(milliseconds: 600),
-        vsync: this,
-      );
-      final animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(parent: controller, curve: Curves.easeOutCubic),
-      );
-      _cardControllers.add(controller);
-      _cardAnimations.add(animation);
     }
   }
 
@@ -188,6 +202,9 @@ class _SkillsSectionState extends State<SkillsSection>
 
   @override
   Widget build(BuildContext context) {
+    final skills = ref.watch(portfolioProvider.select((s) => s.visibleSkills));
+    _ensureCardControllers(skills.length);
+
     return AnimatedBuilder(
       animation: _skillsController,
       builder: (context, child) {
@@ -287,65 +304,67 @@ class _SkillsSectionState extends State<SkillsSection>
                                   ),
                                 ),
                                 const SizedBox(height: 60),
-                                // Cards in 3x2 grid (3 left, 3 right)
-                                if (isNarrow)
-                                  // Mobile: Single column
+                                // Cards: single column on mobile, split into
+                                // two balanced columns on desktop.
+                                if (skills.isEmpty)
+                                  const SizedBox.shrink()
+                                else if (isNarrow)
                                   Column(
                                     children: [
-                                      ...List.generate(_skills.length, (index) {
-                                        return Padding(
+                                      for (int index = 0; index < skills.length; index++)
+                                        Padding(
                                           padding: EdgeInsets.only(
-                                            bottom:
-                                                index < _skills.length - 1
-                                                    ? 20
-                                                    : 0,
+                                            bottom: index < skills.length - 1 ? 20 : 0,
                                           ),
-                                          child: _buildSkillCard(index),
-                                        );
-                                      }),
+                                          child: _buildSkillCard(index, skills[index]),
+                                        ),
                                     ],
                                   )
                                 else
-                                  // Desktop: 3 left, 3 right
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      // Left column - first 3 cards
-                                      Expanded(
-                                        child: Column(
-                                          children: [
-                                            ...List.generate(3, (index) {
-                                              return Padding(
-                                                padding: EdgeInsets.only(
-                                                  bottom: index < 2 ? 20 : 0,
-                                                ),
-                                                child: _buildSkillCard(index),
-                                              );
-                                            }),
+                                  Builder(
+                                    builder: (context) {
+                                      final leftCount = (skills.length / 2).ceil();
+                                      final leftSkills = skills.take(leftCount).toList();
+                                      final rightSkills = skills.skip(leftCount).toList();
+                                      return Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              children: [
+                                                for (int i = 0; i < leftSkills.length; i++)
+                                                  Padding(
+                                                    padding: EdgeInsets.only(
+                                                      bottom: i < leftSkills.length - 1 ? 20 : 0,
+                                                    ),
+                                                    child: _buildSkillCard(i, leftSkills[i]),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                          if (rightSkills.isNotEmpty) ...[
+                                            const SizedBox(width: 24),
+                                            Expanded(
+                                              child: Column(
+                                                children: [
+                                                  for (int i = 0; i < rightSkills.length; i++)
+                                                    Padding(
+                                                      padding: EdgeInsets.only(
+                                                        bottom: i < rightSkills.length - 1 ? 20 : 0,
+                                                      ),
+                                                      child: _buildSkillCard(
+                                                        leftCount + i,
+                                                        rightSkills[i],
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                            ),
                                           ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 24),
-                                      // Right column - last 3 cards
-                                      Expanded(
-                                        child: Column(
-                                          children: [
-                                            ...List.generate(3, (index) {
-                                              return Padding(
-                                                padding: EdgeInsets.only(
-                                                  bottom: index < 2 ? 20 : 0,
-                                                ),
-                                                child: _buildSkillCard(
-                                                  index + 3,
-                                                ),
-                                              );
-                                            }),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
+                                        ],
+                                      );
+                                    },
                                   ),
                               ],
                             ),
@@ -363,60 +382,16 @@ class _SkillsSectionState extends State<SkillsSection>
     );
   }
 
-  List<Map<String, dynamic>> get _skills => [
-    {
-      'name': 'Firebase',
-      'percentage': 80,
-      'color': AppColors.skillsGreen,
-      'icon': Icons.local_fire_department,
-      'description': 'Leading collaborative design tool',
-    },
-    {
-      'name': 'JavaScript',
-      'percentage': 50,
-      'color': AppColors.skillsGreen,
-      'icon': Icons.javascript,
-      'description': 'Leading collaborative design tool',
-    },
-    {
-      'name': 'HTML',
-      'percentage': 70,
-      'color': AppColors.skillsGreen,
-      'icon': Icons.language,
-      'description': 'Leading collaborative design tool',
-    },
-    {
-      'name': 'CSS',
-      'percentage': 70,
-      'color': AppColors.skillsGreen,
-      'icon': Icons.palette,
-      'description': 'Leading collaborative design tool',
-    },
-    {
-      'name': 'Flutter',
-      'percentage': 85,
-      'color': AppColors.skillsGreen,
-      'icon': Icons.phone_android,
-      'description': 'Leading collaborative design tool',
-    },
-    {
-      'name': 'Dart',
-      'percentage': 90,
-      'color': AppColors.skillsGreen,
-      'icon': Icons.code,
-      'description': 'Leading collaborative design tool',
-    },
-  ];
-
-  Widget _buildSkillCard(int index) {
-    if (index < 0 || index >= _skills.length) {
+  Widget _buildSkillCard(int index, SkillItem skill) {
+    if (index < 0 || index >= _cardAnimations.length) {
       return const SizedBox.shrink();
     }
 
-    final skill = _skills[index];
     final animation = _cardAnimations[index];
     final isVisible = _visibleCards.contains(index);
-    final percentage = skill['percentage'] as int;
+    final percentage = skill.percent;
+    final color = AppColors.skillsGreen;
+    final icon = iconForSkillKey(skill.iconKey);
 
     return AnimatedBuilder(
       animation: animation,
@@ -453,8 +428,8 @@ class _SkillsSectionState extends State<SkillsSection>
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
-                          skill['icon'] as IconData,
-                          color: skill['color'] as Color,
+                          icon,
+                          color: color,
                           size: 32,
                         ),
                       ),
@@ -465,7 +440,7 @@ class _SkillsSectionState extends State<SkillsSection>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              skill['name'] as String,
+                              skill.name,
                               style: GoogleFonts.manrope(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
@@ -474,7 +449,7 @@ class _SkillsSectionState extends State<SkillsSection>
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              skill['description'] as String,
+                              skill.description,
                               style: GoogleFonts.manrope(
                                 fontSize: 14,
                                 color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
@@ -530,7 +505,7 @@ class _SkillsSectionState extends State<SkillsSection>
                                     width: fillWidth,
                                     height: 8,
                                     decoration: BoxDecoration(
-                                      color: skill['color'] as Color,
+                                      color: color,
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
@@ -544,7 +519,7 @@ class _SkillsSectionState extends State<SkillsSection>
                                       width: circleSize,
                                       height: circleSize,
                                       decoration: BoxDecoration(
-                                        color: skill['color'] as Color,
+                                        color: color,
                                         shape: BoxShape.circle,
                                       ),
                                       alignment: Alignment.center,

@@ -48,8 +48,8 @@ class ContentListWorkspace extends StatefulWidget {
     required this.itemLabel,
     required this.fieldOneLabel,
     required this.fieldOneHint,
-    required this.fieldTwoLabel,
-    required this.fieldTwoHint,
+    this.fieldTwoLabel,
+    this.fieldTwoHint,
     this.fieldThreeLabel,
     this.fieldThreeHint,
     required this.defaultItems,
@@ -66,8 +66,8 @@ class ContentListWorkspace extends StatefulWidget {
   final String itemLabel;
   final String fieldOneLabel;
   final String fieldOneHint;
-  final String fieldTwoLabel;
-  final String fieldTwoHint;
+  final String? fieldTwoLabel;
+  final String? fieldTwoHint;
   final String? fieldThreeLabel;
   final String? fieldThreeHint;
   final List<ContentItem> defaultItems;
@@ -143,13 +143,15 @@ class _ContentListWorkspaceState extends State<ContentListWorkspace> {
                           label: widget.fieldOneLabel,
                           hint: widget.fieldOneHint,
                         ),
-                        const SizedBox(height: 14),
-                        DialogField(
-                          controller: f2,
-                          label: widget.fieldTwoLabel,
-                          hint: widget.fieldTwoHint,
-                          maxLines: 4,
-                        ),
+                        if (widget.fieldTwoLabel != null) ...[
+                          const SizedBox(height: 14),
+                          DialogField(
+                            controller: f2,
+                            label: widget.fieldTwoLabel!,
+                            hint: widget.fieldTwoHint ?? '',
+                            maxLines: 4,
+                          ),
+                        ],
                         if (widget.fieldThreeLabel != null) ...[
                           const SizedBox(height: 14),
                           DialogField(
@@ -191,7 +193,10 @@ class _ContentListWorkspaceState extends State<ContentListWorkspace> {
                       onPressed: () {
                         final title = f1.text.trim();
                         final body = f2.text.trim();
-                        if (title.isEmpty || body.isEmpty) return;
+                        final bodyRequired = widget.fieldTwoLabel != null;
+                        if (title.isEmpty || (bodyRequired && body.isEmpty)) {
+                          return;
+                        }
                         final item = ContentItem(
                           id: existing?.id ?? '',
                           title: title,
@@ -397,17 +402,19 @@ class ContentItemRow extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  item.body,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.manrope(
-                    color: Colors.white60,
-                    fontSize: 12.5,
-                    height: 1.5,
+                if (item.body.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    item.body,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.manrope(
+                      color: Colors.white60,
+                      fontSize: 12.5,
+                      height: 1.5,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/portfolio_provider.dart';
 
-class ProjectTypesMarquee extends StatefulWidget {
+class ProjectTypesMarquee extends ConsumerStatefulWidget {
   const ProjectTypesMarquee({super.key});
 
   @override
-  State<ProjectTypesMarquee> createState() => _ProjectTypesMarqueeState();
+  ConsumerState<ProjectTypesMarquee> createState() => _ProjectTypesMarqueeState();
 }
 
-class _ProjectTypesMarqueeState extends State<ProjectTypesMarquee>
+class _ProjectTypesMarqueeState extends ConsumerState<ProjectTypesMarquee>
     with SingleTickerProviderStateMixin {
   late ScrollController _scrollController;
   late AnimationController _animationController;
-
-  final List<String> _projectTypes = [
-    'E-commerce',
-    'Social Media App',
-    'Blog',
-    'Block Chain',
-    'Ride booking app',
-  ];
 
   @override
   void initState() {
@@ -61,6 +55,11 @@ class _ProjectTypesMarqueeState extends State<ProjectTypesMarquee>
 
   @override
   Widget build(BuildContext context) {
+    final projectTypes = ref
+        .watch(portfolioProvider.select((s) => s.visibleDevAreas))
+        .map((d) => d.label)
+        .toList();
+
     return Container(
       width: double.infinity,
       color: Colors.black,
@@ -75,7 +74,7 @@ class _ProjectTypesMarqueeState extends State<ProjectTypesMarquee>
             children: List.generate(10, (index) {
               return Row(
                 children: [
-                  ..._projectTypes
+                  ...projectTypes
                       .map(
                         (type) => [
                           _buildProjectTypeItem(type),

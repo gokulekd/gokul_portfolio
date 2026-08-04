@@ -123,13 +123,18 @@ is used across multiple pages (hero, about, contact), same as name/title already
 - [x] New "Stats Marquee" admin module (`stats_workspace.dart`) — added `AdminModule.homeStats` enum value + nav entry + registry wiring
 - [x] Verified live in browser: hero copy, CTA, both stat strips all render from Firestore, zero console errors
 
-### Day 4 — Home page: Skills section + Development Areas marquee ⬜ NOT STARTED
-- [ ] Skills section (`skills_section.dart`, home page) → wire to `visibleSkills` (already streamed since Day 2, just needs the widget wired)
-- [ ] Decide icon rendering: `SkillItem.iconKey` is a string (`fire`, `code`, `phone_android`, `language`, `palette`, `javascript`, `database`, `cloud`, `terminal`, `layers`, `bolt`, `star`) — build a small `iconKey → IconData` map in the widget layer
-- [ ] Skills admin panel: fix "Skills & Experience" workspace (`skills_workspace.dart`) — currently a disconnected local-state facade unrelated to the real skills list. Decide: does it need icon-picker UI, or is a flat `ContentListWorkspace` (name/percent as 2 fields, icon fixed or a 3rd free-text field) good enough?
-- [ ] Development Areas marquee (`project_types_marquee.dart`) → wire to `visibleDevAreas`
-- [ ] Development Areas admin panel already uses `ContentListWorkspace` in the registry with placeholder data — replace with a live wrapper (same pattern as `faq_workspace.dart`/`stats_workspace.dart`), field mapping: title→label, drop body/meta (real model only has `label`)
-- [ ] Verify live in browser
+### Day 4 — Home page: Skills section + Development Areas marquee ✅ DONE
+- [x] Skills section (`skills_section.dart`) → wired to `visibleSkills`, reused on Home/About/Skills pages (one fix, three pages)
+- [x] Icon rendering: moved the `iconKey → IconData` map out to shared `lib/core/utils/skill_icons.dart` (`iconForSkillKey`, `kSkillIconKeys`) so the public widget and admin icon-picker use the exact same mapping
+- [x] Fixed a structural bug while wiring this: the desktop layout hardcoded a 3-left/3-right card split (`List.generate(3, ...)`) which assumed exactly 6 skills forever. Replaced with a dynamic split based on actual list length so admin add/delete doesn't break the layout. Also made the animation-controller pool resize itself when the skill count changes instead of being fixed at `initState`.
+- [x] Skills admin panel (`skills_workspace.dart`) rebuilt as a real Firestore-backed editor — bespoke form (not `ContentListWorkspace`, since it needed a proficiency slider + icon picker), including hide/show toggle. Retired the old parallel `SkillEntry` model/`skill_entry.dart` in favor of using the real `SkillItem` model directly — there's only one skills model now, not two.
+- [x] Development Areas marquee (`project_types_marquee.dart`) → wired to `visibleDevAreas`
+- [x] Development Areas admin panel: new `dev_areas_workspace.dart` using `ContentListWorkspace`. This needed a small infra change: `ContentListWorkspace.fieldTwoLabel`/`fieldTwoHint` are now optional (single-field mode), since `DevAreaItem` only has `label` — no description field to force.
+- [x] Verified live in browser: hero/stats/dev-areas all correct with real data; About page confirmed real Education/Experience/Skills content rendering (skill card showing live `80%` proficiency)
+
+**Note:** the homepage's `SkillsSection(scrollController: ...)` instance only animates cards into view once real scroll events fire (pre-existing behavior, not something today's change touched — confirmed identical blank-until-scrolled behavior already existed in the Day 3 screenshots). The About/Skills-page instances (no scrollController) show cards immediately. Not a bug, just noting it so a future session doesn't mistake it for one.
+
+**Tooling note:** hit a scary-looking fully-black page during verification. Root cause was a stale browser tab/DWDS debug connection after several forced reloads in the same tab — not a code issue. Fix: open a fresh tab (`tabs_create`) rather than repeatedly force-navigating the same one when the preview looks stuck.
 
 ### Day 5 — Home page: Achievements + Freelance Process + Testimonials + FAQ hide/reorder polish ⬜ NOT STARTED
 - [ ] Achievements (`proud_achievements_section.dart`) → wire to `visibleAchievements`. Icon/colors are NOT admin-editable per-item (decided Day 1) — render by rotating a fixed icon/color set based on list position instead
@@ -191,10 +196,11 @@ is used across multiple pages (hero, about, contact), same as name/title already
 Running list of things that were deliberately simplified or deferred — check here before
 "fixing" something that was actually an intentional trade-off.
 
-- **Icon/color pickers**: Skills (`iconKey`) and Achievements (`iconKey` + 3 hex colors) are
-  modeled with string fields but have no picker UI yet. Current plan (Day 4/5): render by a fixed
-  key→visual mapping in the widget, not a free-form admin picker. Revisit only if the user
-  explicitly asks for visual customization per item.
+- **Icon/color pickers**: ~~Skills and Achievements have no picker UI~~ — **resolved for Skills
+  on Day 4**: built a proper icon-swatch picker in `skills_workspace.dart` using the shared
+  `kSkillIconKeys` list, cheap enough to justify once `skill_icons.dart` existed. Achievements'
+  `iconKey` + 3 hex colors is still undecided — that one has more fields (3 colors is a lot of
+  UI for a flat form), Day 5 should decide fresh rather than assume the Skills pattern applies.
 - **Freelance Process nested items**: no plan yet for how admin edits the 2–4 sub-bullets per
   step through a flat-field UI. Leaning toward newline-separated text in one field. Decide on
   Day 5, write the actual decision here once made.

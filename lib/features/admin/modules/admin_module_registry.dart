@@ -6,6 +6,7 @@ import 'basic_details/basic_details_workspace.dart';
 import 'blog/blog_workspace.dart';
 import 'create_post/create_post_workspace.dart';
 import 'dashboard/dashboard_workspace.dart';
+import 'dev_areas/dev_areas_workspace.dart';
 import 'faq/faq_workspace.dart';
 import 'home_content/home_content_workspace.dart';
 import 'home_content/stats_workspace.dart';
@@ -34,43 +35,7 @@ class AdminModuleRegistry {
       AdminModule.homeStats => StatsWorkspace(isCompact: isCompact),
       AdminModule.projects => ProjectsWorkspace(isCompact: isCompact),
       AdminModule.skillsExperience => SkillsWorkspace(isCompact: isCompact),
-      AdminModule.developmentAreas => _contentListWorkspace(
-        module: module,
-        isCompact: isCompact,
-        eyebrow: 'DEVELOPMENT AREAS',
-        title: 'Specialisations',
-        description:
-            'Keep the scrolling service and specialisation content aligned with current offerings.',
-        itemLabel: 'Area',
-        fieldOneLabel: 'Area title',
-        fieldOneHint: 'e.g. Flutter Mobile Apps',
-        fieldTwoLabel: 'Description',
-        fieldTwoHint: 'What you offer in this area…',
-        defaultItems: const [
-          ContentItem(
-            title: 'Flutter Mobile Apps',
-            body: 'Production-ready iOS & Android apps with pixel-perfect UI.',
-            isVisible: true,
-          ),
-          ContentItem(
-            title: 'Firebase Backends',
-            body:
-                'Auth, Firestore, Storage, and Cloud Functions for scalable backends.',
-            isVisible: true,
-          ),
-          ContentItem(
-            title: 'Admin Dashboards',
-            body: 'Custom CMS and admin portals built with Flutter Web.',
-            isVisible: true,
-          ),
-          ContentItem(
-            title: 'UI/UX Design',
-            body:
-                'Design systems, component libraries, and high-fidelity Figma prototypes.',
-            isVisible: false,
-          ),
-        ],
-      ),
+      AdminModule.developmentAreas => DevAreasWorkspace(isCompact: isCompact),
       AdminModule.achievements => _contentListWorkspace(
         module: module,
         isCompact: isCompact,
