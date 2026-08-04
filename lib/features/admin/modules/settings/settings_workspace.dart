@@ -22,12 +22,6 @@ class SettingsWorkspace extends ConsumerStatefulWidget {
 }
 
 class _SettingsWorkspaceState extends ConsumerState<SettingsWorkspace> {
-  bool _notifyNewSubmissions = true;
-  bool _notifyProjectUpdates = false;
-  bool _notifyBlogSync = true;
-  bool _analyticsEnabled = true;
-  bool _maintenanceMode = false;
-
   void _confirmDangerAction(
     BuildContext context,
     String title,
@@ -102,8 +96,7 @@ class _SettingsWorkspaceState extends ConsumerState<SettingsWorkspace> {
           const AdminSectionHeader(
             eyebrow: 'SETTINGS',
             title: 'Admin configuration',
-            description:
-                'Manage your account, notifications, and site-level settings.',
+            description: 'Manage your account and irreversible platform actions.',
           ),
           const SizedBox(height: 24),
 
@@ -185,53 +178,6 @@ class _SettingsWorkspaceState extends ConsumerState<SettingsWorkspace> {
                 ),
               ],
             ),
-          ),
-
-          const SizedBox(height: 24),
-          SectionLabel(label: 'NOTIFICATIONS'),
-          const SizedBox(height: 12),
-          SettingsToggleRow(
-            icon: Icons.inbox_rounded,
-            label: 'New submission alerts',
-            description: 'Notify when a visitor submits a contact form',
-            value: _notifyNewSubmissions,
-            onChanged: (v) => setState(() => _notifyNewSubmissions = v),
-          ),
-          const SizedBox(height: 10),
-          SettingsToggleRow(
-            icon: Icons.workspaces_rounded,
-            label: 'Project update alerts',
-            description: 'Notify when a project is published or edited',
-            value: _notifyProjectUpdates,
-            onChanged: (v) => setState(() => _notifyProjectUpdates = v),
-          ),
-          const SizedBox(height: 10),
-          SettingsToggleRow(
-            icon: Icons.sync_rounded,
-            label: 'Dev.to blog sync alerts',
-            description: 'Notify when new articles are fetched from Dev.to',
-            value: _notifyBlogSync,
-            onChanged: (v) => setState(() => _notifyBlogSync = v),
-          ),
-
-          const SizedBox(height: 24),
-          SectionLabel(label: 'SITE CONFIG'),
-          const SizedBox(height: 12),
-          SettingsToggleRow(
-            icon: Icons.analytics_rounded,
-            label: 'Analytics tracking',
-            description: 'Enable visitor analytics on the public portfolio',
-            value: _analyticsEnabled,
-            onChanged: (v) => setState(() => _analyticsEnabled = v),
-          ),
-          const SizedBox(height: 10),
-          SettingsToggleRow(
-            icon: Icons.construction_rounded,
-            label: 'Maintenance mode',
-            description: 'Show a maintenance page instead of the portfolio',
-            value: _maintenanceMode,
-            color: const Color(0xFFFFB44C),
-            onChanged: (v) => setState(() => _maintenanceMode = v),
           ),
 
           const SizedBox(height: 24),
@@ -353,23 +299,6 @@ class _SettingsWorkspaceState extends ConsumerState<SettingsWorkspace> {
             icon: Icons.workspaces_rounded,
             color: const Color(0xFFFFB44C),
           ),
-          const SizedBox(height: 10),
-          PreviewTile(
-            title: 'Notifications',
-            value: [
-                  if (_notifyNewSubmissions) 'Submissions',
-                  if (_notifyBlogSync) 'Blog sync',
-                  if (_notifyProjectUpdates) 'Projects',
-                ].isEmpty
-                ? 'All off'
-                : [
-                  if (_notifyNewSubmissions) 'Submissions',
-                  if (_notifyBlogSync) 'Blog sync',
-                  if (_notifyProjectUpdates) 'Projects',
-                ].join(', '),
-            icon: Icons.notifications_active_rounded,
-            color: const Color(0xFFB57AFF),
-          ),
         ],
       ),
     );
@@ -390,77 +319,3 @@ class _SettingsWorkspaceState extends ConsumerState<SettingsWorkspace> {
   }
 }
 
-class SettingsToggleRow extends StatelessWidget {
-  const SettingsToggleRow({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.description,
-    required this.value,
-    required this.onChanged,
-    this.color,
-  });
-
-  final IconData icon;
-  final String label;
-  final String description;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = color ?? AppColors.primaryGreen;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: c.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Icon(icon, color: c, size: 18),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.manrope(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                ),
-                Text(
-                  description,
-                  style: GoogleFonts.manrope(
-                    color: Colors.white38,
-                    fontSize: 11.5,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: c,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-        ],
-      ),
-    );
-  }
-}

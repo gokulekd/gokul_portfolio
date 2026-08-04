@@ -28,5 +28,5 @@ final supabaseBlogServiceProvider = Provider<SupabaseBlogService>((ref) {
 });
 
 final contactServiceProvider = Provider<ContactService>((ref) {
-  return ContactService();
+  return ContactService(ref.read(firebasePortfolioServiceProvider));
 });

@@ -13,7 +13,7 @@ class ResumeOverviewSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(portfolioProvider);
     final info = state.personalInfo;
-    final experiences = state.experiences;
+    final experiences = state.visibleExperiences;
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final hPad =

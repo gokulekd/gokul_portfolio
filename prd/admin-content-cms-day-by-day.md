@@ -256,15 +256,21 @@ No Storage bucket changes needed — `blog-covers` is just a new folder inside t
 
 **Tooling note:** this page's sections use `RevealSequence`/`DelayedReveal` — a **timer**-based fade-in (`Timer` in `initState`, not scroll-triggered, unlike `SkillsSection`'s scroll-gated animation from Day 4). A tall `resize_window` + screenshot works fine here, but needs a longer wait (~8–10s total) for every section's staggered `Timer` to fire, not the usual 2–3s — a screenshot taken too early looked like a rendering bug (mostly blank) but was actually just impatience.
 
-### Day 11 — Contact page ⬜ NOT STARTED
-- [ ] Location field: already added to Basic Details form (Day 1) and now actually applies (Day 3 bug fix) — verify it displays on the contact page's contact-channels section
-- [ ] Contact form → currently posts to Formspree only (`contact_service.dart`), not Firestore. The "Visitor Submissions" admin inbox reads a Firestore `submissions` collection that nothing writes to — it's a dead inbox. Decide: write to Firestore in addition to Formspree, or instead of it? (Firestore rules already allow public `create` on `submissions` — see existing `firestore.rules` block, no rule changes needed here)
-- [ ] Social links — already working (Social & Contact workspace, real Firestore) — spot-check only
+### Day 11 — Contact page ✅ DONE
+- [x] Location field: verified live — `info.location` renders in the contact-channels section, the hero profile card, and the contact form's detail column, all sourced from real `personalInfo.location`. No code changes needed, Day 3's fix already covers this page too.
+- [x] **Decision:** write to both Formspree and Firestore (user's choice — keeps the instant email notification and finally populates the "Visitor Submissions" admin inbox, which had nothing writing to it before). No `firestore.rules` change needed — `submissions/{docId}` already allows public `create`.
+  - New `FirebasePortfolioService.createSubmission()` — mirrors the shape `VisitorSubmission.fromFirestore` expects (name/email/company/message/status/createdAt/notes), defaults `status` to `unread` and `company` to `''` since the public form has no company field.
+  - `ContactService` now takes a `FirebasePortfolioService` dependency (was a bare `ContactService()`, updated the one call site in `service_providers.dart`) and calls `createSubmission()` after the Formspree POST. The Firestore write is wrapped in its own try/catch — a Firestore failure never blocks or flips the Formspree result the UI actually shows the visitor.
+- [x] Social links — spot-checked only, confirmed live: `ContactPage` passes `state.personalInfo.socialLinks` (real Firestore-backed `BasicDetails`, wired since Day 1) into `SocialLinksSection`, no hardcoded data. No changes made.
+- [x] Verified with `flutter analyze lib` — no issues. Live in browser: `/contact` renders Location, all 5 social links, and the contact form correctly with zero console errors. **Did not click Send Message** — that would fire a real Formspree email and write a real row to the live Firestore inbox, which isn't something to trigger during a verification pass.
 
-### Day 12 — Global / cross-cutting ⬜ NOT STARTED
-- [ ] "Available for work" toggle — now persists via `HomeHeroContent.isAvailableForWork` (Day 3) and the `AvailableForWorkBadge` widget IS rendered on the hero (confirmed visually Day 3, contradicting an earlier audit claim that it was dead code) — just needs a final check that toggling in admin actually flips the public badge live
-- [ ] Settings workspace — decide which toggles (notifications, analytics, maintenance mode) are real features vs. should be removed if there's no backend for them. Don't ship a fake toggle.
-- [ ] Media Library — decide: wire it into the image pickers for projects/blog/resume banner uploads (so admin-uploaded media is actually selectable elsewhere), or leave scoped down for now
+### Day 12 — Global / cross-cutting ✅ DONE
+- [x] "Available for work" toggle — confirmed via code trace (couldn't click-test live, `/admin` needs the site owner's real Google sign-in, same blocker as every admin-panel check since Day 8): `home_content_workspace.dart`'s toggle → `saveHomeHero()` → Firestore `site_sections/home_hero` write → `portfolio_provider.dart`'s `streamHomeHero()` **live `snapshots()` listener** (not a one-time fetch, so no Day-8-style staleness gap here) → `state.isAvailableForWork` → `AvailableForWorkBadge` (`ref.watch`-reactive) on the hero. The full chain is a real-time stream end to end; nothing to fix.
+- [x] Settings workspace audit — **found 5 fake toggles and removed them**: "New submission alerts", "Project update alerts", "Dev.to blog sync alerts" (no notification infrastructure exists at all — no FCM, no email trigger, no webhook), "Analytics tracking" (no analytics package in `pubspec.yaml`), "Maintenance mode" (no route guard anywhere checks it — toggling it did literally nothing, not even persisted to local state beyond the widget's own `setState`). Kept the two real actions: **Sign out** (`adminAuthProvider.signOut()`) and **Re-seed Firestore** (`ensureSeedData()` — genuinely writes default docs for empty collections). Removed the now-unused `SettingsToggleRow` widget and the "Notifications" info tile that summarized the fake toggles' state.
+- [x] Media Library — **decision: leave scoped down.** It's already fully real and functional standalone (real Supabase upload/list/delete, real Firestore-backed `MediaAssetRecord` metadata) — the open question was only whether to also let admin *pick* an already-uploaded asset when setting a project banner / blog cover / resume file, instead of always uploading a fresh file. That's a genuine UX improvement, not a gap-closing fix like everything else in this workstream (every image upload flow that exists today already works correctly end to end). Descoped as a future enhancement rather than built this round — flagging here so a later session doesn't rediscover this as an open question.
+- [x] Verified with `flutter analyze lib` — no issues.
+
+**Note:** this day was audit-and-remove rather than wire-and-build, unlike every previous day. "Don't ship a fake toggle" ended up being about admin-panel honesty (not showing controls that do nothing) rather than public-site content wiring.
 
 ### Day 13 — QA pass ⬜ NOT STARTED
 - [ ] Walk every page top to bottom: for every section, confirm admin edit → live site updates, admin delete → item disappears, admin hide → item disappears from public site but stays in admin list
@@ -298,8 +304,9 @@ Running list of things that were deliberately simplified or deferred — check h
   images can go through the same Storage flow as project banners; Dev.to stays as a
   user-toggleable supplementary feed. See Day 9 notes above for the full reasoning and the
   Firestore `BlogPostRecord` removal.
-- **Contact form → Firestore**: not decided whether to add Firestore writes alongside or instead
-  of Formspree. Decide at the start of Day 11.
+- **Contact form → Firestore**: **resolved Day 11** — writes to both. Formspree stays the
+  visitor-facing success signal (unchanged behavior); Firestore write is best-effort and populates
+  the previously-dead Visitor Submissions inbox. See `contact_service.dart`.
 - **Guiding Principles section**: has a Firestore section key and a `ContentListWorkspace` admin
   panel already, but is not rendered on any public page. Out of scope for this workstream (we're
   only wiring things that are actually live on the site) unless the user asks for it to be added

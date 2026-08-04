@@ -157,6 +157,30 @@ class FirebasePortfolioService {
     });
   }
 
+  /// Public contact form write (Day 11 decision: write to both Formspree
+  /// and Firestore). `firestore.rules` already allows public `create` on
+  /// `submissions` — no rules change needed. Silently no-ops if Firebase
+  /// isn't configured, matching every other write in this service; the
+  /// caller (`ContactService`) doesn't let a Firestore failure block the
+  /// Formspree email from sending.
+  Future<void> createSubmission({
+    required String name,
+    required String email,
+    required String message,
+    String company = '',
+  }) async {
+    if (!isEnabled) return;
+    await _firestore.collection('submissions').add({
+      'name': name,
+      'email': email,
+      'company': company,
+      'message': message,
+      'status': SubmissionStatus.unread.name,
+      'createdAt': FieldValue.serverTimestamp(),
+      'notes': <String>[],
+    });
+  }
+
   Stream<List<SitePageConfig>> streamPageConfigs() {
     if (!isEnabled) {
       return Stream.value(const <SitePageConfig>[]);
