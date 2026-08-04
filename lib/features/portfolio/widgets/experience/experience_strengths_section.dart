@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import 'experience_components.dart';
 
-class ExperienceStrengthsSection extends StatelessWidget {
+// `cards` used to be hardcoded `StrengthCard` data; the section now reads
+// `ExperienceStrengthItem` from Firestore via
+// `portfolioProvider.visibleExperienceStrengths`.
+
+class ExperienceStrengthsSection extends ConsumerWidget {
   const ExperienceStrengthsSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final hPad =
@@ -17,27 +23,12 @@ class ExperienceStrengthsSection extends StatelessWidget {
             ? 48.0
             : 88.0;
 
-    const cards = [
-      StrengthCard(
-        title: 'Cross-Platform Thinking',
-        description:
-            'Build experiences that feel polished and consistent across mobile and web without losing product clarity.',
-      ),
-      StrengthCard(
-        title: 'Clean Execution',
-        description:
-            'Turn requirements into maintainable Flutter implementations with scalable structure and readable code.',
-      ),
-      StrengthCard(
-        title: 'Design Awareness',
-        description:
-            'Care about rhythm, spacing, motion, and UX details so delivery feels intentional rather than assembled.',
-      ),
-      StrengthCard(
-        title: 'Reliable Collaboration',
-        description:
-            'Keep projects moving with communication, feedback loops, and a practical balance between quality and speed.',
-      ),
+    final strengths = ref.watch(
+      portfolioProvider.select((s) => s.visibleExperienceStrengths),
+    );
+    final cards = [
+      for (final strength in strengths)
+        StrengthCard(title: strength.title, description: strength.description),
     ];
 
     return Padding(

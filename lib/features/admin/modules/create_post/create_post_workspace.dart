@@ -6,9 +6,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/admin_portal_provider.dart';
 import '../../../../core/providers/portfolio_provider.dart';
+import '../../../../core/providers/service_providers.dart';
+import '../../../../core/services/supabase_storage_service.dart';
+import '../../../../core/supabase/supabase_bootstrap.dart';
 import '../../shared/admin_portal_components.dart';
+import '../blog/models/admin_blog_post.dart';
 
+/// The "write" flow for blog posts — real-time preview, image + hashtag
+/// picker. Persists a real Supabase `AdminBlogPost` on submit (Day 9;
+/// previously this just faked a 1-second delay and cleared the form). List
+/// management (edit existing/delete/hide) lives in `BlogWorkspace`.
 class CreatePostWorkspace extends ConsumerStatefulWidget {
   const CreatePostWorkspace({super.key, required this.isCompact});
   final bool isCompact;
@@ -18,6 +27,7 @@ class CreatePostWorkspace extends ConsumerStatefulWidget {
 }
 
 class _CreatePostWorkspaceState extends ConsumerState<CreatePostWorkspace> {
+  final _titleController = TextEditingController();
   final _textController = TextEditingController();
   final _hashtagController = TextEditingController();
   String _visibility = 'Public';
@@ -26,25 +36,29 @@ class _CreatePostWorkspaceState extends ConsumerState<CreatePostWorkspace> {
   bool _isPosting = false;
 
   static const int _maxChars = 3000;
-  final _visibilityOptions = ['Public', 'Portfolio Only', 'Draft'];
+  final _visibilityOptions = ['Public', 'Draft'];
 
   @override
   void dispose() {
+    _titleController.dispose();
     _textController.dispose();
     _hashtagController.dispose();
     super.dispose();
   }
 
+  // Only the first selected image is used as the post's cover — a blog post
+  // has one cover image, unlike the social-feed-style multi-image gallery
+  // this composer was originally modeled on.
   Future<void> _pickImages() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
-      allowMultiple: true,
       withData: true,
     );
     if (result != null) {
       setState(() {
+        _selectedImages.clear();
         for (final file in result.files) {
-          if (file.bytes != null && _selectedImages.length < 4) {
+          if (file.bytes != null && _selectedImages.isEmpty) {
             _selectedImages.add(file.bytes!);
           }
         }
@@ -62,25 +76,88 @@ class _CreatePostWorkspaceState extends ConsumerState<CreatePostWorkspace> {
     }
   }
 
+  String _autoExcerpt(String content) {
+    final trimmed = content.trim();
+    if (trimmed.length <= 160) return trimmed;
+    return '${trimmed.substring(0, 160).trim()}…';
+  }
+
+  int _estimateReadingTime(String content) {
+    final words = content.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+    return (words / 200).ceil().clamp(1, 60);
+  }
+
   Future<void> _submitPost() async {
-    if (_textController.text.trim().isEmpty && _selectedImages.isEmpty) return;
+    final title = _titleController.text.trim();
+    if (title.isEmpty || _textController.text.trim().isEmpty) return;
     setState(() => _isPosting = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      _isPosting = false;
-      _textController.clear();
-      _selectedImages.clear();
-      _hashtags.clear();
-      _visibility = 'Public';
-    });
+
+    var coverImageUrl = '';
+    if (_selectedImages.isNotEmpty) {
+      if (!SupabaseBootstrap.isReady) {
+        setState(() => _isPosting = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Storage not configured — Add SUPABASE_URL and SUPABASE_ANON_KEY.',
+                style: GoogleFonts.manrope(color: Colors.white),
+              ),
+              backgroundColor: Colors.orange.withValues(alpha: 0.85),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+          );
+        }
+        return;
+      }
+      final storage = ref.read(supabaseStorageServiceProvider);
+      final uploadResult = await storage.uploadFromBytes(
+        bucket: SupabaseStorageService.mediaBucket,
+        folder: 'media/blog-covers',
+        fileName: 'cover_${DateTime.now().millisecondsSinceEpoch}.png',
+        bytes: _selectedImages.first,
+      );
+      coverImageUrl = uploadResult?.url ?? '';
+    }
+
+    final content = _textController.text.trim();
+    final willPublish = _visibility == 'Public';
+    final post = AdminBlogPost(
+      title: title,
+      excerpt: _autoExcerpt(content),
+      content: content,
+      coverImageUrl: coverImageUrl,
+      tags: List.from(_hashtags),
+      authorName: ref.read(portfolioProvider).personalInfo.name,
+      readingTimeMinutes: _estimateReadingTime(content),
+      isPublished: willPublish,
+      createdAt: DateTime.now(),
+    );
+    final ok = await ref.read(adminPortalProvider.notifier).saveBlogPost(post);
+
+    setState(() => _isPosting = false);
+    if (ok) {
+      setState(() {
+        _titleController.clear();
+        _textController.clear();
+        _selectedImages.clear();
+        _hashtags.clear();
+        _visibility = 'Public';
+      });
+    }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Post published — Your post is now live.',
+            ok
+                ? (willPublish
+                    ? 'Post published — Your post is now live.'
+                    : 'Draft saved — Find it in Blog Management.')
+                : 'Could not save. Check Supabase config.',
             style: GoogleFonts.manrope(color: Colors.white),
           ),
-          backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.85),
+          backgroundColor: (ok ? AppColors.primaryGreen : Colors.orange).withValues(alpha: 0.85),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
@@ -89,7 +166,8 @@ class _CreatePostWorkspaceState extends ConsumerState<CreatePostWorkspace> {
   }
 
   bool get _canPost =>
-      (_textController.text.trim().isNotEmpty || _selectedImages.isNotEmpty) &&
+      _titleController.text.trim().isNotEmpty &&
+      _textController.text.trim().isNotEmpty &&
       !_isPosting;
 
   @override
@@ -183,6 +261,26 @@ class _CreatePostWorkspaceState extends ConsumerState<CreatePostWorkspace> {
             ],
           ),
           const SizedBox(height: 20),
+          TextField(
+            controller: _titleController,
+            style: GoogleFonts.manrope(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Post title…',
+              hintStyle: GoogleFonts.manrope(color: Colors.white38, fontSize: 18, fontWeight: FontWeight.w700),
+              filled: true,
+              fillColor: Colors.white.withValues(alpha: 0.03),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            onChanged: (_) => setState(() {}),
+          ),
+          const SizedBox(height: 12),
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: _textController,
             builder: (context, value, _) {
@@ -200,7 +298,7 @@ class _CreatePostWorkspaceState extends ConsumerState<CreatePostWorkspace> {
                       height: 1.65,
                     ),
                     decoration: InputDecoration(
-                      hintText: "What's on your mind?",
+                      hintText: "Write your post…",
                       hintStyle: GoogleFonts.manrope(
                         color: Colors.white38,
                         fontSize: 15,
@@ -293,12 +391,12 @@ class _CreatePostWorkspaceState extends ConsumerState<CreatePostWorkspace> {
               children: [
                 PostActionButton(
                   icon: Icons.image_rounded,
-                  label: 'Photo',
+                  label: 'Cover Image',
                   color: AppColors.primaryGreen,
                   onTap: _pickImages,
                   badge:
                       _selectedImages.isNotEmpty
-                          ? '${_selectedImages.length}'
+                          ? '1'
                           : null,
                 ),
                 PostActionButton(
@@ -390,20 +488,14 @@ class _CreatePostWorkspaceState extends ConsumerState<CreatePostWorkspace> {
                 child: AdminGhostButton(
                   label: 'Save Draft',
                   icon: Icons.save_rounded,
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Draft saved — Your draft has been saved.',
-                          style: GoogleFonts.manrope(color: Colors.white),
-                        ),
-                        backgroundColor: Colors.white.withValues(alpha: 0.6),
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                    );
+                  onPressed: () async {
+                    if (_titleController.text.trim().isEmpty ||
+                        _textController.text.trim().isEmpty ||
+                        _isPosting) {
+                      return;
+                    }
+                    setState(() => _visibility = 'Draft');
+                    await _submitPost();
                   },
                 ),
               ),
@@ -518,6 +610,20 @@ class _CreatePostWorkspaceState extends ConsumerState<CreatePostWorkspace> {
                       ],
                     ),
                     const SizedBox(height: 14),
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _titleController,
+                      builder: (context, titleValue, _) => Text(
+                        titleValue.text.isEmpty ? 'Your post title will appear here...' : titleValue.text,
+                        style: GoogleFonts.manrope(
+                          color: titleValue.text.isEmpty ? Colors.white38 : Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     Text(
                       value.text.isEmpty
                           ? 'Your post text will appear here...'
@@ -542,17 +648,6 @@ class _CreatePostWorkspaceState extends ConsumerState<CreatePostWorkspace> {
                           fit: BoxFit.cover,
                         ),
                       ),
-                      if (_selectedImages.length > 1)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            '+${_selectedImages.length - 1} more image(s)',
-                            style: GoogleFonts.manrope(
-                              color: Colors.white54,
-                              fontSize: 11.5,
-                            ),
-                          ),
-                        ),
                     ],
                     if (_hashtags.isNotEmpty) ...[
                       const SizedBox(height: 10),

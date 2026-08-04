@@ -145,7 +145,7 @@ class BlogHeroSection extends ConsumerWidget {
                     children: [
                       BlogHeroPill(
                         icon: Icons.article_outlined,
-                        label: '${state.blogPosts.length}+ Posts',
+                        label: '${state.combinedBlogPosts.length}+ Posts',
                       ),
                       const BlogHeroPill(
                         icon: Icons.draw_outlined,

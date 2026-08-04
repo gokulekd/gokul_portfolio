@@ -8,6 +8,8 @@ enum AdminModule {
   homeStats,
   projects,
   skillsExperience,
+  education,
+  experienceStrengths,
   developmentAreas,
   achievements,
   guidingPrinciples,

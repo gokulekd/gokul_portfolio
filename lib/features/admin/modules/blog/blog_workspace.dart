@@ -1,56 +1,27 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/admin_portal_provider.dart';
 import '../../../../core/providers/portfolio_provider.dart';
+import '../../../../core/providers/service_providers.dart';
+import '../../../../core/services/supabase_storage_service.dart';
+import '../../../../core/supabase/supabase_bootstrap.dart';
+import '../../../portfolio/models/firebase_content_models.dart';
 import '../../models/admin_portal_models.dart';
 import '../../shared/admin_portal_components.dart';
 import '../../shared/dialog_widgets.dart';
 import '../../shared/preview_tile.dart';
+import '../projects/widgets/form_widgets.dart';
+import 'models/admin_blog_post.dart';
 
-class AdminBlogPost {
-  AdminBlogPost({
-    required this.id,
-    required this.title,
-    required this.excerpt,
-    required this.tags,
-    required this.publishDate,
-    required this.readingTimeMinutes,
-    this.isPublished = false,
-    this.isExternal = false,
-    this.externalUrl,
-  });
-
-  final String id;
-  final String title;
-  final String excerpt;
-  final List<String> tags;
-  final DateTime publishDate;
-  final int readingTimeMinutes;
-  final bool isPublished;
-  final bool isExternal;
-  final String? externalUrl;
-
-  AdminBlogPost copyWith({
-    String? title,
-    String? excerpt,
-    List<String>? tags,
-    int? readingTimeMinutes,
-    bool? isPublished,
-  }) => AdminBlogPost(
-    id: id,
-    title: title ?? this.title,
-    excerpt: excerpt ?? this.excerpt,
-    tags: tags ?? this.tags,
-    publishDate: publishDate,
-    readingTimeMinutes: readingTimeMinutes ?? this.readingTimeMinutes,
-    isPublished: isPublished ?? this.isPublished,
-    isExternal: isExternal,
-    externalUrl: externalUrl,
-  );
-}
-
+/// Firestore-backed Dev.to toggle + Supabase-backed post list/edit/delete.
+/// Post *authoring* (the rich compose UX) lives in `CreatePostWorkspace` —
+/// this is the manage/list surface, same division of labor as the original
+/// nav copy described ("Manage article states, metadata, and publishing
+/// readiness" vs. "Write rich posts... Publish directly").
 class BlogWorkspace extends ConsumerStatefulWidget {
   const BlogWorkspace({super.key, required this.isCompact});
   final bool isCompact;
@@ -60,208 +31,279 @@ class BlogWorkspace extends ConsumerStatefulWidget {
 }
 
 class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
-  late final List<AdminBlogPost> _posts;
   String _filter = 'All';
 
-  @override
-  void initState() {
-    super.initState();
-    _posts = [
-      ...ref.read(portfolioProvider).blogPosts.map(
-        (p) => AdminBlogPost(
-          id: p.url ?? p.title,
-          title: p.title,
-          excerpt: p.excerpt,
-          tags: p.tags,
-          publishDate: p.publishDate,
-          readingTimeMinutes: p.readingTimeMinutes,
-          isPublished: true,
-          isExternal: true,
-          externalUrl: p.url,
+  Future<void> _pickAndUploadCover(
+    BuildContext ctx,
+    StateSetter setDlgState,
+    TextEditingController urlController, {
+    required void Function(bool) setUploading,
+    required void Function(String) setPreview,
+  }) async {
+    if (!SupabaseBootstrap.isReady) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Storage not configured — Add SUPABASE_URL and SUPABASE_ANON_KEY.',
+            style: GoogleFonts.manrope(color: Colors.white),
+          ),
+          backgroundColor: Colors.orange.withValues(alpha: 0.85),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
-      ),
-    ];
+      );
+      return;
+    }
+
+    final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.first;
+    final bytes = file.bytes;
+    if (bytes == null) return;
+
+    setDlgState(() => setUploading(true));
+    final storage = ref.read(supabaseStorageServiceProvider);
+    final uploadResult = await storage.uploadFromBytes(
+      bucket: SupabaseStorageService.mediaBucket,
+      folder: 'media/blog-covers',
+      fileName: file.name,
+      bytes: bytes,
+    );
+
+    if (uploadResult != null) {
+      urlController.text = uploadResult.url;
+      setDlgState(() {
+        setUploading(false);
+        setPreview(uploadResult.url);
+      });
+    } else {
+      setDlgState(() => setUploading(false));
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(
+            content: Text('Upload failed — Check Supabase storage config.',
+                style: GoogleFonts.manrope(color: Colors.white)),
+            backgroundColor: Colors.red.withValues(alpha: 0.85),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        );
+      }
+    }
   }
 
-  List<AdminBlogPost> get _filtered {
-    return switch (_filter) {
-      'Published' => _posts.where((p) => p.isPublished).toList(),
-      'Draft' => _posts.where((p) => !p.isPublished).toList(),
-      'Dev.to' => _posts.where((p) => p.isExternal).toList(),
-      _ => _posts,
-    };
-  }
-
-  void _openDialog({AdminBlogPost? existing}) {
+  void _openDialog(List<AdminBlogPost> posts, {AdminBlogPost? existing}) {
     final titleCtrl = TextEditingController(text: existing?.title ?? '');
     final excerptCtrl = TextEditingController(text: existing?.excerpt ?? '');
-    final tagsCtrl = TextEditingController(
-      text: existing?.tags.join(', ') ?? '',
-    );
+    final contentCtrl = TextEditingController(text: existing?.content ?? '');
+    final coverUrlCtrl = TextEditingController(text: existing?.coverImageUrl ?? '');
+    final tagsInputCtrl = TextEditingController();
+    var tags = List<String>.from(existing?.tags ?? []);
+    var coverPreview = existing?.coverImageUrl ?? '';
+    var isUploading = false;
     int readTime = existing?.readingTimeMinutes ?? 5;
-    bool isPublished = existing?.isPublished ?? false;
+    bool isPublished = existing?.isPublished ?? true;
+    bool isFeatured = existing?.isFeatured ?? false;
 
     showDialog<void>(
       context: context,
-      builder:
-          (ctx) => StatefulBuilder(
-            builder:
-                (ctx, setDlg) => AlertDialog(
-                  backgroundColor: const Color(0xFF1A1C1F),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  title: Text(
-                    existing == null ? 'New post' : 'Edit post',
-                    style: GoogleFonts.manrope(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  content: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        DialogField(
-                          controller: titleCtrl,
-                          label: 'Title',
-                          hint: 'Post title…',
-                        ),
-                        const SizedBox(height: 14),
-                        DialogField(
-                          controller: excerptCtrl,
-                          label: 'Excerpt',
-                          hint: 'Short summary shown in the blog list…',
-                          maxLines: 3,
-                        ),
-                        const SizedBox(height: 14),
-                        DialogField(
-                          controller: tagsCtrl,
-                          label: 'Tags (comma separated)',
-                          hint: 'Flutter, Firebase, Tutorial',
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Text(
-                              'Read time',
-                              style: GoogleFonts.manrope(
-                                color: Colors.white54,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              '$readTime min',
-                              style: GoogleFonts.manrope(
-                                color: AppColors.primaryGreen,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Slider(
-                          value: readTime.toDouble(),
-                          min: 1,
-                          max: 30,
-                          divisions: 29,
-                          activeColor: AppColors.primaryGreen,
-                          inactiveColor: Colors.white12,
-                          onChanged: (v) => setDlg(() => readTime = v.round()),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Publish immediately',
-                              style: GoogleFonts.manrope(
-                                color: Colors.white70,
-                                fontSize: 13,
-                              ),
-                            ),
-                            Switch(
-                              value: isPublished,
-                              onChanged: (v) => setDlg(() => isPublished = v),
-                              activeThumbColor: AppColors.primaryGreen,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(),
-                      child: Text(
-                        'Cancel',
-                        style: GoogleFonts.manrope(color: Colors.white54),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        final title = titleCtrl.text.trim();
-                        final excerpt = excerptCtrl.text.trim();
-                        if (title.isEmpty || excerpt.isEmpty) return;
-                        final tags =
-                            tagsCtrl.text
-                                .split(',')
-                                .map((t) => t.trim())
-                                .where((t) => t.isNotEmpty)
-                                .toList();
-                        setState(() {
-                          if (existing != null) {
-                            final idx = _posts.indexWhere(
-                              (p) => p.id == existing.id,
-                            );
-                            if (idx != -1) {
-                              _posts[idx] = existing.copyWith(
-                                title: title,
-                                excerpt: excerpt,
-                                tags: tags,
-                                readingTimeMinutes: readTime,
-                                isPublished: isPublished,
-                              );
-                            }
-                          } else {
-                            _posts.insert(
-                              0,
-                              AdminBlogPost(
-                                id:
-                                    DateTime.now().millisecondsSinceEpoch
-                                        .toString(),
-                                title: title,
-                                excerpt: excerpt,
-                                tags: tags,
-                                publishDate: DateTime.now(),
-                                readingTimeMinutes: readTime,
-                                isPublished: isPublished,
-                              ),
-                            );
-                          }
-                        });
-                        Navigator.of(ctx).pop();
-                      },
-                      child: Text(
-                        'Save',
-                        style: GoogleFonts.manrope(
-                          color: AppColors.primaryGreen,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => AlertDialog(
+          backgroundColor: const Color(0xFF1A1C1F),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            existing == null ? 'New post' : 'Edit post',
+            style: GoogleFonts.manrope(color: Colors.white, fontWeight: FontWeight.w700),
           ),
+          content: SizedBox(
+            width: 480,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: isUploading
+                        ? null
+                        : () => _pickAndUploadCover(
+                              ctx,
+                              setDlg,
+                              coverUrlCtrl,
+                              setUploading: (v) => isUploading = v,
+                              setPreview: (url) => coverPreview = url,
+                            ),
+                    child: Container(
+                      height: 140,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: coverPreview.isNotEmpty
+                          ? Image.network(
+                              coverPreview,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                Icons.image_not_supported_rounded,
+                                color: Colors.white24,
+                              ),
+                            )
+                          : Center(
+                              child: isUploading
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation(AppColors.primaryGreen),
+                                      ),
+                                    )
+                                  : Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.add_photo_alternate_rounded,
+                                            color: Colors.white.withValues(alpha: 0.25), size: 26),
+                                        const SizedBox(height: 6),
+                                        Text('Click to upload cover image',
+                                            style: GoogleFonts.manrope(color: Colors.white30, fontSize: 12.5)),
+                                      ],
+                                    ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  DialogField(controller: titleCtrl, label: 'Title', hint: 'Post title…'),
+                  const SizedBox(height: 14),
+                  DialogField(
+                    controller: excerptCtrl,
+                    label: 'Excerpt',
+                    hint: 'Short summary shown in the blog list…',
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 14),
+                  DialogField(
+                    controller: contentCtrl,
+                    label: 'Content',
+                    hint: 'Full post body…',
+                    maxLines: 8,
+                  ),
+                  const SizedBox(height: 14),
+                  TechStackInput(
+                    tags: tags,
+                    inputController: tagsInputCtrl,
+                    onAdd: (tag) => setDlg(() => tags = [...tags, tag]),
+                    onRemove: (tag) => setDlg(() => tags = tags.where((t) => t != tag).toList()),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Text('Read time',
+                          style: GoogleFonts.manrope(color: Colors.white54, fontSize: 11.5, fontWeight: FontWeight.w700)),
+                      const Spacer(),
+                      Text('$readTime min',
+                          style: GoogleFonts.manrope(color: AppColors.primaryGreen, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                  Slider(
+                    value: readTime.toDouble(),
+                    min: 1,
+                    max: 30,
+                    divisions: 29,
+                    activeColor: AppColors.primaryGreen,
+                    inactiveColor: Colors.white12,
+                    onChanged: (v) => setDlg(() => readTime = v.round()),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Featured', style: GoogleFonts.manrope(color: Colors.white70, fontSize: 13)),
+                      Switch(
+                        value: isFeatured,
+                        onChanged: (v) => setDlg(() => isFeatured = v),
+                        activeThumbColor: AppColors.primaryGreen,
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Published', style: GoogleFonts.manrope(color: Colors.white70, fontSize: 13)),
+                      Switch(
+                        value: isPublished,
+                        onChanged: (v) => setDlg(() => isPublished = v),
+                        activeThumbColor: AppColors.primaryGreen,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Cancel', style: GoogleFonts.manrope(color: Colors.white54)),
+            ),
+            TextButton(
+              onPressed: () async {
+                final title = titleCtrl.text.trim();
+                final excerpt = excerptCtrl.text.trim();
+                if (title.isEmpty || excerpt.isEmpty) return;
+                final post = AdminBlogPost(
+                  id: existing?.id ?? '',
+                  title: title,
+                  excerpt: excerpt,
+                  content: contentCtrl.text.trim(),
+                  coverImageUrl: coverUrlCtrl.text.trim(),
+                  tags: tags,
+                  authorName: existing?.authorName ??
+                      ref.read(portfolioProvider).personalInfo.name,
+                  readingTimeMinutes: readTime,
+                  isPublished: isPublished,
+                  isFeatured: isFeatured,
+                  displayOrder: existing?.displayOrder ?? posts.length + 1,
+                  createdAt: existing?.createdAt ?? DateTime.now(),
+                );
+                final ok = await ref.read(adminPortalProvider.notifier).saveBlogPost(post);
+                if (ctx.mounted) Navigator.of(ctx).pop();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        ok ? '$title was saved.' : 'Could not save. Check Supabase config.',
+                        style: GoogleFonts.manrope(color: Colors.white),
+                      ),
+                      backgroundColor: (ok ? AppColors.primaryGreen : Colors.orange).withValues(alpha: 0.85),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                  );
+                }
+              },
+              child: Text('Save', style: GoogleFonts.manrope(color: AppColors.primaryGreen)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _filtered;
-    final publishedCount = _posts.where((p) => p.isPublished).length;
-    final draftCount = _posts.where((p) => !p.isPublished).length;
-    final externalCount = _posts.where((p) => p.isExternal).length;
+    final posts = ref.watch(portfolioProvider.select((s) => s.adminBlogPosts));
+    final devToCount = ref.watch(portfolioProvider.select((s) => s.blogPosts.length));
+    final showDevToFeed = ref.watch(portfolioProvider.select((s) => s.showDevToFeed));
+
+    final filtered = switch (_filter) {
+      'Published' => posts.where((p) => p.isPublished).toList(),
+      'Draft' => posts.where((p) => !p.isPublished).toList(),
+      'Featured' => posts.where((p) => p.isFeatured).toList(),
+      _ => posts,
+    };
+    final publishedCount = posts.where((p) => p.isPublished).length;
+    final draftCount = posts.where((p) => !p.isPublished).length;
 
     final postList = AdminSurfaceCard(
       child: Column(
@@ -271,61 +313,74 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
             eyebrow: 'BLOG CMS',
             title: 'Posts & articles',
             description:
-                '${_posts.length} total posts — $externalCount synced from Dev.to, ${_posts.length - externalCount} portfolio-only.',
+                '${posts.length} portfolio posts (Supabase) · $devToCount synced from Dev.to.',
             action: AdminPrimaryButton(
               label: 'New post',
               icon: Icons.add_rounded,
-              onPressed: () => _openDialog(),
+              onPressed: () => _openDialog(posts),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.03),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Show Dev.to feed on the public blog page',
+                    style: GoogleFonts.manrope(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                Switch(
+                  value: showDevToFeed,
+                  onChanged: (v) => ref
+                      .read(adminPortalProvider.notifier)
+                      .saveBlogSettings(BlogSettings(showDevToFeed: v)),
+                  activeThumbColor: AppColors.primaryGreen,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 16),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children:
-                  ['All', 'Published', 'Draft', 'Dev.to'].map((f) {
-                    final active = _filter == f;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: GestureDetector(
-                        onTap: () => setState(() => _filter = f),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 7,
-                          ),
-                          decoration: BoxDecoration(
-                            color:
-                                active
-                                    ? AppColors.primaryGreen.withValues(
-                                      alpha: 0.16,
-                                    )
-                                    : Colors.white.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color:
-                                  active
-                                      ? AppColors.primaryGreen.withValues(
-                                        alpha: 0.4,
-                                      )
-                                      : Colors.white.withValues(alpha: 0.08),
-                            ),
-                          ),
-                          child: Text(
-                            f,
-                            style: GoogleFonts.manrope(
-                              color:
-                                  active
-                                      ? AppColors.primaryGreen
-                                      : Colors.white54,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+              children: ['All', 'Published', 'Draft', 'Featured'].map((f) {
+                final active = _filter == f;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _filter = f),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: active
+                            ? AppColors.primaryGreen.withValues(alpha: 0.16)
+                            : Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: active
+                              ? AppColors.primaryGreen.withValues(alpha: 0.4)
+                              : Colors.white.withValues(alpha: 0.08),
                         ),
                       ),
-                    );
-                  }).toList(),
+                      child: Text(
+                        f,
+                        style: GoogleFonts.manrope(
+                          color: active ? AppColors.primaryGreen : Colors.white54,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ),
           const SizedBox(height: 16),
@@ -333,10 +388,7 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Text(
-                  'No posts match this filter.',
-                  style: GoogleFonts.manrope(color: Colors.white38),
-                ),
+                child: Text('No posts match this filter.', style: GoogleFonts.manrope(color: Colors.white38)),
               ),
             )
           else
@@ -345,29 +397,27 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: BlogPostRow(
                   post: post,
-                  onEdit:
-                      post.isExternal
-                          ? null
-                          : () => _openDialog(existing: post),
-                  onDelete:
-                      post.isExternal
-                          ? null
-                          : () => setState(
-                            () => _posts.removeWhere((p) => p.id == post.id),
+                  onEdit: () => _openDialog(posts, existing: post),
+                  onDelete: () async {
+                    final ok = await ref.read(adminPortalProvider.notifier).deleteBlogPost(post.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            ok ? '${post.title} was deleted.' : 'Could not delete. Check Supabase config.',
+                            style: GoogleFonts.manrope(color: Colors.white),
                           ),
-                  onTogglePublish:
-                      post.isExternal
-                          ? null
-                          : (val) {
-                            setState(() {
-                              final idx = _posts.indexWhere(
-                                (p) => p.id == post.id,
-                              );
-                              if (idx != -1) {
-                                _posts[idx] = post.copyWith(isPublished: val);
-                              }
-                            });
-                          },
+                          backgroundColor:
+                              (ok ? const Color(0xFFFF7C7C) : Colors.orange).withValues(alpha: 0.85),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                      );
+                    }
+                  },
+                  onTogglePublish: (val) => ref
+                      .read(adminPortalProvider.notifier)
+                      .saveBlogPost(post.copyWith(isPublished: val)),
                 ),
               ),
             ),
@@ -386,8 +436,8 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
           ),
           const SizedBox(height: 18),
           PreviewTile(
-            title: 'Total posts',
-            value: '${_posts.length} articles',
+            title: 'Portfolio posts',
+            value: '${posts.length} articles',
             icon: Icons.article_rounded,
             color: AppColors.primaryGreen,
           ),
@@ -407,8 +457,8 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
           ),
           const SizedBox(height: 12),
           PreviewTile(
-            title: 'Synced from Dev.to',
-            value: '$externalCount external articles',
+            title: 'Dev.to feed',
+            value: showDevToFeed ? '$devToCount articles shown' : 'Hidden from public page',
             icon: Icons.sync_rounded,
             color: const Color(0xFFB57AFF),
           ),
@@ -417,9 +467,7 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
     );
 
     if (widget.isCompact) {
-      return Column(
-        children: [postList, const SizedBox(height: 18), statsPanel],
-      );
+      return Column(children: [postList, const SizedBox(height: 18), statsPanel]);
     }
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,9 +490,9 @@ class BlogPostRow extends StatelessWidget {
   });
 
   final AdminBlogPost post;
-  final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
-  final ValueChanged<bool>? onTogglePublish;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final ValueChanged<bool> onTogglePublish;
 
   @override
   Widget build(BuildContext context) {
@@ -458,6 +506,24 @@ class BlogPostRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (post.coverImageUrl.isNotEmpty) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Image.network(
+                post.coverImageUrl,
+                width: 64,
+                height: 64,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  width: 64,
+                  height: 64,
+                  color: Colors.white.withValues(alpha: 0.04),
+                  child: const Icon(Icons.image_not_supported_rounded, color: Colors.white24),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -467,42 +533,24 @@ class BlogPostRow extends StatelessWidget {
                     Expanded(
                       child: Text(
                         post.title,
-                        style: GoogleFonts.manrope(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
+                        style: GoogleFonts.manrope(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    if (post.isExternal)
+                    if (post.isFeatured)
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(
-                            0xFFB57AFF,
-                          ).withValues(alpha: 0.14),
+                          color: const Color(0xFFFFB44C).withValues(alpha: 0.14),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          'Dev.to',
-                          style: GoogleFonts.manrope(
-                            color: const Color(0xFFB57AFF),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          'Featured',
+                          style: GoogleFonts.manrope(color: const Color(0xFFFFB44C), fontSize: 10, fontWeight: FontWeight.w700),
                         ),
                       ),
                     const SizedBox(width: 6),
-                    AdminStateChip(
-                      state:
-                          post.isPublished
-                              ? AdminItemState.live
-                              : AdminItemState.draft,
-                    ),
+                    AdminStateChip(state: post.isPublished ? AdminItemState.live : AdminItemState.draft),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -510,55 +558,35 @@ class BlogPostRow extends StatelessWidget {
                   post.excerpt,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.manrope(
-                    color: Colors.white60,
-                    fontSize: 12.5,
-                    height: 1.5,
-                  ),
+                  style: GoogleFonts.manrope(color: Colors.white60, fontSize: 12.5, height: 1.5),
                 ),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    ...post.tags
-                        .take(3)
-                        .map(
+                    ...post.tags.take(3).map(
                           (tag) => Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.06),
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
                               '#$tag',
-                              style: GoogleFonts.manrope(
-                                color: Colors.white54,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: GoogleFonts.manrope(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.w600),
                             ),
                           ),
                         ),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.04),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
                         '${post.readingTimeMinutes} min read',
-                        style: GoogleFonts.manrope(
-                          color: Colors.white38,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: GoogleFonts.manrope(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -578,34 +606,18 @@ class BlogPostRow extends StatelessWidget {
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ),
-              if (onEdit != null)
-                IconButton(
-                  onPressed: onEdit,
-                  icon: const Icon(
-                    Icons.edit_rounded,
-                    color: Colors.white54,
-                    size: 18,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 32,
-                    minHeight: 32,
-                  ),
-                ),
-              if (onDelete != null)
-                IconButton(
-                  onPressed: onDelete,
-                  icon: const Icon(
-                    Icons.delete_outline_rounded,
-                    color: Color(0xFFFF7C7C),
-                    size: 18,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 32,
-                    minHeight: 32,
-                  ),
-                ),
+              IconButton(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_rounded, color: Colors.white54, size: 18),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+              IconButton(
+                onPressed: onDelete,
+                icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFFF7C7C), size: 18),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
             ],
           ),
         ],

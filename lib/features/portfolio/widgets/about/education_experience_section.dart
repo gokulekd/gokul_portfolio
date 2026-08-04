@@ -4,50 +4,17 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../models/portfolio_models.dart';
+import '../../models/site_content_models.dart';
 import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/utils/responsive_helper.dart';
 
-class EducationEntry {
-  const EducationEntry({
-    required this.title,
-    required this.period,
-    required this.description,
-  });
-
-  final String title;
-  final String period;
-  final String description;
-}
+// `EducationEntry` used to be the hardcoded panel data; the section now
+// reads `EducationItem` from Firestore (`site_content_models.dart`) via
+// `portfolioProvider.visibleEducation`, same as the Experience timeline
+// already did via `visibleExperiences`.
 
 class EducationExperienceSection extends ConsumerWidget {
   const EducationExperienceSection({super.key});
-
-  static const List<EducationEntry> _educationEntries = [
-    EducationEntry(
-      title: "BSc Mathematics",
-      period: "Jun 2013 – Jun 2016",
-      description:
-          "Devaswom Board Pampa College, Parumala. Built a strong analytical and problem-solving foundation.",
-    ),
-    EducationEntry(
-      title: "Higher Secondary — Computer Science",
-      period: "Jun 2011 – Jun 2013",
-      description:
-          "Govt. Higher Secondary School, Budhanoor. First exposure to programming and computer fundamentals.",
-    ),
-    EducationEntry(
-      title: "Flutter & Mobile Development",
-      period: "2021 – Present",
-      description:
-          "Continuous self-learning — Flutter, Dart, Firebase, Bloc, GetX, Figma, REST APIs, and payment integrations.",
-    ),
-    EducationEntry(
-      title: "Internship — Brototype, Kochi",
-      period: "Oct 2021 – Oct 2022",
-      description:
-          "Intensive full-stack Flutter training. Built real-world projects with Google Maps, Firebase, and GetX state management.",
-    ),
-  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -59,19 +26,19 @@ class EducationExperienceSection extends ConsumerWidget {
     return isCompact
         ? Column(
           children: [
-            EducationPanel(entries: _educationEntries),
+            EducationPanel(entries: state.visibleEducation),
             const SizedBox(height: 20),
-            ExperiencePanel(experiences: state.experiences.toList()),
+            ExperiencePanel(experiences: state.visibleExperiences),
           ],
         )
         : Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: EducationPanel(entries: _educationEntries)),
+            Expanded(child: EducationPanel(entries: state.visibleEducation)),
             const SizedBox(width: 24),
             Expanded(
               child: ExperiencePanel(
-                experiences: state.experiences.toList(),
+                experiences: state.visibleExperiences,
               ),
             ),
           ],
@@ -82,7 +49,7 @@ class EducationExperienceSection extends ConsumerWidget {
 class EducationPanel extends StatelessWidget {
   const EducationPanel({super.key, required this.entries});
 
-  final List<EducationEntry> entries;
+  final List<EducationItem> entries;
 
   @override
   Widget build(BuildContext context) {

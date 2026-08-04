@@ -7,6 +7,8 @@ import '../../../../core/providers/admin_portal_provider.dart';
 import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/utils/skill_icons.dart';
 import '../../../portfolio/models/firebase_content_models.dart';
+import '../../../portfolio/models/portfolio_models.dart' show Experience;
+import '../../shared/content_list_workspace.dart' show ContentItem, ContentItemRow;
 import '../../shared/dialog_widgets.dart';
 import '../../shared/preview_tile.dart';
 import '../../widgets/admin_buttons.dart';
@@ -204,9 +206,139 @@ class _SkillsWorkspaceState extends ConsumerState<SkillsWorkspace> {
     );
   }
 
+  // ─── Experience timeline (Day 6: shares this "Skills & Experience" nav
+  // entry per its original title/description rather than adding a second
+  // nav item — the entry already promised "timeline entries" before this
+  // was wired up). This collection also backs the Experience page and
+  // Resume page timelines (Days 7/10 just consume it, not rebuild it).
+
+  void _openExperienceDialog(
+    List<Experience> experiences, {
+    Experience? existing,
+    int? index,
+  }) {
+    final companyCtrl = TextEditingController(text: existing?.company ?? '');
+    final positionCtrl = TextEditingController(text: existing?.position ?? '');
+    final durationCtrl = TextEditingController(text: existing?.duration ?? '');
+    final descriptionCtrl = TextEditingController(text: existing?.description ?? '');
+    final technologiesCtrl = TextEditingController(
+      text: existing?.technologies.join(', ') ?? '',
+    );
+    bool isVisible = existing?.isVisible ?? true;
+
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => AlertDialog(
+          backgroundColor: const Color(0xFF1A1C1F),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            existing == null ? 'Add Experience' : 'Edit Experience',
+            style: GoogleFonts.manrope(color: Colors.white, fontWeight: FontWeight.w700),
+          ),
+          content: SizedBox(
+            width: 480,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DialogField(
+                    controller: positionCtrl,
+                    label: 'Position',
+                    hint: 'e.g. Flutter Developer',
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: DialogField(
+                          controller: companyCtrl,
+                          label: 'Company',
+                          hint: 'e.g. Brototype',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: DialogField(
+                          controller: durationCtrl,
+                          label: 'Duration',
+                          hint: 'e.g. Oct 2021 – Oct 2022',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  DialogField(
+                    controller: descriptionCtrl,
+                    label: 'Description',
+                    hint: 'What the role involved…',
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 14),
+                  DialogField(
+                    controller: technologiesCtrl,
+                    label: 'Technologies (comma-separated)',
+                    hint: 'e.g. Flutter, Firebase, GetX',
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Visible on portfolio',
+                        style: GoogleFonts.manrope(color: Colors.white70, fontSize: 13),
+                      ),
+                      Switch(
+                        value: isVisible,
+                        onChanged: (v) => setDlg(() => isVisible = v),
+                        activeThumbColor: AppColors.primaryGreen,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Cancel', style: GoogleFonts.manrope(color: Colors.white54)),
+            ),
+            TextButton(
+              onPressed: () {
+                final position = positionCtrl.text.trim();
+                final company = companyCtrl.text.trim();
+                if (position.isEmpty || company.isEmpty) return;
+                final experience = Experience(
+                  id: existing?.id ?? '',
+                  company: company,
+                  position: position,
+                  duration: durationCtrl.text.trim(),
+                  description: descriptionCtrl.text.trim(),
+                  technologies: technologiesCtrl.text
+                      .split(',')
+                      .map((t) => t.trim())
+                      .where((t) => t.isNotEmpty)
+                      .toList(),
+                  displayOrder: (index ?? experiences.length) + 1,
+                  isVisible: isVisible,
+                );
+                ref.read(adminPortalProvider.notifier).saveExperience(experience);
+                Navigator.of(ctx).pop();
+              },
+              child: Text('Save', style: GoogleFonts.manrope(color: AppColors.primaryGreen)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final skills = ref.watch(portfolioProvider.select((s) => s.skills));
+    final experiences = ref.watch(portfolioProvider.select((s) => s.experiences));
 
     final skillList = AdminSurfaceCard(
       child: Column(
@@ -290,17 +422,119 @@ class _SkillsWorkspaceState extends ConsumerState<SkillsWorkspace> {
       ),
     );
 
+    final experienceList = AdminSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AdminSectionHeader(
+            eyebrow: 'EXPERIENCE',
+            title: 'Work experience timeline',
+            description:
+                'Shared across About, Experience, and Resume pages — edit once, updates everywhere.',
+            action: AdminPrimaryButton(
+              label: 'Add experience',
+              icon: Icons.add_rounded,
+              onPressed: () => _openExperienceDialog(experiences),
+            ),
+          ),
+          const SizedBox(height: 18),
+          if (experiences.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(
+                  'No experience entries yet. Add one above.',
+                  style: GoogleFonts.manrope(color: Colors.white38),
+                ),
+              ),
+            )
+          else
+            ...experiences.asMap().entries.map(
+              (entry) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ContentItemRow(
+                  item: ContentItem(
+                    id: entry.value.id,
+                    title: '${entry.value.position} · ${entry.value.company}',
+                    body: entry.value.description,
+                    meta: entry.value.duration,
+                    isVisible: entry.value.isVisible,
+                  ),
+                  onEdit: () => _openExperienceDialog(experiences, existing: entry.value, index: entry.key),
+                  onDelete: () => ref.read(adminPortalProvider.notifier).deleteExperience(entry.value.id),
+                  onToggle: (v) => ref
+                      .read(adminPortalProvider.notifier)
+                      .saveExperience(entry.value.copyWith(isVisible: v)),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+
+    final experienceStatsPanel = AdminSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AdminSectionHeader(
+            eyebrow: 'EXPERIENCE STATS',
+            title: 'Timeline overview',
+            description: 'Current publish state for this collection.',
+          ),
+          const SizedBox(height: 18),
+          PreviewTile(
+            title: 'Total roles',
+            value: '${experiences.length} entries',
+            icon: Icons.work_history_rounded,
+            color: AppColors.primaryGreen,
+          ),
+          const SizedBox(height: 12),
+          PreviewTile(
+            title: 'Live',
+            value: '${experiences.where((e) => e.isVisible).length} visible publicly',
+            icon: Icons.visibility_rounded,
+            color: const Color(0xFF5CD6FF),
+          ),
+          const SizedBox(height: 12),
+          PreviewTile(
+            title: 'Hidden',
+            value: '${experiences.where((e) => !e.isVisible).length} in draft',
+            icon: Icons.visibility_off_rounded,
+            color: const Color(0xFFFF7C7C),
+          ),
+        ],
+      ),
+    );
+
     if (widget.isCompact) {
       return Column(
-        children: [skillList, const SizedBox(height: 18), statsPanel],
+        children: [
+          skillList,
+          const SizedBox(height: 18),
+          statsPanel,
+          const SizedBox(height: 18),
+          experienceList,
+          const SizedBox(height: 18),
+          experienceStatsPanel,
+        ],
       );
     }
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(flex: 8, child: skillList),
+        Expanded(
+          flex: 8,
+          child: Column(
+            children: [skillList, const SizedBox(height: 18), experienceList],
+          ),
+        ),
         const SizedBox(width: 18),
-        Expanded(flex: 4, child: statsPanel),
+        Expanded(
+          flex: 4,
+          child: Column(
+            children: [statsPanel, const SizedBox(height: 18), experienceStatsPanel],
+          ),
+        ),
       ],
     );
   }

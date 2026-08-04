@@ -9,8 +9,10 @@ import '../config/app_colors.dart';
 import '../../features/portfolio/models/firebase_content_models.dart';
 import '../../features/portfolio/models/portfolio_models.dart';
 import '../../features/admin/models/admin_portal_models.dart';
+import '../../features/admin/modules/blog/models/admin_blog_post.dart';
 import '../../features/admin/modules/projects/models/app_project.dart';
 import 'admin_auth_provider.dart';
+import 'portfolio_provider.dart';
 import 'service_providers.dart';
 
 // ─── State ─────────────────────────────────────────────────────────────────
@@ -93,6 +95,8 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
     AdminModuleItem(module: AdminModule.homeContent, group: AdminModuleGroup.content, title: 'Home Content', subtitle: 'Hero and headlines', icon: Icons.home_work_rounded),
     AdminModuleItem(module: AdminModule.homeStats, group: AdminModuleGroup.content, title: 'Stats Marquee', subtitle: 'Scrolling trust numbers', icon: Icons.bar_chart_rounded),
     AdminModuleItem(module: AdminModule.skillsExperience, group: AdminModuleGroup.content, title: 'Skills & Experience', subtitle: 'Skills and timeline', icon: Icons.stacked_line_chart_rounded),
+    AdminModuleItem(module: AdminModule.education, group: AdminModuleGroup.content, title: 'Education', subtitle: 'Formal education timeline', icon: Icons.school_rounded),
+    AdminModuleItem(module: AdminModule.experienceStrengths, group: AdminModuleGroup.content, title: 'Experience Strengths', subtitle: 'What I bring cards', icon: Icons.fitness_center_rounded),
     AdminModuleItem(module: AdminModule.developmentAreas, group: AdminModuleGroup.content, title: 'Development Areas', subtitle: 'Scrolling specialities', icon: Icons.apps_rounded),
     AdminModuleItem(module: AdminModule.achievements, group: AdminModuleGroup.content, title: 'Achievements', subtitle: 'Proof and metrics', icon: Icons.workspace_premium_rounded),
     AdminModuleItem(module: AdminModule.guidingPrinciples, group: AdminModuleGroup.content, title: 'Guiding Principles', subtitle: 'Core operating values', icon: Icons.auto_awesome_rounded),
@@ -251,6 +255,8 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
         AdminModule.homeStats => 'Stats Marquee',
         AdminModule.projects => 'Project Management',
         AdminModule.skillsExperience => 'Skills & Experience',
+        AdminModule.education => 'Education',
+        AdminModule.experienceStrengths => 'Experience Strengths',
         AdminModule.developmentAreas => 'Development Areas',
         AdminModule.achievements => 'Achievements',
         AdminModule.guidingPrinciples => 'Guiding Principles',
@@ -275,6 +281,8 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
         AdminModule.homeStats => 'Edit the value/label pairs shown in the scrolling stats strips above and below the fold.',
         AdminModule.projects => 'Curate featured work, control ordering, and prepare project cards for the public site.',
         AdminModule.skillsExperience => 'Manage stack percentages, marquee content, and experience timeline entries.',
+        AdminModule.education => 'Manage the formal education and self-learning entries shown on the About page.',
+        AdminModule.experienceStrengths => 'Manage the "what I bring" strength cards shown on the Experience page.',
         AdminModule.developmentAreas => 'Keep the scrolling service and specialisation content aligned with current offerings.',
         AdminModule.achievements => 'Publish proof points, results, and milestone-driven credibility markers.',
         AdminModule.guidingPrinciples => 'Shape the values and creative principles that sit behind the work.',
@@ -420,6 +428,12 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
       if (i != -1) { list[i] = saved; } else { list.add(saved); }
       list.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
       state = state.copyWith(liveAppProjects: list);
+      // Admin's `liveAppProjects` and the public site's `portfolioProvider`
+      // used to be two disconnected copies of the same Supabase table — the
+      // public site only fetched once at app startup, so edits/toggles here
+      // never reached the homepage featured section or the Projects page
+      // within the same session (Day 8 spot-check finding). Refresh it too.
+      await ref.read(portfolioProvider.notifier).refreshAppProjects();
       return true;
     } catch (_) { return false; }
   }
@@ -427,7 +441,10 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
   Future<bool> deleteAppProject(AppProject project) async {
     try {
       final ok = await ref.read(supabaseProjectsServiceProvider).deleteProject(project.id);
-      if (ok) state = state.copyWith(liveAppProjects: state.liveAppProjects.where((p) => p.id != project.id).toList());
+      if (ok) {
+        state = state.copyWith(liveAppProjects: state.liveAppProjects.where((p) => p.id != project.id).toList());
+        await ref.read(portfolioProvider.notifier).refreshAppProjects();
+      }
       return ok;
     } catch (_) { return false; }
   }
@@ -633,16 +650,39 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
     } catch (e) { _handleError(e); }
   }
 
-  Future<void> saveBlogPost(BlogPostRecord item) async {
+  // Blog posts are Supabase-backed (Day 9), not Firestore — same reasoning
+  // and same shape as `saveAppProject`/`deleteAppProject` below: cover
+  // images need real file storage, which Firestore/Spark doesn't have.
+  Future<bool> saveBlogPost(AdminBlogPost post) async {
     try {
-      await ref.read(firebasePortfolioServiceProvider).saveBlogPost(item);
+      final saved = await ref.read(supabaseBlogServiceProvider).savePost(post);
+      if (saved == null) return false;
+      await ref.read(portfolioProvider.notifier).refreshAdminBlogPosts();
       _clearError();
-    } catch (e) { _handleError(e); }
+      return true;
+    } catch (e) {
+      _handleError(e);
+      return false;
+    }
   }
 
-  Future<void> deleteBlogPost(String id) async {
+  Future<bool> deleteBlogPost(String id) async {
     try {
-      await ref.read(firebasePortfolioServiceProvider).deleteBlogPost(id);
+      final ok = await ref.read(supabaseBlogServiceProvider).deletePost(id);
+      if (ok) {
+        await ref.read(portfolioProvider.notifier).refreshAdminBlogPosts();
+      }
+      _clearError();
+      return ok;
+    } catch (e) {
+      _handleError(e);
+      return false;
+    }
+  }
+
+  Future<void> saveBlogSettings(BlogSettings settings) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).saveBlogSettings(settings);
       _clearError();
     } catch (e) { _handleError(e); }
   }

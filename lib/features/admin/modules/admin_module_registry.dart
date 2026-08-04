@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../models/admin_portal_models.dart';
 import '../shared/content_list_workspace.dart';
+import 'achievements/achievements_workspace.dart';
 import 'basic_details/basic_details_workspace.dart';
 import 'blog/blog_workspace.dart';
 import 'create_post/create_post_workspace.dart';
 import 'dashboard/dashboard_workspace.dart';
 import 'dev_areas/dev_areas_workspace.dart';
+import 'education/education_workspace.dart';
+import 'experience_strengths/experience_strengths_workspace.dart';
 import 'faq/faq_workspace.dart';
+import 'freelance_process/freelance_process_workspace.dart';
 import 'home_content/home_content_workspace.dart';
 import 'home_content/stats_workspace.dart';
 import 'manage_pages/manage_pages_workspace.dart';
@@ -19,6 +23,7 @@ import 'site_structure/site_structure_workspace.dart';
 import 'skills/skills_workspace.dart';
 import 'social_contact/social_contact_workspace.dart';
 import 'submissions/submissions_workspace.dart';
+import 'testimonials/testimonials_workspace.dart';
 
 class AdminModuleRegistry {
   const AdminModuleRegistry._();
@@ -35,45 +40,10 @@ class AdminModuleRegistry {
       AdminModule.homeStats => StatsWorkspace(isCompact: isCompact),
       AdminModule.projects => ProjectsWorkspace(isCompact: isCompact),
       AdminModule.skillsExperience => SkillsWorkspace(isCompact: isCompact),
+      AdminModule.education => EducationWorkspace(isCompact: isCompact),
+      AdminModule.experienceStrengths => ExperienceStrengthsWorkspace(isCompact: isCompact),
       AdminModule.developmentAreas => DevAreasWorkspace(isCompact: isCompact),
-      AdminModule.achievements => _contentListWorkspace(
-        module: module,
-        isCompact: isCompact,
-        eyebrow: 'ACHIEVEMENTS',
-        title: 'Milestones & proof points',
-        description:
-            'Manage credibility markers, metrics, and milestone cards shown on the portfolio.',
-        itemLabel: 'Achievement',
-        fieldOneLabel: 'Headline',
-        fieldOneHint: 'e.g. 50+ Apps Delivered',
-        fieldTwoLabel: 'Detail',
-        fieldTwoHint: 'Brief supporting description…',
-        fieldThreeLabel: 'Metric / Badge',
-        fieldThreeHint: 'e.g. 50+',
-        defaultItems: const [
-          ContentItem(
-            title: '50+ Apps Delivered',
-            body:
-                'Cross-platform Flutter applications shipped across mobile, web, and desktop.',
-            meta: '50+',
-            isVisible: true,
-          ),
-          ContentItem(
-            title: '4.9★ Client Rating',
-            body:
-                'Consistent five-star feedback across freelance platforms and direct clients.',
-            meta: '4.9★',
-            isVisible: true,
-          ),
-          ContentItem(
-            title: '3 Years Flutter',
-            body:
-                'Building production Flutter apps since the stable release in 2021.',
-            meta: '3yr',
-            isVisible: true,
-          ),
-        ],
-      ),
+      AdminModule.achievements => AchievementsWorkspace(isCompact: isCompact),
       AdminModule.guidingPrinciples => _contentListWorkspace(
         module: module,
         isCompact: isCompact,
@@ -104,82 +74,8 @@ class AdminModuleRegistry {
           ),
         ],
       ),
-      AdminModule.freelanceProcess => _contentListWorkspace(
-        module: module,
-        isCompact: isCompact,
-        eyebrow: 'FREELANCE PROCESS',
-        title: 'Client journey steps',
-        description:
-            'Define how prospects understand the collaboration flow from first message to delivery.',
-        itemLabel: 'Step',
-        fieldOneLabel: 'Step title',
-        fieldOneHint: 'e.g. Discovery call',
-        fieldTwoLabel: 'Description',
-        fieldTwoHint: 'What happens in this step…',
-        fieldThreeLabel: 'Step number / Badge',
-        fieldThreeHint: 'e.g. 01',
-        defaultItems: const [
-          ContentItem(
-            title: 'Discovery call',
-            body:
-                'We align on goals, scope, timeline, and budget before anything is written.',
-            meta: '01',
-            isVisible: true,
-          ),
-          ContentItem(
-            title: 'Proposal & scope',
-            body:
-                'A detailed proposal with milestones, tech decisions, and pricing.',
-            meta: '02',
-            isVisible: true,
-          ),
-          ContentItem(
-            title: 'Build & iterate',
-            body:
-                'Weekly check-ins, live previews, and rapid iteration on feedback.',
-            meta: '03',
-            isVisible: true,
-          ),
-          ContentItem(
-            title: 'Handoff & support',
-            body:
-                'Full code handoff, documentation, and post-launch support window.',
-            meta: '04',
-            isVisible: true,
-          ),
-        ],
-      ),
-      AdminModule.testimonials => _contentListWorkspace(
-        module: module,
-        isCompact: isCompact,
-        eyebrow: 'TESTIMONIALS',
-        title: 'Client feedback',
-        description:
-            'Manage client quotes and social proof shown on the portfolio.',
-        itemLabel: 'Testimonial',
-        fieldOneLabel: 'Client name',
-        fieldOneHint: 'e.g. Jane Doe, Acme Corp',
-        fieldTwoLabel: 'Quote',
-        fieldTwoHint: 'What the client said…',
-        fieldThreeLabel: 'Role / Company',
-        fieldThreeHint: 'e.g. CEO at Acme Corp',
-        defaultItems: const [
-          ContentItem(
-            title: 'Sarah K.',
-            body:
-                'Gokul delivered a stunning portfolio and admin dashboard on time. Highly recommend.',
-            meta: 'Founder, Pixel Studio',
-            isVisible: true,
-          ),
-          ContentItem(
-            title: 'Raj M.',
-            body:
-                'Exceptional Flutter work. The attention to detail in UI and Firebase integration was impressive.',
-            meta: 'CTO, MiraHealth',
-            isVisible: true,
-          ),
-        ],
-      ),
+      AdminModule.freelanceProcess => FreelanceProcessWorkspace(isCompact: isCompact),
+      AdminModule.testimonials => TestimonialsWorkspace(isCompact: isCompact),
       AdminModule.faq => FaqWorkspace(isCompact: isCompact),
       AdminModule.socialContact => SocialContactWorkspace(isCompact: isCompact),
       AdminModule.blog => BlogWorkspace(isCompact: isCompact),

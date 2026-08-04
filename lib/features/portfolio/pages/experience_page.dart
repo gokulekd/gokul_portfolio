@@ -20,7 +20,7 @@ class ExperiencePage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const ExperienceHeroSection(),
-            ExperienceTimelineSection(experiences: state.experiences),
+            ExperienceTimelineSection(experiences: state.visibleExperiences),
             const ExperienceStrengthsSection(),
             const ExperienceClosingSection(),
             const FooterSection(),

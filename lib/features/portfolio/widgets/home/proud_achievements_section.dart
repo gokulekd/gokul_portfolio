@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../models/site_content_models.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AchievementCard {
@@ -25,6 +26,45 @@ class AchievementCard {
   });
 }
 
+// Fixed icon/background/text/number style set that achievement cards rotate
+// through by list position. Per-item iconKey/color fields on `AchievementItem`
+// are deliberately not admin-editable (decided Day 1, confirmed Day 5) —
+// this keeps the visual rhythm consistent no matter how many cards admin adds.
+List<AchievementCard> _achievementCards(List<AchievementItem> achievements) {
+  final styles = <({Color background, Color text, Color number, Widget Function() icon})>[
+    (
+      background: AppColors.primaryGreen,
+      text: const Color(0xFF374151),
+      number: Colors.black,
+      icon: () => _SatisfactionIcon(color: Colors.black),
+    ),
+    (
+      background: const Color(0xFF1F2937),
+      text: Colors.white,
+      number: Colors.white,
+      icon: () => _ExperienceIcon(color: AppColors.primaryGreen),
+    ),
+    (
+      background: Colors.white,
+      text: Colors.black,
+      number: Colors.black,
+      icon: () => _ProjectsIcon(color: Colors.black),
+    ),
+  ];
+
+  return [
+    for (var i = 0; i < achievements.length; i++)
+      AchievementCard(
+        number: achievements[i].number,
+        description: achievements[i].description,
+        backgroundColor: styles[i % styles.length].background,
+        textColor: styles[i % styles.length].text,
+        numberColor: styles[i % styles.length].number,
+        icon: styles[i % styles.length].icon(),
+      ),
+  ];
+}
+
 class ProudAchievementsSection extends ConsumerWidget {
   const ProudAchievementsSection({super.key});
 
@@ -32,32 +72,10 @@ class ProudAchievementsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
-    final List<AchievementCard> cards = [
-      AchievementCard(
-        number: "95+",
-        description: "Percent customer satisfaction",
-        backgroundColor: AppColors.primaryGreen,
-        textColor: const Color(0xFF374151), // Dark grey
-        numberColor: Colors.black,
-        icon: _SatisfactionIcon(color: Colors.black),
-      ),
-      AchievementCard(
-        number: "2+",
-        description: "Years of experience",
-        backgroundColor: const Color(0xFF1F2937), // Dark grey/charcoal
-        textColor: Colors.white,
-        numberColor: Colors.white,
-        icon: _ExperienceIcon(color: AppColors.primaryGreen),
-      ),
-      AchievementCard(
-        number: "3+",
-        description: "Projects completed",
-        backgroundColor: Colors.white,
-        textColor: Colors.black,
-        numberColor: Colors.black,
-        icon: _ProjectsIcon(color: Colors.black),
-      ),
-    ];
+    final achievements = ref.watch(
+      portfolioProvider.select((s) => s.visibleAchievements),
+    );
+    final List<AchievementCard> cards = _achievementCards(achievements);
 
     return Container(
       padding: EdgeInsets.symmetric(

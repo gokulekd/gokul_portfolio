@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/admin/modules/blog/services/supabase_blog_service.dart';
 import '../../features/admin/modules/projects/services/supabase_projects_service.dart';
 import '../../features/admin/services/admin_auth_service.dart';
 import '../services/contact_service.dart';
@@ -20,6 +21,10 @@ final adminAuthServiceProvider = Provider<AdminAuthService>((ref) {
 
 final supabaseProjectsServiceProvider = Provider<SupabaseProjectsService>((ref) {
   return SupabaseProjectsService();
+});
+
+final supabaseBlogServiceProvider = Provider<SupabaseBlogService>((ref) {
+  return SupabaseBlogService();
 });
 
 final contactServiceProvider = Provider<ContactService>((ref) {

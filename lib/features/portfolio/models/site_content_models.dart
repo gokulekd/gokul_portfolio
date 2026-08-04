@@ -1187,120 +1187,39 @@ class ResumeHighlightGroup {
   }
 }
 
-// ─── Blog posts authored from the admin portal ──────────────────────────────
+// ─── Blog settings (singleton) ──────────────────────────────────────────────
 //
-// Distinct from the read-only `BlogPost` model in portfolio_models.dart,
-// which represents articles pulled live from the Dev.to API. This is what
-// the "Blog"/"Create Post" admin workspaces write to.
+// Day 9 decision: blog posts themselves moved to Supabase (see
+// `AdminBlogPost` in `lib/features/admin/modules/blog/models/`) so cover
+// images can be uploaded through the same Supabase Storage flow as project
+// banners — Firebase has no Storage on the Spark plan. This tiny singleton
+// stays in Firestore alongside the other lightweight site config/toggles
+// (`home_hero`, section visibility) since it's not per-post content, just a
+// site-wide switch. A `BlogPostRecord` Firestore model used to live here
+// (Days 1–2 scaffolding, never wired to a real UI) — removed rather than
+// left as a second, unused blog-storage path once Supabase took over.
 
-class BlogPostRecord {
-  const BlogPostRecord({
-    required this.id,
-    required this.title,
-    required this.excerpt,
-    this.content = '',
-    this.imageUrl = '',
-    this.tags = const [],
-    required this.publishDate,
-    this.authorName = '',
-    this.readingTimeMinutes = 5,
-    this.isPublished = true,
-    this.isFeatured = false,
-    this.isExternal = false,
-    this.externalUrl,
-    this.displayOrder = 0,
-  });
+class BlogSettings {
+  const BlogSettings({this.showDevToFeed = true});
 
-  final String id;
-  final String title;
-  final String excerpt;
-  final String content;
-  final String imageUrl;
-  final List<String> tags;
-  final DateTime publishDate;
-  final String authorName;
-  final int readingTimeMinutes;
-  final bool isPublished;
-  final bool isFeatured;
-  final bool isExternal;
-  final String? externalUrl;
-  final int displayOrder;
+  final bool showDevToFeed;
 
-  factory BlogPostRecord.fromFirestore(
+  factory BlogSettings.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) {
     final data = doc.data() ?? <String, dynamic>{};
-    return BlogPostRecord(
-      id: doc.id,
-      title: data['title'] as String? ?? '',
-      excerpt: data['excerpt'] as String? ?? '',
-      content: data['content'] as String? ?? '',
-      imageUrl: data['imageUrl'] as String? ?? '',
-      tags:
-          (data['tags'] as List<dynamic>? ?? [])
-              .map((e) => e.toString())
-              .toList(),
-      publishDate:
-          (data['publishDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      authorName: data['authorName'] as String? ?? '',
-      readingTimeMinutes: (data['readingTimeMinutes'] as num?)?.toInt() ?? 5,
-      isPublished: data['isPublished'] as bool? ?? true,
-      isFeatured: data['isFeatured'] as bool? ?? false,
-      isExternal: data['isExternal'] as bool? ?? false,
-      externalUrl: data['externalUrl'] as String?,
-      displayOrder: (data['displayOrder'] as num?)?.toInt() ?? 0,
+    return BlogSettings(
+      showDevToFeed: data['showDevToFeed'] as bool? ?? true,
     );
   }
 
-  Map<String, dynamic> toFirestore() {
-    return {
-      'title': title,
-      'excerpt': excerpt,
-      'content': content,
-      'imageUrl': imageUrl,
-      'tags': tags,
-      'publishDate': Timestamp.fromDate(publishDate),
-      'authorName': authorName,
-      'readingTimeMinutes': readingTimeMinutes,
-      'isPublished': isPublished,
-      'isFeatured': isFeatured,
-      'isExternal': isExternal,
-      'externalUrl': externalUrl,
-      'displayOrder': displayOrder,
-      'updatedAt': FieldValue.serverTimestamp(),
-    };
-  }
+  Map<String, dynamic> toFirestore() => {
+    'showDevToFeed': showDevToFeed,
+    'updatedAt': FieldValue.serverTimestamp(),
+  };
 
-  BlogPostRecord copyWith({
-    String? title,
-    String? excerpt,
-    String? content,
-    String? imageUrl,
-    List<String>? tags,
-    DateTime? publishDate,
-    String? authorName,
-    int? readingTimeMinutes,
-    bool? isPublished,
-    bool? isFeatured,
-    bool? isExternal,
-    String? externalUrl,
-    int? displayOrder,
-  }) {
-    return BlogPostRecord(
-      id: id,
-      title: title ?? this.title,
-      excerpt: excerpt ?? this.excerpt,
-      content: content ?? this.content,
-      imageUrl: imageUrl ?? this.imageUrl,
-      tags: tags ?? this.tags,
-      publishDate: publishDate ?? this.publishDate,
-      authorName: authorName ?? this.authorName,
-      readingTimeMinutes: readingTimeMinutes ?? this.readingTimeMinutes,
-      isPublished: isPublished ?? this.isPublished,
-      isFeatured: isFeatured ?? this.isFeatured,
-      isExternal: isExternal ?? this.isExternal,
-      externalUrl: externalUrl ?? this.externalUrl,
-      displayOrder: displayOrder ?? this.displayOrder,
-    );
-  }
+  BlogSettings copyWith({bool? showDevToFeed}) =>
+      BlogSettings(showDevToFeed: showDevToFeed ?? this.showDevToFeed);
+
+  static BlogSettings defaults() => const BlogSettings();
 }

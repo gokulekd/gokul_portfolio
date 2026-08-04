@@ -136,33 +136,117 @@ is used across multiple pages (hero, about, contact), same as name/title already
 
 **Tooling note:** hit a scary-looking fully-black page during verification. Root cause was a stale browser tab/DWDS debug connection after several forced reloads in the same tab — not a code issue. Fix: open a fresh tab (`tabs_create`) rather than repeatedly force-navigating the same one when the preview looks stuck.
 
-### Day 5 — Home page: Achievements + Freelance Process + Testimonials + FAQ hide/reorder polish ⬜ NOT STARTED
-- [ ] Achievements (`proud_achievements_section.dart`) → wire to `visibleAchievements`. Icon/colors are NOT admin-editable per-item (decided Day 1) — render by rotating a fixed icon/color set based on list position instead
-- [ ] Achievements admin panel: bespoke form needed (headline/description/number, no color picker) — don't force into `ContentListWorkspace` as-is since registry's current field labels ("Headline"/"Detail"/"Metric") don't match the real public card shape (number + description only)
-- [ ] Freelance Process (`freelance_process_section.dart`) → wire to `visibleProcessSteps`. Nested `items` (sub-bullets) don't fit flat fields — decide mapping (e.g. admin edits sub-items as newline-separated text in one field, widget splits on `\n`)
-- [ ] Testimonials (`testimonials_section.dart`) → wire to `visibleTestimonials`. `rating` and `avatarUrl` have no admin field yet — default rating to 5.0, handle empty `avatarUrl` gracefully (don't crash `NetworkImage`)
-- [ ] Verify live in browser
+### Day 5 — Home page: Achievements + Freelance Process + Testimonials + FAQ hide/reorder polish ✅ DONE
+- [x] Achievements (`proud_achievements_section.dart`) → wired to `visibleAchievements`. Icon/colors are NOT admin-editable per-item (decided Day 1, confirmed here) — `_achievementCards()` rotates a fixed 3-style set (icon painter + bg/text/number colors, same 3 looks as the old hardcoded cards) by list position, `iconKey` field is stored but unused by rendering
+- [x] Achievements admin panel: new `achievements_workspace.dart` — used `ContentListWorkspace`'s 2-field mode (Number/Description) instead of a fully bespoke form, since the real shape (number + description) fits flat fields fine once the field labels match; didn't reuse the old registry entry's mismatched "Headline/Detail/Metric" labels
+- [x] Freelance Process (`freelance_process_section.dart`) → wired to `visibleProcessSteps`, converted to `ConsumerWidget`. New bespoke `freelance_process_workspace.dart` (label/number/title/timeEstimate fields + one multiline field for sub-items). **Decision:** sub-items are one line per bullet formatted `"Key: description"` (matches how the key already renders as a bold prefix on the public card); a line with no colon becomes a bullet with an empty key. Parsing/joining helpers are `_parseItems`/`_itemsToText` in that file.
+- [x] Testimonials (`testimonials_section.dart`) → wired to `visibleTestimonials`, converted to `ConsumerStatefulWidget`. New bespoke `testimonials_workspace.dart` with a 1–5 rating slider (default 5.0) and an optional avatar URL field. Empty `avatarUrl` now skips `Image.network` entirely (renders initials directly) instead of relying on `errorBuilder` to catch an invalid empty-string URL.
+- [x] Verified with `flutter analyze lib` — no issues. Live browser verification pending (see note below).
 
-### Day 6 — About page: Education + Experience timeline ⬜ NOT STARTED
-- [ ] Education entries (`education_experience_section.dart`) → wire to `visibleEducation` (currently zero admin surface exists — need a new admin module + nav entry, same as Stats got on Day 3)
-- [ ] Experience timeline (same file, `ExperiencePanel`) → wire to `state.visibleExperiences` (the model + Firestore plumbing already exists from Day 1/2, just needs an admin module + the widget needs to stop reading `state.experiences.toList()` directly and use `visibleExperiences`)
-- [ ] This `experience` collection is shared across About, Experience page, and Resume page — build it once here, other two days just consume it
-- [ ] Verify live in browser
+**Note:** all three collections' Firestore plumbing (models, repo, service streams, `PortfolioState` visible-getters, `AdminPortalNotifier` save/delete methods) already existed from Days 1–2 — this day was purely: (a) swap each public widget's hardcoded list for the provider's `visibleX` getter, (b) build the admin editor. No new infra needed.
 
-### Day 7 — Experience page: Timeline (reuse) + Strengths ⬜ NOT STARTED
-- [ ] Timeline: confirm it already works via the Day 6 `experience` collection — no rework if Day 6 was done right
-- [ ] Strengths section (`experience_strengths_section.dart`) → wire to `visibleExperienceStrengths`, new admin module + nav entry
-- [ ] Verify live in browser
+### Day 6 — About page: Education + Experience timeline ✅ DONE
+- [x] Education entries (`education_experience_section.dart`) → wired to `visibleEducation`. New admin module: `AdminModule.education` + nav entry ("Education", between Skills & Experience and Development Areas) + `education_workspace.dart` — fits `ContentListWorkspace`'s 3-field mode (Title/Description/Period), same pattern as FAQ/DevAreas.
+- [x] Experience timeline (same file, `ExperiencePanel`) → wired to `state.visibleExperiences`. **Decision:** did not add a new nav entry for Experience — the existing `AdminModule.skillsExperience` nav item was already titled "Skills & Experience" with a description promising "experience timeline entries" (written before Skills was actually wired on Day 4), so `skills_workspace.dart` now renders two stacked sections in one workspace: the existing Skills editor, and a new bespoke Experience Timeline editor (company/position/duration/description/technologies, technologies entered as a comma-separated field and parsed to `List<String>`).
+- [x] Confirmed the `experience` collection is the same one Days 1–2 already wired — no schema change, just consumers switching from `state.experiences.toList()` (unfiltered) to `state.visibleExperiences` (hide-aware). Experience/Resume pages (Days 7/10) will consume the same admin surface built here.
+- [x] Verified with `flutter analyze lib` — no issues. Live browser verification: About page renders Education + Experience panels correctly from the provider, zero console errors.
 
-### Day 8 — Skills page (reuse) + Projects page spot-check ⬜ NOT STARTED
-- [ ] Skills page (`skills_page_components.dart` / wherever the skills grid lives on `/my-work` or dedicated skills route) → confirm it reads the same `visibleSkills` from Day 4
-- [ ] Projects page: already Supabase-backed and functional — spot-check edit/delete/hide/feature-toggle work end-to-end on both the homepage featured section and the full Projects page; fix any gaps found (this is verification, not new build)
+### Day 7 — Experience page: Timeline (reuse) + Strengths ✅ DONE
+- [x] Timeline: the Day 6 `experience` collection was already flowing through, but [experience_page.dart](../lib/features/portfolio/pages/experience_page.dart) was passing the unfiltered `state.experiences` into `ExperienceTimelineSection` — hiding an experience in admin wouldn't have hidden it here. One-line fix to `state.visibleExperiences`.
+- [x] Strengths section (`experience_strengths_section.dart`) → wired to `visibleExperienceStrengths`, converted to `ConsumerWidget`. New admin module: `AdminModule.experienceStrengths` + nav entry ("Experience Strengths") + `experience_strengths_workspace.dart` — flat title/description fits `ContentListWorkspace`'s 2-field mode exactly (same as FAQ).
+- [x] Verified with `flutter analyze lib` — no issues. Live in browser at `/experience`: timeline shows both experience entries, strengths section shows all 4 cards from Firestore, zero console errors.
 
-### Day 9 — Blog page ⬜ NOT STARTED — needs a decision first
-- [ ] **Decide:** keep Dev.to as the only source, or let admin-authored Firestore posts (`BlogPostRecord`, already modeled Day 1, collection wired Day 2) appear too? Recommendation from the original plan: Firestore posts + Dev.to as an optional supplementary feed with an admin toggle.
-- [ ] Wire "Blog" and "Create Post" admin panels to actually write `BlogPostRecord` docs (currently both are local-state-only facades — `blog_workspace.dart`'s `AdminBlogPost` model is a good shape reference, doesn't persist yet; `create_post_workspace.dart` is more of a status-composer UI, may need rethinking)
-- [ ] Update `blog_page.dart` to stream Firestore posts, not just call `DevToService.fetchArticles()`
-- [ ] Verify live in browser
+**Tooling note:** the dev server ignores direct path navigation (`/experience`) and falls back to the home route — this app uses hash-based routing (`/#/experience`) since no `PathUrlStrategy` is configured in `main.dart`. Use the hash form when deep-linking during verification instead of clicking through the UI.
+
+### Day 8 — Skills page (reuse) + Projects page spot-check ✅ DONE
+- [x] Skills page (`skills_page.dart`) → confirmed: it renders the same `SkillsSection` widget used on Home/About (`widgets/home/skills_section.dart`), which was wired to `visibleSkills` on Day 4. Zero rework needed — pure verification, checked via `grep` for `visibleSkills` in that widget.
+- [x] Projects page spot-check — **found and fixed a real gap.** `adminPortalProvider.liveAppProjects` and the public `portfolioProvider.appProjects` were two disconnected copies of the same Supabase table: the public site only called `_loadAppProjects()` once at app startup (`Future.microtask` in `PortfolioNotifier.build()`), so an admin save/delete/feature-toggle/publish-toggle updated Supabase and the admin's own list, but the homepage featured section and the full Projects page (`state.featuredAppProjects` / `state.publishedAppProjects`) would stay stale until a hard reload — same-session edits never showed up live.
+  - Added `PortfolioNotifier.refreshAppProjects()` (public method wrapping the existing private `_loadAppProjects`).
+  - `AdminPortalNotifier.saveAppProject()` and `.deleteAppProject()` now call it after a successful Supabase write — covers all four flows since `toggleAppProjectFeatured`/`toggleAppProjectPublished` both route through `saveAppProject`.
+  - Confirmed both public consumers already read the correct filtered getters (`featuredAppProjects` = published + featured; `publishedAppProjects` = published only) — no widget-level changes needed, just the missing state-sync link.
+- [x] Verified with `flutter analyze lib` — no issues. Live in browser: home "Featured Projects" and `/my-work` "All Projects" both render their correct empty state ("No projects in this category yet.") cleanly with zero console errors — Supabase `projects` table is currently empty so the actual live-update path (add a project in admin → see it appear without reload) could not be click-tested end-to-end, since `/admin` requires the site owner's real Google sign-in, which is not something I can complete. The fix is verified by code trace: both `saveAppProject` and `deleteAppProject` now call the same `refreshAppProjects()` that feeds the exact getters both public pages read.
+
+### Day 9 — Blog page ✅ DONE (needs one manual Supabase step — see below)
+
+**Decision (changed from the original plan):** the original plan assumed Firestore
+(`BlogPostRecord`). The user redirected this at the start of the day: blog posts move to
+**Supabase** instead, because posts need cover images and Firebase has no Storage on the Spark
+plan — Supabase already handles every other upload (project banners/icons, resume, media
+library), so this follows the exact same pattern as `AppProject`. Dev.to stays as a
+supplementary feed, admin-toggleable (user's explicit choice on the follow-up question).
+
+- [x] `BlogPostRecord` (Firestore, Days 1–2 scaffolding, never had a real UI) — **removed**
+  rather than left as a second, unused blog-storage path. Replaced by `AdminBlogPost`
+  (`lib/features/admin/modules/blog/models/admin_blog_post.dart`), persisted via
+  `SupabaseBlogService` (`blog_posts` table, mirrors `SupabaseProjectsService`/`app_projects`
+  exactly — insert/update/delete by id, ordered by `created_at`).
+- [x] New tiny Firestore singleton `BlogSettings` (`site_sections/blog_settings`, one field:
+  `showDevToFeed`) — kept in Firestore since it's a site-wide toggle, not per-post content, same
+  pattern as the existing `home_hero` singleton. No `firestore.rules` change needed —
+  `site_sections/{docId}` already matches it.
+- [x] `PortfolioState.combinedBlogPosts` — merges published `AdminBlogPost`s (converted to the
+  existing `BlogPost` shape) with Dev.to's `blogPosts` (only when `showDevToFeed` is on), sorted
+  newest first. This is the one getter `blog_page.dart`/`blog_hero_section.dart`/
+  `blog_profile_card.dart` now read — none of the blog *widget* files needed to change beyond
+  swapping which getter they call, since the merge happens at the state layer.
+- [x] **Day 8 lesson applied up front:** `AdminPortalNotifier.saveBlogPost`/`.deleteBlogPost` call
+  `portfolioProvider.notifier.refreshAdminBlogPosts()` after every successful Supabase write, so
+  admin edits reach the public blog page within the same session (avoided the exact staleness bug
+  found and fixed in Projects on Day 8).
+- [x] `blog_workspace.dart` rebuilt as the manage surface — real list from
+  `portfolioProvider.adminBlogPosts`, edit dialog with cover-image upload (Supabase Storage,
+  `media` bucket, `blog-covers` folder — same bucket Projects/Resume/Media Library already use),
+  tags, reading time, featured/published toggles, delete. Also hosts the "Show Dev.to feed"
+  switch (blog-specific, so it lives here rather than waiting for the Day 12 Settings pass).
+- [x] `create_post_workspace.dart` rewired as the write/compose surface — added a required Title
+  field (was missing entirely), auto-generates an excerpt (first 160 chars) and reading time
+  (word count ÷ 200 wpm) so the admin doesn't have to fill those in by hand, persists a real
+  `AdminBlogPost` on submit. Simplified from a 4-image social-post gallery down to a single cover
+  image (a blog post has one cover, not a Twitter-style photo dump) and from a 3-state visibility
+  dropdown down to Public/Draft (the third original option, "Portfolio Only", didn't map to any
+  real distinct behavior in a single-destination blog). "Save Draft" now actually saves as a
+  draft instead of showing a fake success toast.
+- [x] Verified with `flutter analyze lib` — no issues (one pre-existing-pattern info lint in
+  `blog_workspace.dart` about an interleaved `mounted` check, not a real bug). Live in browser:
+  `/blog` renders the featured Dev.to post and post list correctly through `combinedBlogPosts`
+  with zero console errors, confirming graceful degradation while the Supabase table doesn't
+  exist yet (see below) — `SupabaseBlogService.fetchPosts()` catches and returns `[]`, same
+  fallback behavior `AppProjects` already relied on all through Day 8.
+
+**⚠️ Action needed from you before this is fully live:** the `blog_posts` Supabase table doesn't
+exist yet — I can't run DDL from here (no service-role access). Run this once in the Supabase SQL
+editor (mirrors whatever `app_projects` is already set up with):
+
+```sql
+create table if not exists blog_posts (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  excerpt text not null default '',
+  content text not null default '',
+  cover_image_url text not null default '',
+  tags text[] not null default '{}',
+  author_name text not null default '',
+  reading_time_minutes integer not null default 5,
+  is_published boolean not null default true,
+  is_featured boolean not null default false,
+  display_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table blog_posts enable row level security;
+
+create policy "Public can read blog posts" on blog_posts
+  for select using (true);
+
+-- Matches the existing app_projects setup: the admin panel writes via the anon
+-- key (no Supabase Auth session — admin access is gated by Firebase Google
+-- Sign-In on the client only). Tighten this later if that changes.
+create policy "Anon can manage blog posts" on blog_posts
+  for all using (true) with check (true);
+```
+
+No Storage bucket changes needed — `blog-covers` is just a new folder inside the existing
+`media` bucket that `SupabaseStorageService`/Projects/Media Library already upload to.
 
 ### Day 10 — Resume page ⬜ NOT STARTED
 - [ ] Highlights section (`resume_highlights_section.dart`) → wire to `visibleResumeHighlights`, new admin module + nav entry (note: `ResumeHighlightGroup` has a title + `List<String> items` — this one might fit `ContentListWorkspace` if items are stored as newline-joined text in the body field, same trick as Freelance Process)
@@ -198,14 +282,20 @@ Running list of things that were deliberately simplified or deferred — check h
 
 - **Icon/color pickers**: ~~Skills and Achievements have no picker UI~~ — **resolved for Skills
   on Day 4**: built a proper icon-swatch picker in `skills_workspace.dart` using the shared
-  `kSkillIconKeys` list, cheap enough to justify once `skill_icons.dart` existed. Achievements'
-  `iconKey` + 3 hex colors is still undecided — that one has more fields (3 colors is a lot of
-  UI for a flat form), Day 5 should decide fresh rather than assume the Skills pattern applies.
-- **Freelance Process nested items**: no plan yet for how admin edits the 2–4 sub-bullets per
-  step through a flat-field UI. Leaning toward newline-separated text in one field. Decide on
-  Day 5, write the actual decision here once made.
-- **Blog architecture**: not decided yet whether Firestore posts fully replace or supplement
-  Dev.to. Must decide at the start of Day 9 before writing any code that day.
+  `kSkillIconKeys` list, cheap enough to justify once `skill_icons.dart` existed. **Resolved for
+  Achievements on Day 5**: went the opposite way — `iconKey`/3 hex colors stay in the model (so
+  the schema doesn't need to change later) but are not exposed in the admin form at all. The
+  public widget rotates a fixed 3-look style set by list position instead, matching the original
+  hardcoded 3-card design. Simpler than a 3-color picker UI and the visual rhythm of the row
+  matters more than per-card color control.
+- **Freelance Process nested items**: **resolved Day 5** — admin edits sub-items as one line per
+  bullet in a single multiline field, formatted `"Key: description"`. This mirrors how the key
+  already renders as a bold prefix before the description on the public card, so the admin's
+  mental model matches the output. See `freelance_process_workspace.dart`.
+- **Blog architecture**: **resolved Day 9** — posts live in Supabase (not Firestore) so cover
+  images can go through the same Storage flow as project banners; Dev.to stays as a
+  user-toggleable supplementary feed. See Day 9 notes above for the full reasoning and the
+  Firestore `BlogPostRecord` removal.
 - **Contact form → Firestore**: not decided whether to add Firestore writes alongside or instead
   of Formspree. Decide at the start of Day 11.
 - **Guiding Principles section**: has a Firestore section key and a `ContentListWorkspace` admin

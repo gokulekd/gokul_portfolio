@@ -1,121 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/portfolio_provider.dart';
+import '../../models/site_content_models.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class ProcessStep {
-  final String label;
-  final String number;
-  final String title;
-  final List<ProcessItem> items;
-  final String timeEstimate;
+// `ProcessStep`/`ProcessItem` used to be the hardcoded step data; the section
+// now reads `ProcessStepItem`/`ProcessStepDetail` from Firestore
+// (`site_content_models.dart`) via `portfolioProvider.visibleProcessSteps`.
 
-  const ProcessStep({
-    required this.label,
-    required this.number,
-    required this.title,
-    required this.items,
-    required this.timeEstimate,
-  });
-}
-
-class ProcessItem {
-  final String key;
-  final String description;
-
-  const ProcessItem({required this.key, required this.description});
-}
-
-class FreelanceProcessSection extends StatelessWidget {
+class FreelanceProcessSection extends ConsumerWidget {
   const FreelanceProcessSection({super.key});
 
-  static const List<ProcessStep> _steps = [
-    ProcessStep(
-      label: "Discovery",
-      number: "01",
-      title: "We'll dive deep into your personal goals and long-term vision",
-      items: [
-        ProcessItem(
-          key: "Initial Consultation:",
-          description:
-              "Understand the client's vision, goals, and target audience.",
-        ),
-        ProcessItem(
-          key: "Research:",
-          description:
-              "Analyze competitors and industry trends to gather insights.",
-        ),
-        ProcessItem(
-          key: "Define Scope:",
-          description:
-              "Set the project's objectives, deliverables, and timelines.",
-        ),
-      ],
-      timeEstimate: "3-5 days",
-    ),
-    ProcessStep(
-      label: "Design",
-      number: "02",
-      title: "I'll create mockups that bring your brand to life",
-      items: [
-        ProcessItem(
-          key: "Wireframing:",
-          description:
-              "Create low-fidelity wireframes to map out the site's structure.",
-        ),
-        ProcessItem(
-          key: "Style Guide Creation:",
-          description:
-              "Develop a design language including colors, fonts, and UI elements.",
-        ),
-        ProcessItem(
-          key: "Prototype Development:",
-          description: "Build clickable prototypes for client feedback.",
-        ),
-        ProcessItem(
-          key: "Finalize Design:",
-          description:
-              "Approve the final design with detailed mockups for all pages.",
-        ),
-      ],
-      timeEstimate: "1-2 weeks",
-    ),
-    ProcessStep(
-      label: "Build",
-      number: "03",
-      title: "Using coding tools, I'll construct your site",
-      items: [
-        ProcessItem(
-          key: "Page Construction:",
-          description: "Build out the website structure using selected tools.",
-        ),
-        ProcessItem(
-          key: "Content Integration:",
-          description: "Import and format content (text, images, videos).",
-        ),
-      ],
-      timeEstimate: "1 week",
-    ),
-    ProcessStep(
-      label: "Launch",
-      number: "04",
-      title: "Your site goes live, ready to make an impact",
-      items: [
-        ProcessItem(
-          key: "Client Review:",
-          description: "Present the site to the client for feedback.",
-        ),
-        ProcessItem(
-          key: "Revisions:",
-          description: "Make necessary changes based on client feedback.",
-        ),
-      ],
-      timeEstimate: "2-3 days",
-    ),
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+    final steps = ref.watch(
+      portfolioProvider.select((s) => s.visibleProcessSteps),
+    );
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -169,11 +71,11 @@ class FreelanceProcessSection extends StatelessWidget {
                 child: Column(
                   children: [
                     ...List.generate(
-                      _steps.length,
+                      steps.length,
                       (index) => Column(
                         children: [
-                          _buildProcessStep(_steps[index], context),
-                          if (index < _steps.length - 1)
+                          _buildProcessStep(steps[index], context),
+                          if (index < steps.length - 1)
                             Container(
                               margin: const EdgeInsets.symmetric(vertical: 32),
                               height: 1,
@@ -192,7 +94,7 @@ class FreelanceProcessSection extends StatelessWidget {
     );
   }
 
-  Widget _buildProcessStep(ProcessStep step, BuildContext context) {
+  Widget _buildProcessStep(ProcessStepItem step, BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     // Label tag with round container

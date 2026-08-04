@@ -1,78 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/portfolio_provider.dart';
+import '../../models/site_content_models.dart';
 
-class Testimonial {
-  final double rating;
-  final String text;
-  final String authorName;
-  final String authorRole;
-  final String avatarUrl;
+// `Testimonial` used to be the hardcoded card data; the section now reads
+// `TestimonialItem` from Firestore (`site_content_models.dart`) via
+// `portfolioProvider.visibleTestimonials`.
 
-  const Testimonial({
-    required this.rating,
-    required this.text,
-    required this.authorName,
-    required this.authorRole,
-    required this.avatarUrl,
-  });
-}
-
-class TestimonialsSectionNew extends StatefulWidget {
+class TestimonialsSectionNew extends ConsumerStatefulWidget {
   const TestimonialsSectionNew({super.key});
 
   @override
-  State<TestimonialsSectionNew> createState() => _TestimonialsSectionNewState();
+  ConsumerState<TestimonialsSectionNew> createState() =>
+      _TestimonialsSectionNewState();
 }
 
-class _TestimonialsSectionNewState extends State<TestimonialsSectionNew>
+class _TestimonialsSectionNewState
+    extends ConsumerState<TestimonialsSectionNew>
     with SingleTickerProviderStateMixin {
   late ScrollController _scrollController;
   late AnimationController _animationController;
-
-  static final List<Testimonial> _testimonials = [
-    const Testimonial(
-      rating: 5.0,
-      text:
-          "Working with this developer was an absolute pleasure. The attention to detail and creative solutions exceeded all our expectations. Highly recommended!",
-      authorName: "David Mitchell",
-      authorRole: "CEO, TechFlow",
-      avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg",
-    ),
-    const Testimonial(
-      rating: 4.5,
-      text:
-          "Professional, responsive, and delivered exactly what we needed. The project was completed on time and the quality was outstanding.",
-      authorName: "Sarah Lewis",
-      authorRole: "Product Manager",
-      avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg",
-    ),
-    const Testimonial(
-      rating: 5.0,
-      text:
-          "Exceptional work! The design is modern, clean, and perfectly aligned with our brand. Couldn't be happier with the results.",
-      authorName: "James Reynolds",
-      authorRole: "Founder, StartUp",
-      avatarUrl: "https://randomuser.me/api/portraits/men/86.jpg",
-    ),
-    const Testimonial(
-      rating: 4.8,
-      text:
-          "Great communication throughout the project. The developer understood our vision and brought it to life beautifully.",
-      authorName: "Emily Wilson",
-      authorRole: "Marketing Director",
-      avatarUrl: "https://randomuser.me/api/portraits/women/68.jpg",
-    ),
-    const Testimonial(
-      rating: 5.0,
-      text:
-          "Outstanding service from start to finish. The final product exceeded our expectations and the process was smooth and efficient.",
-      authorName: "Michael Brown",
-      authorRole: "CTO, DevInc",
-      avatarUrl: "https://randomuser.me/api/portraits/men/11.jpg",
-    ),
-  ];
 
   @override
   void initState() {
@@ -113,6 +63,9 @@ class _TestimonialsSectionNewState extends State<TestimonialsSectionNew>
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+    final testimonials = ref.watch(
+      portfolioProvider.select((s) => s.visibleTestimonials),
+    );
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -202,7 +155,7 @@ class _TestimonialsSectionNewState extends State<TestimonialsSectionNew>
                       ...List.generate(3, (index) {
                         return Row(
                           children:
-                              _testimonials
+                              testimonials
                                   .map(
                                     (testimonial) => Padding(
                                       padding: const EdgeInsets.symmetric(
@@ -228,7 +181,7 @@ class _TestimonialsSectionNewState extends State<TestimonialsSectionNew>
     );
   }
 
-  Widget _buildTestimonialCard(Testimonial testimonial, bool isMobile) {
+  Widget _buildTestimonialCard(TestimonialItem testimonial, bool isMobile) {
     return Container(
       width: isMobile ? 320 : 400,
       height: isMobile ? 320 : 360,
@@ -319,20 +272,31 @@ class _TestimonialsSectionNewState extends State<TestimonialsSectionNew>
                   color: Colors.grey[800],
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: Image.network(
-                  testimonial.avatarUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) => Center(
-                        child: Text(
-                          _initialsFor(testimonial.authorName),
-                          style: GoogleFonts.manrope(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
+                child:
+                    testimonial.avatarUrl.isEmpty
+                        ? Center(
+                          child: Text(
+                            _initialsFor(testimonial.authorName),
+                            style: GoogleFonts.manrope(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
+                        )
+                        : Image.network(
+                          testimonial.avatarUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) => Center(
+                                child: Text(
+                                  _initialsFor(testimonial.authorName),
+                                  style: GoogleFonts.manrope(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
                         ),
-                      ),
-                ),
               ),
               const SizedBox(width: 16),
               Column(

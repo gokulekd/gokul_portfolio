@@ -67,7 +67,7 @@ class BlogProfileCard extends ConsumerWidget {
           const Divider(height: 1),
           const SizedBox(height: 20),
           BlogProfileMetric(
-            value: '${ref.watch(portfolioProvider).blogPosts.length}+',
+            value: '${ref.watch(portfolioProvider).combinedBlogPosts.length}+',
             label: 'Published posts available to read',
           ),
           const SizedBox(height: 14),

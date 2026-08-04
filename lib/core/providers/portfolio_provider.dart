@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../features/admin/modules/blog/models/admin_blog_post.dart';
 import '../../features/admin/modules/projects/models/app_project.dart';
 import '../../features/portfolio/models/firebase_content_models.dart';
 import '../../features/portfolio/models/portfolio_models.dart';
@@ -41,6 +42,7 @@ class PortfolioState {
     required this.stats,
     required this.resumeHighlights,
     this.adminBlogPosts = const [],
+    this.showDevToFeed = true,
   });
 
   final List<AppProject> appProjects;
@@ -68,7 +70,8 @@ class PortfolioState {
   final List<DevAreaItem> devAreas;
   final List<StatItem> stats;
   final List<ResumeHighlightGroup> resumeHighlights;
-  final List<BlogPostRecord> adminBlogPosts;
+  final List<AdminBlogPost> adminBlogPosts;
+  final bool showDevToFeed;
 
   // ─── Computed ──────────────────────────────────────────────────────────────
 
@@ -132,8 +135,31 @@ class PortfolioState {
   List<ResumeHighlightGroup> get visibleResumeHighlights =>
       resumeHighlights.where((r) => r.isVisible).toList();
 
-  List<BlogPostRecord> get publishedAdminBlogPosts =>
+  List<AdminBlogPost> get publishedAdminBlogPosts =>
       adminBlogPosts.where((p) => p.isPublished).toList();
+
+  /// Unified public blog feed: published Supabase-authored posts, plus
+  /// Dev.to articles when `showDevToFeed` is on, newest first. Converts
+  /// `AdminBlogPost` into the existing `BlogPost` shape so the blog page
+  /// widgets (`BlogHeroSection`, `BlogFeaturedSection`, `BlogPostsSection`)
+  /// don't need to know about two different post types.
+  List<BlogPost> get combinedBlogPosts {
+    final admin = publishedAdminBlogPosts.map(
+      (p) => BlogPost(
+        title: p.title,
+        excerpt: p.excerpt,
+        content: p.content,
+        imageUrl: p.coverImageUrl,
+        publishDate: p.createdAt,
+        author: p.authorName.isNotEmpty ? p.authorName : personalInfo.name,
+        tags: p.tags,
+        readingTimeMinutes: p.readingTimeMinutes,
+      ),
+    );
+    final devto = showDevToFeed ? blogPosts : const <BlogPost>[];
+    return [...admin, ...devto]
+      ..sort((a, b) => b.publishDate.compareTo(a.publishDate));
+  }
 
   PortfolioState copyWith({
     List<AppProject>? appProjects,
@@ -161,7 +187,8 @@ class PortfolioState {
     List<DevAreaItem>? devAreas,
     List<StatItem>? stats,
     List<ResumeHighlightGroup>? resumeHighlights,
-    List<BlogPostRecord>? adminBlogPosts,
+    List<AdminBlogPost>? adminBlogPosts,
+    bool? showDevToFeed,
   }) {
     return PortfolioState(
       appProjects: appProjects ?? this.appProjects,
@@ -188,6 +215,7 @@ class PortfolioState {
       stats: stats ?? this.stats,
       resumeHighlights: resumeHighlights ?? this.resumeHighlights,
       adminBlogPosts: adminBlogPosts ?? this.adminBlogPosts,
+      showDevToFeed: showDevToFeed ?? this.showDevToFeed,
       blogPosts: blogPosts ?? this.blogPosts,
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
     );
@@ -365,10 +393,11 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
         );
       });
 
-      final s19 = firebaseService.streamBlogPosts().listen((list) {
-        state = state.copyWith(
-          adminBlogPosts: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
-        );
+      // Blog *post content* lives in Supabase now (Day 9) — this just
+      // streams the "show Dev.to feed" toggle, still a lightweight
+      // Firestore singleton like Home Hero.
+      final s19 = firebaseService.streamBlogSettings().listen((settings) {
+        state = state.copyWith(showDevToFeed: settings.showDevToFeed);
       });
 
       ref.onDispose(() {
@@ -382,6 +411,7 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
       _fetchGitHubData();
       _fetchBlogPosts();
       _loadAppProjects(projectsService);
+      _loadAdminBlogPosts(ref.read(supabaseBlogServiceProvider));
     });
 
     return PortfolioState.initial();
@@ -466,6 +496,11 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
     state = state.copyWith(appProjects: list);
   }
 
+  Future<void> _loadAdminBlogPosts(dynamic blogService) async {
+    final list = await blogService.fetchPosts();
+    state = state.copyWith(adminBlogPosts: list);
+  }
+
   // ─── Public actions ──────────────────────────────────────────────────────
 
   void changePage(int index) => state = state.copyWith(currentPageIndex: index);
@@ -475,6 +510,20 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
 
   Future<void> refreshProjects() => _fetchGitHubData();
   Future<void> refreshBlog() => _fetchBlogPosts();
+
+  /// Re-fetches Supabase-backed `AppProject`s so the public site (home
+  /// featured section + full Projects page) picks up admin edits without a
+  /// full page reload. `_loadAppProjects` only ran once at app startup
+  /// before this — admin saves/deletes/toggles had no way to reach the
+  /// public-facing `portfolioProvider` state (Day 8 spot-check finding).
+  Future<void> refreshAppProjects() =>
+      _loadAppProjects(ref.read(supabaseProjectsServiceProvider));
+
+  /// Same reasoning as `refreshAppProjects()` (Day 8 finding): admin blog
+  /// saves/deletes need to push a fresh fetch into this public-facing state,
+  /// or the Blog page stays stale until a hard reload.
+  Future<void> refreshAdminBlogPosts() =>
+      _loadAdminBlogPosts(ref.read(supabaseBlogServiceProvider));
 
   Future<void> launchEmail({String? subject, String? body}) async {
     final emailUri = Uri(
