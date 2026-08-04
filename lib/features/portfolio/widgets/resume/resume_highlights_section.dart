@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import 'resume_components.dart';
 
-class ResumeHighlightsSection extends StatelessWidget {
+// `cards` used to be three hardcoded `HighlightCard`s; the section now reads
+// `ResumeHighlightGroup` from Firestore via
+// `portfolioProvider.visibleResumeHighlights`.
+
+class ResumeHighlightsSection extends ConsumerWidget {
   const ResumeHighlightsSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final hPad =
@@ -17,40 +23,12 @@ class ResumeHighlightsSection extends StatelessWidget {
             ? 48.0
             : 88.0;
 
+    final groups = ref.watch(
+      portfolioProvider.select((s) => s.visibleResumeHighlights),
+    );
     final cards = [
-      const HighlightCard(
-        title: 'Core Skills',
-        items: [
-          'Flutter and Dart development',
-          'Responsive web and mobile UI',
-          'Firebase integrations',
-          'REST API implementation',
-          'Clean architecture patterns',
-          'Performance-focused delivery',
-        ],
-      ),
-      const HighlightCard(
-        title: 'Working Style',
-        items: [
-          'Design-aware implementation',
-          'Strong product ownership',
-          'Fast iteration with feedback',
-          'Readable, maintainable code',
-          'Collaborative communication',
-          'Reliable delivery mindset',
-        ],
-      ),
-      const HighlightCard(
-        title: 'Value I Bring',
-        items: [
-          'Translate ideas into polished apps',
-          'Balance speed with quality',
-          'Build for scale and reuse',
-          'Create consistent experiences',
-          'Spot UX and technical gaps early',
-          'Keep momentum across project phases',
-        ],
-      ),
+      for (final group in groups)
+        HighlightCard(title: group.title, items: group.items),
     ];
 
     return Padding(

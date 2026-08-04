@@ -248,11 +248,13 @@ create policy "Anon can manage blog posts" on blog_posts
 No Storage bucket changes needed — `blog-covers` is just a new folder inside the existing
 `media` bucket that `SupabaseStorageService`/Projects/Media Library already upload to.
 
-### Day 10 — Resume page ⬜ NOT STARTED
-- [ ] Highlights section (`resume_highlights_section.dart`) → wire to `visibleResumeHighlights`, new admin module + nav entry (note: `ResumeHighlightGroup` has a title + `List<String> items` — this one might fit `ContentListWorkspace` if items are stored as newline-joined text in the body field, same trick as Freelance Process)
-- [ ] Experience section on this page → same shared `experience` collection from Day 6, should already work
-- [ ] Resume file upload/active URL already works (Resume Management workspace) — don't touch, just verify unaffected
-- [ ] Verify live in browser
+### Day 10 — Resume page ✅ DONE
+- [x] Highlights section (`resume_highlights_section.dart`) → wired to `visibleResumeHighlights`, converted to `ConsumerWidget`. New admin module: `AdminModule.resumeHighlights` + nav entry ("Resume Highlights") + `resume_highlights_workspace.dart` — confirmed the newline-joined-items trick works here exactly as it did for Freelance Process: `ContentListWorkspace`'s flat 2-field mode (title + body), body split/joined on `\n`.
+- [x] Experience section on this page (`resume_experience_section.dart`) → **found the same Day-6/Day-7-pattern gap**: it read the unfiltered `state.experiences` instead of `state.visibleExperiences`, so an admin "hide" wouldn't have hidden it here either. One-line fix, same as the Day 7 Experience-page finding — worth checking every remaining consumer of the shared `experience` collection for this exact mistake before assuming "already wired" means "wired correctly."
+- [x] Resume Management workspace (file upload/active URL) — confirmed untouched: it only reads/writes `resumeConfig`, a completely separate concern from `resumeHighlights`. No overlap, verified via grep, no changes made.
+- [x] Verified with `flutter analyze lib` — no issues. Live in browser: `/resume` renders the Experience Timeline (both roles) and the 3 Highlight cards (Core Skills / Working Style / Value I Bring, all bullets intact) correctly from the provider, zero console errors.
+
+**Tooling note:** this page's sections use `RevealSequence`/`DelayedReveal` — a **timer**-based fade-in (`Timer` in `initState`, not scroll-triggered, unlike `SkillsSection`'s scroll-gated animation from Day 4). A tall `resize_window` + screenshot works fine here, but needs a longer wait (~8–10s total) for every section's staggered `Timer` to fire, not the usual 2–3s — a screenshot taken too early looked like a rendering bug (mostly blank) but was actually just impatience.
 
 ### Day 11 — Contact page ⬜ NOT STARTED
 - [ ] Location field: already added to Basic Details form (Day 1) and now actually applies (Day 3 bug fix) — verify it displays on the contact page's contact-channels section

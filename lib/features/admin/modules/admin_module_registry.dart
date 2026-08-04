@@ -18,6 +18,7 @@ import 'manage_pages/manage_pages_workspace.dart';
 import 'media_library/media_library_workspace.dart';
 import 'projects/projects_workspace.dart';
 import 'resume/resume_workspace.dart';
+import 'resume_highlights/resume_highlights_workspace.dart';
 import 'settings/settings_workspace.dart';
 import 'site_structure/site_structure_workspace.dart';
 import 'skills/skills_workspace.dart';
@@ -42,6 +43,7 @@ class AdminModuleRegistry {
       AdminModule.skillsExperience => SkillsWorkspace(isCompact: isCompact),
       AdminModule.education => EducationWorkspace(isCompact: isCompact),
       AdminModule.experienceStrengths => ExperienceStrengthsWorkspace(isCompact: isCompact),
+      AdminModule.resumeHighlights => ResumeHighlightsWorkspace(isCompact: isCompact),
       AdminModule.developmentAreas => DevAreasWorkspace(isCompact: isCompact),
       AdminModule.achievements => AchievementsWorkspace(isCompact: isCompact),
       AdminModule.guidingPrinciples => _contentListWorkspace(
