@@ -5,17 +5,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../features/admin/modules/projects/models/app_project.dart';
+import '../../../../core/config/app_colors.dart';
 import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/utils/responsive_helper.dart';
 
-// Accent palette — cycles through cards
-const kAccents = [
-  Color(0xFF6C63FF), // violet
-  Color(0xFF00C9A7), // teal
-  Color(0xFFFF6B6B), // coral
-  Color(0xFFFFB347), // amber
-];
+// Card surface colors — flat dark charcoal, no per-card accent cycling.
+const _kCardBg = Color(0xFF141414);
+const _kPanelBg = Color(0xFF161616);
+
+// Max tech-stack tags rendered before collapsing the rest into a "+N" chip.
+const _kMaxTechTags = 8;
 
 class SectionHeader extends StatelessWidget {
   const SectionHeader({super.key, required this.isMobile, required this.isTablet});
@@ -109,23 +109,12 @@ class _AppProjectCardState extends State<AppProjectCard> {
   @override
   Widget build(BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
-    final accent = kAccents[widget.index % kAccents.length];
-    final indexLabel = (widget.index + 1).toString().padLeft(2, '0');
 
-    // Alternate layout direction on desktop
-    final flipLayout = !isMobile && widget.index.isOdd;
-
-    final bannerWidget = BannerImage(
-      url: project.appBannerUrl,
-      accent: accent,
-      flipGradient: flipLayout,
-    );
+    final bannerWidget = BannerImage(url: project.appBannerUrl);
 
     final infoWidget = InfoPanel(
       project: project,
       isMobile: isMobile,
-      accent: accent,
-      indexLabel: indexLabel,
       onLaunch: _launch,
     );
 
@@ -142,18 +131,18 @@ class _AppProjectCardState extends State<AppProjectCard> {
         curve: Curves.easeOut,
         transform: Matrix4.translationValues(0, _hovered ? -4 : 0, 0),
         decoration: BoxDecoration(
-          color: const Color(0xFF0D0F12),
-          borderRadius: BorderRadius.circular(24),
+          color: _kCardBg,
+          borderRadius: BorderRadius.circular(28),
           border: Border.all(
             color: _hovered
-                ? accent.withValues(alpha: 0.35)
+                ? AppColors.primaryGreen.withValues(alpha: 0.35)
                 : Colors.white.withValues(alpha: 0.07),
             width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
               color: _hovered
-                  ? accent.withValues(alpha: 0.18)
+                  ? AppColors.primaryGreen.withValues(alpha: 0.15)
                   : Colors.black.withValues(alpha: 0.3),
               blurRadius: _hovered ? 40 : 24,
               offset: const Offset(0, 8),
@@ -165,41 +154,32 @@ class _AppProjectCardState extends State<AppProjectCard> {
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(height: 300, child: bannerWidget),
+                  SizedBox(height: 260, child: bannerWidget),
                   infoWidget,
                 ],
               )
-            : SizedBox(
-                height: 460,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: flipLayout
-                      ? [
-                          Expanded(
-                            flex: 4,
-                            child: ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(24),
-                                bottomLeft: Radius.circular(24),
-                              ),
-                              child: bannerWidget,
-                            ),
+            : ConstrainedBox(
+                // Grows to fit whatever the info panel needs (long
+                // descriptions, many tech tags) instead of clipping it —
+                // 440 is just a floor so short cards still look substantial.
+                constraints: const BoxConstraints(minHeight: 440),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(flex: 35, child: infoWidget),
+                      Expanded(
+                        flex: 65,
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(28),
+                            bottomRight: Radius.circular(28),
                           ),
-                          Expanded(flex: 5, child: infoWidget),
-                        ]
-                      : [
-                          Expanded(flex: 5, child: infoWidget),
-                          Expanded(
-                            flex: 4,
-                            child: ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topRight: Radius.circular(24),
-                                bottomRight: Radius.circular(24),
-                              ),
-                              child: bannerWidget,
-                            ),
-                          ),
-                        ],
+                          child: bannerWidget,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
         ),
@@ -213,60 +193,43 @@ class _AppProjectCardState extends State<AppProjectCard> {
 // ─── Banner with gradient overlay ────────────────────────────────────────────
 
 class BannerImage extends StatelessWidget {
-  const BannerImage({super.key, required this.url,
-    required this.accent,
-    required this.flipGradient,});
+  const BannerImage({super.key, required this.url});
   final String url;
-  final Color accent;
-  final bool flipGradient;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Subtle tinted background
-        Container(color: accent.withValues(alpha: 0.06)),
+        // Neutral backdrop so partially-transparent/loading images don't flash white
+        Container(color: const Color(0xFF1C1C1C)),
 
-        // Project banner
+        // Project screenshot / preview
         if (url.isNotEmpty)
           Image.network(
             url,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            errorBuilder: (_, __, ___) => Center(
+              child: Icon(Icons.image_rounded, color: Colors.white12, size: 48),
+            ),
           )
         else
           Center(
             child: Icon(Icons.image_rounded, color: Colors.white12, size: 48),
           ),
 
-        // Gradient fade toward the info panel side
+        // Thin seam blend where the image meets the info panel
         Positioned.fill(
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: flipGradient ? Alignment.centerRight : Alignment.centerLeft,
-                end: flipGradient ? Alignment.centerLeft : Alignment.centerRight,
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
                 colors: [
-                  const Color(0xFF0D0F12).withValues(alpha: 0.55),
+                  _kCardBg.withValues(alpha: 0.25),
                   Colors.transparent,
                 ],
-                stops: const [0.0, 0.5],
-              ),
-            ),
-          ),
-        ),
-
-        // Subtle accent glow at top
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 3,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [accent.withValues(alpha: 0.0), accent, accent.withValues(alpha: 0.0)],
+                stops: const [0.0, 0.08],
               ),
             ),
           ),
@@ -279,200 +242,151 @@ class BannerImage extends StatelessWidget {
 // ─── Info Panel ───────────────────────────────────────────────────────────────
 
 class InfoPanel extends StatelessWidget {
-  const InfoPanel({super.key, required this.project,
+  const InfoPanel({
+    super.key,
+    required this.project,
     required this.isMobile,
-    required this.accent,
-    required this.indexLabel,
-    required this.onLaunch,});
+    required this.onLaunch,
+  });
 
   final AppProject project;
   final bool isMobile;
-  final Color accent;
-  final String indexLabel;
   final Future<void> Function(String) onLaunch;
+
+  /// The link the big primary button should open — prefer the live site,
+  /// fall back to the repo if there's no website yet.
+  String? get _primaryUrl {
+    if (project.appWebsiteUrl.isNotEmpty) return project.appWebsiteUrl;
+    if (project.githubUrl?.isNotEmpty ?? false) return project.githubUrl;
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Secondary links: whatever wasn't already used as the primary CTA.
+    final primary = _primaryUrl;
+    final secondaryLinks = <(IconData, String)>[
+      if (project.appWebsiteUrl.isNotEmpty && primary != project.appWebsiteUrl)
+        (Icons.language_rounded, project.appWebsiteUrl),
+      if ((project.githubUrl?.isNotEmpty ?? false) && primary != project.githubUrl)
+        (Icons.code_rounded, project.githubUrl!),
+      if (project.playStoreUrl?.isNotEmpty ?? false)
+        (Icons.shop_rounded, project.playStoreUrl!),
+      if (project.appStoreUrl?.isNotEmpty ?? false)
+        (Icons.apple_rounded, project.appStoreUrl!),
+    ];
+
     return Container(
-      padding: EdgeInsets.all(isMobile ? 24 : 40),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF0D0F12),
-            Color.lerp(const Color(0xFF0D0F12), accent, 0.06)!,
-          ],
-        ),
-      ),
+      padding: EdgeInsets.all(isMobile ? 24 : 36),
+      color: _kPanelBg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Index number
+          // App name
           Text(
-            indexLabel,
+            project.appName,
             style: GoogleFonts.manrope(
-              color: accent.withValues(alpha: 0.5),
-              fontSize: isMobile ? 12 : 13,
+              color: Colors.white,
+              fontSize: isMobile ? 22 : 26,
               fontWeight: FontWeight.w800,
-              letterSpacing: 1.5,
+              letterSpacing: -0.5,
+              height: 1.15,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 10),
-
-          // Icon + Name
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (project.appIconUrl.isNotEmpty) ...[
-                Container(
-                  width: isMobile ? 42 : 52,
-                  height: isMobile ? 42 : 52,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: accent.withValues(alpha: 0.25)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: accent.withValues(alpha: 0.15),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Image.network(
-                    project.appIconUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      child: const Icon(Icons.apps_rounded, color: Colors.white24, size: 22),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-              ],
-              Expanded(
-                child: Text(
-                  project.appName,
-                  style: GoogleFonts.manrope(
-                    color: Colors.white,
-                    fontSize: isMobile ? 20 : 26,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                    height: 1.15,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-
-          // Divider accent line
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 2,
-                  decoration: BoxDecoration(
-                    color: accent,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.5),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const SizedBox(height: 14),
 
           if (project.appDescription.isNotEmpty)
             Text(
               project.appDescription,
               style: GoogleFonts.manrope(
-                color: Colors.white.withValues(alpha: 0.55),
+                color: Colors.white.withValues(alpha: 0.65),
                 fontSize: isMobile ? 13 : 14,
-                height: 1.65,
+                height: 1.55,
               ),
-              maxLines: project.techStack.isNotEmpty
-                  ? (isMobile ? 3 : 2)
-                  : (isMobile ? 5 : 4),
+              maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
 
           if (project.techStack.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             Wrap(
               spacing: 8,
-              runSpacing: 6,
-              children: project.techStack.map((tag) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: accent.withValues(alpha: 0.25)),
-                ),
-                child: Text(
-                  tag,
-                  style: GoogleFonts.manrope(
-                    color: accent,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+              runSpacing: 8,
+              children: [
+                // Cap how many tags render — an unusually long tech stack
+                // shouldn't be able to balloon the card's height unbounded.
+                for (final tag in project.techStack.take(_kMaxTechTags))
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.10),
+                      ),
+                    ),
+                    child: Text(
+                      tag,
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
                   ),
-                ),
-              )).toList(),
+                if (project.techStack.length > _kMaxTechTags)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.03),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
+                    ),
+                    child: Text(
+                      '+${project.techStack.length - _kMaxTechTags}',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ],
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 28),
 
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              if (project.appWebsiteUrl.isNotEmpty)
-                LinkPill(
-                  label: 'Website',
-                  icon: Icons.language_rounded,
-                  accent: accent,
-                  onTap: () => onLaunch(project.appWebsiteUrl),
-                  filled: true,
+              if (primary != null) CheckItButton(onTap: () => onLaunch(primary)),
+              if (secondaryLinks.isNotEmpty) ...[
+                const SizedBox(width: 10),
+                ...secondaryLinks.map(
+                  (link) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: IconLinkButton(
+                      icon: link.$1,
+                      onTap: () => onLaunch(link.$2),
+                    ),
+                  ),
                 ),
-              if (project.githubUrl?.isNotEmpty ?? false)
-                LinkPill(
-                  label: 'GitHub',
-                  icon: Icons.code_rounded,
-                  onTap: () => onLaunch(project.githubUrl!),
-                ),
-              LinkPill(
-                label: project.playStoreUrl?.isNotEmpty ?? false
-                    ? 'Play Store'
-                    : 'Play Store · Soon',
-                icon: Icons.shop_rounded,
-                accent: const Color(0xFF34A853),
-                onTap: project.playStoreUrl?.isNotEmpty ?? false
-                    ? () => onLaunch(project.playStoreUrl!)
-                    : null,
-              ),
-              LinkPill(
-                label: project.appStoreUrl?.isNotEmpty ?? false
-                    ? 'App Store'
-                    : 'App Store · Soon',
-                icon: Icons.apple_rounded,
-                accent: const Color(0xFF5CD6FF),
-                onTap: project.appStoreUrl?.isNotEmpty ?? false
-                    ? () => onLaunch(project.appStoreUrl!)
-                    : null,
-              ),
+              ],
             ],
           ),
         ],
@@ -481,88 +395,50 @@ class InfoPanel extends StatelessWidget {
   }
 }
 
-// ─── Link Button ─────────────────────────────────────────────────────────────
+// ─── Primary CTA ("Check it ↗") ──────────────────────────────────────────────
 
-class LinkPill extends StatefulWidget {
-  const LinkPill({super.key, required this.label,
-    required this.icon,
-    required this.onTap,
-    this.accent,
-    this.filled = false,});
-
-  final String label;
-  final IconData icon;
-  final VoidCallback? onTap;
-  final Color? accent;
-  final bool filled;
+class CheckItButton extends StatefulWidget {
+  const CheckItButton({super.key, required this.onTap});
+  final VoidCallback onTap;
 
   @override
-  State<LinkPill> createState() => _LinkPillState();
+  State<CheckItButton> createState() => _CheckItButtonState();
 }
 
-class _LinkPillState extends State<LinkPill> {
+class _CheckItButtonState extends State<CheckItButton> {
   bool _hovered = false;
-
-  bool get _disabled => widget.onTap == null;
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = widget.accent ?? Colors.white;
-    final isDisabled = _disabled;
-
-    final bg = isDisabled
-        ? Colors.white.withValues(alpha: 0.04)
-        : widget.filled
-            ? (_hovered ? baseColor.withValues(alpha: 0.95) : baseColor.withValues(alpha: 0.85))
-            : (_hovered
-                ? Colors.white.withValues(alpha: 0.10)
-                : Colors.white.withValues(alpha: 0.06));
-
-    final fgColor = isDisabled
-        ? Colors.white24
-        : widget.filled
-            ? Colors.black
-            : (widget.accent ?? Colors.white70);
-
-    final borderColor = isDisabled
-        ? Colors.white.withValues(alpha: 0.08)
-        : widget.filled
-            ? Colors.transparent
-            : (widget.accent ?? Colors.white).withValues(alpha: _hovered ? 0.5 : 0.25);
-
     return MouseRegion(
-      onEnter: isDisabled ? null : (_) => setState(() => _hovered = true),
-      onExit: isDisabled ? null : (_) => setState(() => _hovered = false),
-      cursor: isDisabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: borderColor,
-            ),
+            color: _hovered
+                ? AppColors.primaryGreen
+                : AppColors.primaryGreen.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(widget.icon, size: 15, color: fgColor),
-              const SizedBox(width: 8),
               Text(
-                widget.label,
-                style: GoogleFonts.manrope(
-                  color: fgColor,
+                'Check it',
+                style: GoogleFonts.inter(
+                  color: Colors.black,
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
+                  letterSpacing: 0.2,
                 ),
               ),
-              if (!isDisabled) ...[
-                const SizedBox(width: 5),
-                Icon(Icons.arrow_outward_rounded, size: 12, color: fgColor.withValues(alpha: 0.6)),
-              ],
+              const SizedBox(width: 8),
+              const Icon(Icons.north_east_rounded, size: 15, color: Colors.black),
             ],
           ),
         ),
@@ -570,3 +446,43 @@ class _LinkPillState extends State<LinkPill> {
     );
   }
 }
+
+// ─── Secondary icon-only link (GitHub / Play Store / App Store) ─────────────
+
+class IconLinkButton extends StatefulWidget {
+  const IconLinkButton({super.key, required this.icon, required this.onTap});
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  State<IconLinkButton> createState() => _IconLinkButtonState();
+}
+
+class _IconLinkButtonState extends State<IconLinkButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: _hovered ? 0.12 : 0.06),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+          ),
+          child: Icon(widget.icon, size: 17, color: Colors.white70),
+        ),
+      ),
+    );
+  }
+}
+
