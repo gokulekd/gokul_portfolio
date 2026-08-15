@@ -12,43 +12,51 @@ class AdminMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AdminSurfaceCard(
+      padding: const EdgeInsets.all(18),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 46,
-            width: 46,
+            height: 42,
+            width: 42,
             decoration: BoxDecoration(
               color: item.color.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(item.icon, color: item.color),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 18),
           Text(
             item.value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.manrope(
               color: Colors.white,
-              fontSize: 28,
+              fontSize: 26,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             item.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.manrope(
               color: Colors.white70,
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             item.change,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.manrope(
               color: Colors.white54,
               fontSize: 12,
-              height: 1.5,
+              height: 1.4,
             ),
           ),
         ],

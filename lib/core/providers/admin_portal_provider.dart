@@ -214,18 +214,28 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
   List<AdminModuleItem> modulesForGroup(AdminModuleGroup group) =>
       modules.where((item) => item.group == group).toList(growable: false);
 
+  /// Top-of-dashboard stat cards. `Freelance Enquiries` is backed by the
+  /// real submissions inbox (Firestore `submissions` collection) — no mock
+  /// fallback, so it reads 0 rather than fabricating leads when the inbox
+  /// is genuinely empty. The other three have no tracking pipeline yet
+  /// (visitor counting, resume-download counting, and blog view counting
+  /// are all future work), so they render as an honest "—" placeholder
+  /// rather than a fabricated number.
   List<AdminMetricItem> get dashboardMetrics {
-    final visiblePagesCount = sectionConfigs.where((s) => s.isVisible).length;
-    final featuredProjectCount = projects.where((p) => p.isFeatured).length;
-    final publishedPostCount = ref.read(portfolioProvider).publishedAdminBlogPosts.length;
-    final newLeadsCount = state.liveSubmissions.isNotEmpty
-        ? state.liveSubmissions.where((s) => s.isUnread).length
-        : recentLeads.where((l) => l.unread).length;
+    final totalEnquiries = state.liveSubmissions.length;
+    final unreadEnquiries =
+        state.liveSubmissions.where((s) => s.isUnread).length;
+    final enquiriesChange = !isFirebaseConnected
+        ? 'Firestore not connected'
+        : unreadEnquiries > 0
+            ? '$unreadEnquiries unread'
+            : 'All caught up';
+
     return [
-      AdminMetricItem(label: 'Live Pages', value: visiblePagesCount.toString().padLeft(2, '0'), change: isFirebaseConnected ? 'Synced from Firestore' : 'Using local fallback content', icon: Icons.visibility_rounded, color: AppColors.primaryGreen),
-      AdminMetricItem(label: 'Featured Projects', value: featuredProjectCount.toString().padLeft(2, '0'), change: isFirebaseConnected ? 'Live Firestore collection' : 'Using local fallback projects', icon: Icons.folder_special_rounded, color: const Color(0xFF5CD6FF)),
-      AdminMetricItem(label: 'Published Posts', value: publishedPostCount.toString().padLeft(2, '0'), change: 'Supabase-backed blog posts', icon: Icons.library_books_rounded, color: const Color(0xFFFFB44C)),
-      AdminMetricItem(label: 'New Leads', value: newLeadsCount.toString().padLeft(2, '0'), change: state.liveSubmissions.isNotEmpty ? 'Unread submissions in inbox' : 'Using dashboard fallback inbox', icon: Icons.campaign_rounded, color: const Color(0xFFFF7C7C)),
+      const AdminMetricItem(label: 'New Visitors', value: '—', change: 'Tracking coming soon', icon: Icons.groups_rounded, color: AppColors.primaryGreen),
+      const AdminMetricItem(label: 'Resume Downloads', value: '—', change: 'Tracking coming soon', icon: Icons.download_rounded, color: Color(0xFF5CD6FF)),
+      AdminMetricItem(label: 'Freelance Enquiries', value: totalEnquiries.toString().padLeft(2, '0'), change: enquiriesChange, icon: Icons.campaign_rounded, color: const Color(0xFFFF7C7C)),
+      const AdminMetricItem(label: 'Blog Viewers', value: '—', change: 'Tracking coming soon', icon: Icons.remove_red_eye_rounded, color: Color(0xFFFFB44C)),
     ];
   }
 

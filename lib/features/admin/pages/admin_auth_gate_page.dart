@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/config/app_colors.dart';
 import '../../../core/providers/admin_auth_provider.dart';
+import '../services/admin_auth_service.dart';
 import 'admin_portal_page.dart';
 
 class AdminAuthGatePage extends ConsumerWidget {
@@ -117,11 +118,33 @@ class _AdminSetupState extends StatelessWidget {
   }
 }
 
-class _AdminLoginState extends ConsumerWidget {
+class _AdminLoginState extends ConsumerStatefulWidget {
   const _AdminLoginState();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_AdminLoginState> createState() => _AdminLoginStateState();
+}
+
+class _AdminLoginStateState extends ConsumerState<_AdminLoginState> {
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _submitPassword(WidgetRef ref) {
+    ref
+        .read(adminAuthProvider.notifier)
+        .signInWithPassword(_usernameController.text, _passwordController.text);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(adminAuthProvider);
     final notifier = ref.read(adminAuthProvider.notifier);
 
@@ -188,7 +211,9 @@ class _AdminLoginState extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'This admin portal is wired for Google authentication and Firestore-backed section/content control. Only the approved owner email can enter.',
+                          kAdminUseGoogleSignIn
+                              ? 'This admin portal is wired for Google authentication and Firestore-backed section/content control. Only the approved owner email can enter.'
+                              : 'Temporary sign-in while Google auth is off for testing. Firestore-backed section/content control is otherwise identical.',
                           style: GoogleFonts.manrope(
                             color: Colors.white70,
                             height: 1.7,
@@ -221,7 +246,9 @@ class _AdminLoginState extends ConsumerWidget {
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            'Allowed email: ${notifier.allowedEmail}',
+                            kAdminUseGoogleSignIn
+                                ? 'Allowed email: ${notifier.allowedEmail}'
+                                : 'Temporary access — username & password',
                             style: GoogleFonts.manrope(
                               color: Colors.white60,
                               height: 1.6,
@@ -252,46 +279,146 @@ class _AdminLoginState extends ConsumerWidget {
                             ),
                           ],
                           const SizedBox(height: 22),
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton.icon(
-                              onPressed: authState.isSigningIn
-                                  ? null
-                                  : () => ref.read(adminAuthProvider.notifier).signIn(),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: AppColors.primaryGreen,
-                                foregroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 18,
+                          if (kAdminUseGoogleSignIn)
+                            SizedBox(
+                              width: double.infinity,
+                              child: FilledButton.icon(
+                                onPressed: authState.isSigningIn
+                                    ? null
+                                    : () => ref.read(adminAuthProvider.notifier).signIn(),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.primaryGreen,
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 18,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                                icon: authState.isSigningIn
+                                    ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.black,
+                                            ),
+                                      ),
+                                    )
+                                    : const Icon(Icons.login_rounded),
+                                label: Text(
+                                  authState.isSigningIn
+                                      ? 'Signing in...'
+                                      : 'Continue with Google',
+                                  style: GoogleFonts.manrope(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 15,
+                                  ),
                                 ),
                               ),
-                              icon: authState.isSigningIn
-                                  ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor:
-                                          AlwaysStoppedAnimation<Color>(
-                                            Colors.black,
-                                          ),
-                                    ),
-                                  )
-                                  : const Icon(Icons.login_rounded),
-                              label: Text(
-                                authState.isSigningIn
-                                    ? 'Signing in...'
-                                    : 'Continue with Google',
-                                style: GoogleFonts.manrope(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 15,
+                            )
+                          else ...[
+                            TextField(
+                              controller: _usernameController,
+                              style: GoogleFonts.manrope(color: Colors.white),
+                              decoration: InputDecoration(
+                                labelText: 'Username',
+                                labelStyle: GoogleFonts.manrope(color: Colors.white60),
+                                filled: true,
+                                fillColor: Colors.white.withValues(alpha: 0.04),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: Colors.white.withValues(alpha: 0.12),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.primaryGreen,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
+                            const SizedBox(height: 14),
+                            TextField(
+                              controller: _passwordController,
+                              obscureText: _obscurePassword,
+                              style: GoogleFonts.manrope(color: Colors.white),
+                              onSubmitted: (_) => _submitPassword(ref),
+                              decoration: InputDecoration(
+                                labelText: 'Password',
+                                labelStyle: GoogleFonts.manrope(color: Colors.white60),
+                                filled: true,
+                                fillColor: Colors.white.withValues(alpha: 0.04),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: Colors.white.withValues(alpha: 0.12),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.primaryGreen,
+                                  ),
+                                ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off_rounded
+                                        : Icons.visibility_rounded,
+                                    color: Colors.white60,
+                                  ),
+                                  onPressed: () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 22),
+                            SizedBox(
+                              width: double.infinity,
+                              child: FilledButton.icon(
+                                onPressed: authState.isSigningIn
+                                    ? null
+                                    : () => _submitPassword(ref),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.primaryGreen,
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 18,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                icon: authState.isSigningIn
+                                    ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.black,
+                                            ),
+                                      ),
+                                    )
+                                    : const Icon(Icons.login_rounded),
+                                label: Text(
+                                  authState.isSigningIn ? 'Signing in...' : 'Sign in',
+                                  style: GoogleFonts.manrope(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

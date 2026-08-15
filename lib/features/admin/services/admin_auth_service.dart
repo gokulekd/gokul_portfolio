@@ -4,6 +4,19 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/firebase/firebase_bootstrap.dart';
 
+/// TEMPORARY: Google sign-in is swapped for a simple username/password gate
+/// while testing the admin portal locally. Flip this back to `true` (and it
+/// reverts to Google-only) before shipping to production.
+const bool kAdminUseGoogleSignIn = false;
+
+/// TEMPORARY credentials for the password gate above. Backed by a dedicated
+/// Firebase Auth account (not the real owner Google account) so Firestore's
+/// `request.auth != null` rule is still satisfied. Remove alongside
+/// [kAdminUseGoogleSignIn] before production.
+const String kTempAdminUsername = 'gokuladmin';
+const String kTempAdminPassword = 'GokulAdmin#2026';
+const String _tempAdminEmail = 'temp-admin@gokul-portfolio-dbdda.firebaseapp.com';
+
 class AdminAuthService {
   bool get isEnabled => FirebaseBootstrap.isReady;
 
@@ -22,7 +35,33 @@ class AdminAuthService {
   }
 
   bool isOwner(User? user) {
-    return user?.email?.toLowerCase() == allowedEmail.toLowerCase();
+    final email = user?.email?.toLowerCase();
+    if (email == allowedEmail.toLowerCase()) return true;
+    // TEMPORARY: accept the password-gate's dedicated account too. Remove
+    // this branch when kAdminUseGoogleSignIn is reverted to true.
+    if (!kAdminUseGoogleSignIn && email == _tempAdminEmail.toLowerCase()) {
+      return true;
+    }
+    return false;
+  }
+
+  /// TEMPORARY password-based sign-in — see [kAdminUseGoogleSignIn].
+  Future<String?> signInWithPassword(String username, String password) async {
+    if (!isEnabled) {
+      return FirebaseBootstrap.statusMessage;
+    }
+    if (username.trim() != kTempAdminUsername || password != kTempAdminPassword) {
+      return 'Incorrect username or password.';
+    }
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: _tempAdminEmail,
+        password: kTempAdminPassword,
+      );
+      return null;
+    } catch (error) {
+      return 'Sign-in failed: $error';
+    }
   }
 
   Future<String?> signInWithGoogle() async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'widgets/dashboard_stats_row.dart';
 import 'widgets/main_action_grid.dart';
 
 export 'widgets/main_action_grid.dart';
@@ -14,6 +15,13 @@ class DashboardWorkspace extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MainActionGrid(isCompact: isCompact);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DashboardStatsRow(isCompact: isCompact),
+        const SizedBox(height: 28),
+        MainActionGrid(isCompact: isCompact),
+      ],
+    );
   }
 }
