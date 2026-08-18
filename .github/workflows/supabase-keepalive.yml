@@ -2,8 +2,13 @@ name: Supabase Keep-Alive
 
 on:
   schedule:
-    - cron: "0 5 */3 * *"
+    # Daily, well inside Supabase's free-tier inactivity window — also
+    # shrinks the detection window from 3 days to 1 if a ping ever fails.
+    - cron: "0 5 * * *"
   workflow_dispatch:
+
+permissions:
+  issues: write
 
 jobs:
   ping:
@@ -11,12 +16,14 @@ jobs:
     steps:
       - name: Ping Supabase REST API
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" \
+          response=$(curl -s -o /tmp/response.txt -w "%{http_code}" \
+            --retry 3 --retry-delay 5 --max-time 20 \
             "${SUPABASE_URL}/rest/v1/app_projects?select=id&limit=1" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
 
           echo "Supabase responded with HTTP $response"
+          cat /tmp/response.txt
 
           if [ "$response" -ge 400 ]; then
             echo "Ping failed with status $response"
@@ -25,3 +32,36 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      # Retries transient network blips above, so a failure reaching here is
+      # worth surfacing — most likely the Supabase project got paused again.
+      - name: Open or update issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          existing=$(gh issue list --state open --label supabase-down --json number --jq '.[0].number')
+          timestamp=$(date -u +'%Y-%m-%d %H:%M UTC')
+          if [ -z "$existing" ]; then
+            body="The scheduled Supabase keep-alive ping failed on ${timestamp}. The project is most likely paused — restore it from the Supabase dashboard, then this issue will auto-close on the next successful ping."$'\n\n'"Workflow run: ${RUN_URL}"
+            gh issue create \
+              --title "Supabase project unreachable — keep-alive ping failed" \
+              --label supabase-down \
+              --body "$body"
+          else
+            gh issue comment "$existing" --body "Still failing as of ${timestamp}. Run: ${RUN_URL}"
+          fi
+
+      # Auto-close the tracking issue once Supabase responds again, so the
+      # issue list stays a live signal instead of stale noise.
+      - name: Close tracking issue on recovery
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          existing=$(gh issue list --state open --label supabase-down --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "Supabase responded successfully again on $(date -u +'%Y-%m-%d %H:%M UTC') — closing."
+            gh issue close "$existing"
+          fi
