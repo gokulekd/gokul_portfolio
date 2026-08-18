@@ -4,15 +4,18 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/firebase/firebase_bootstrap.dart';
 
-/// TEMPORARY: Google sign-in is swapped for a simple username/password gate
-/// while testing the admin portal locally. Flip this back to `true` (and it
-/// reverts to Google-only) before shipping to production.
-const bool kAdminUseGoogleSignIn = false;
+/// Google sign-in gates the admin portal in production (release) builds.
+/// Debug builds (`flutter run`, local dev) fall back to the temporary
+/// username/password gate below so the portal can be tested without Google
+/// OAuth configured locally. This follows Flutter's build mode automatically
+/// — release builds (including `build.sh`, which runs `flutter build web
+/// --release`) always get Google sign-in; no manual toggling required.
+const bool kAdminUseGoogleSignIn = kReleaseMode;
 
-/// TEMPORARY credentials for the password gate above. Backed by a dedicated
+/// Debug-only credentials for the password gate above. Backed by a dedicated
 /// Firebase Auth account (not the real owner Google account) so Firestore's
-/// `request.auth != null` rule is still satisfied. Remove alongside
-/// [kAdminUseGoogleSignIn] before production.
+/// `request.auth != null` rule is still satisfied. Only reachable when
+/// [kAdminUseGoogleSignIn] is `false`, i.e. non-release builds.
 const String kTempAdminUsername = 'gokuladmin';
 const String kTempAdminPassword = 'GokulAdmin#2026';
 const String _tempAdminEmail = 'temp-admin@gokul-portfolio-dbdda.firebaseapp.com';
@@ -37,15 +40,15 @@ class AdminAuthService {
   bool isOwner(User? user) {
     final email = user?.email?.toLowerCase();
     if (email == allowedEmail.toLowerCase()) return true;
-    // TEMPORARY: accept the password-gate's dedicated account too. Remove
-    // this branch when kAdminUseGoogleSignIn is reverted to true.
+    // Debug-only: accept the password-gate's dedicated account too. Inert in
+    // release builds, where kAdminUseGoogleSignIn is always true.
     if (!kAdminUseGoogleSignIn && email == _tempAdminEmail.toLowerCase()) {
       return true;
     }
     return false;
   }
 
-  /// TEMPORARY password-based sign-in — see [kAdminUseGoogleSignIn].
+  /// Debug-only password-based sign-in — see [kAdminUseGoogleSignIn].
   Future<String?> signInWithPassword(String username, String password) async {
     if (!isEnabled) {
       return FirebaseBootstrap.statusMessage;

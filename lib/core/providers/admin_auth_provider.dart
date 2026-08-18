@@ -95,7 +95,7 @@ class AdminAuthNotifier extends Notifier<AdminAuthState> {
     state = state.copyWith(isSigningIn: false);
   }
 
-  /// TEMPORARY — see [kAdminUseGoogleSignIn].
+  /// Debug-only — see [kAdminUseGoogleSignIn].
   Future<void> signInWithPassword(String username, String password) async {
     state = state.copyWith(isSigningIn: true, errorMessage: () => null);
     final result = await ref
