@@ -41,7 +41,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          existing=$(gh issue list --state open --label supabase-down --json number --jq '.[0].number')
+          existing=$(gh issue list --state open --label supabase-down --json number --jq '.[0].number // empty')
           timestamp=$(date -u +'%Y-%m-%d %H:%M UTC')
           if [ -z "$existing" ]; then
             body="The scheduled Supabase keep-alive ping failed on ${timestamp}. The project is most likely paused — restore it from the Supabase dashboard, then this issue will auto-close on the next successful ping."$'\n\n'"Workflow run: ${RUN_URL}"
@@ -60,7 +60,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          existing=$(gh issue list --state open --label supabase-down --json number --jq '.[0].number')
+          existing=$(gh issue list --state open --label supabase-down --json number --jq '.[0].number // empty')
           if [ -n "$existing" ]; then
             gh issue comment "$existing" --body "Supabase responded successfully again on $(date -u +'%Y-%m-%d %H:%M UTC') — closing."
             gh issue close "$existing"
