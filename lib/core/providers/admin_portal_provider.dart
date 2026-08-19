@@ -11,6 +11,7 @@ import '../../features/portfolio/models/portfolio_models.dart';
 import '../../features/admin/models/admin_portal_models.dart';
 import '../../features/admin/modules/blog/models/admin_blog_post.dart';
 import '../../features/admin/modules/projects/models/app_project.dart';
+import '../../features/portfolio/models/testimonial_entry.dart';
 import 'admin_auth_provider.dart';
 import 'portfolio_provider.dart';
 import 'service_providers.dart';
@@ -574,18 +575,33 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
     } catch (e) { _handleError(e); }
   }
 
-  Future<void> saveTestimonial(TestimonialItem item) async {
+  // Testimonials are Supabase-backed (public submission + moderation), same
+  // reasoning and shape as `saveBlogPost`/`deleteBlogPost` above.
+  Future<bool> saveTestimonialEntry(TestimonialEntry entry) async {
     try {
-      await ref.read(firebasePortfolioServiceProvider).saveTestimonial(item);
+      final saved = await ref.read(supabaseTestimonialsServiceProvider).save(entry);
+      if (saved == null) return false;
+      await ref.read(portfolioProvider.notifier).refreshTestimonials();
       _clearError();
-    } catch (e) { _handleError(e); }
+      return true;
+    } catch (e) {
+      _handleError(e);
+      return false;
+    }
   }
 
-  Future<void> deleteTestimonial(String id) async {
+  Future<bool> deleteTestimonialEntry(String id) async {
     try {
-      await ref.read(firebasePortfolioServiceProvider).deleteTestimonial(id);
+      final ok = await ref.read(supabaseTestimonialsServiceProvider).delete(id);
+      if (ok) {
+        await ref.read(portfolioProvider.notifier).refreshTestimonials();
+      }
       _clearError();
-    } catch (e) { _handleError(e); }
+      return ok;
+    } catch (e) {
+      _handleError(e);
+      return false;
+    }
   }
 
   Future<void> saveFaqItem(FaqItem item) async {

@@ -8,6 +8,7 @@ import '../../features/admin/modules/blog/models/admin_blog_post.dart';
 import '../../features/admin/modules/projects/models/app_project.dart';
 import '../../features/portfolio/models/firebase_content_models.dart';
 import '../../features/portfolio/models/portfolio_models.dart';
+import '../../features/portfolio/models/testimonial_entry.dart';
 import '../services/devto_service.dart';
 import '../services/github_service.dart';
 import 'service_providers.dart';
@@ -36,7 +37,7 @@ class PortfolioState {
     required this.experienceStrengths,
     required this.achievements,
     required this.processSteps,
-    required this.testimonials,
+    this.testimonials = const [],
     required this.faqItems,
     required this.devAreas,
     required this.stats,
@@ -65,7 +66,7 @@ class PortfolioState {
   final List<ExperienceStrengthItem> experienceStrengths;
   final List<AchievementItem> achievements;
   final List<ProcessStepItem> processSteps;
-  final List<TestimonialItem> testimonials;
+  final List<TestimonialEntry> testimonials;
   final List<FaqItem> faqItems;
   final List<DevAreaItem> devAreas;
   final List<StatItem> stats;
@@ -122,7 +123,7 @@ class PortfolioState {
   List<ProcessStepItem> get visibleProcessSteps =>
       processSteps.where((p) => p.isVisible).toList();
 
-  List<TestimonialItem> get visibleTestimonials =>
+  List<TestimonialEntry> get visibleTestimonials =>
       testimonials.where((t) => t.isVisible).toList();
 
   List<FaqItem> get visibleFaqItems => faqItems.where((f) => f.isVisible).toList();
@@ -182,7 +183,7 @@ class PortfolioState {
     List<ExperienceStrengthItem>? experienceStrengths,
     List<AchievementItem>? achievements,
     List<ProcessStepItem>? processSteps,
-    List<TestimonialItem>? testimonials,
+    List<TestimonialEntry>? testimonials,
     List<FaqItem>? faqItems,
     List<DevAreaItem>? devAreas,
     List<StatItem>? stats,
@@ -248,7 +249,6 @@ class PortfolioState {
         experienceStrengths: ExperienceStrengthItem.defaults(),
         achievements: AchievementItem.defaults(),
         processSteps: ProcessStepItem.defaults(),
-        testimonials: TestimonialItem.defaults(),
         faqItems: FaqItem.defaults(),
         devAreas: DevAreaItem.defaults(),
         stats: StatItem.defaults(),
@@ -358,13 +358,6 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
         );
       });
 
-      final s14 = firebaseService.streamTestimonials().listen((list) {
-        if (list.isEmpty) return;
-        state = state.copyWith(
-          testimonials: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
-        );
-      });
-
       final s15 = firebaseService.streamFaq().listen((list) {
         if (list.isEmpty) return;
         state = state.copyWith(
@@ -401,7 +394,7 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
       });
 
       ref.onDispose(() {
-        for (final s in [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19]) {
+        for (final s in [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s15, s16, s17, s18, s19]) {
           s.cancel();
         }
       });
@@ -412,6 +405,7 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
       _fetchBlogPosts();
       _loadAppProjects(projectsService);
       _loadAdminBlogPosts(ref.read(supabaseBlogServiceProvider));
+      _loadTestimonials(ref.read(supabaseTestimonialsServiceProvider));
     });
 
     return PortfolioState.initial();
@@ -501,6 +495,11 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
     state = state.copyWith(adminBlogPosts: list);
   }
 
+  Future<void> _loadTestimonials(dynamic testimonialsService) async {
+    final list = await testimonialsService.fetchAll();
+    state = state.copyWith(testimonials: list);
+  }
+
   // ─── Public actions ──────────────────────────────────────────────────────
 
   void changePage(int index) => state = state.copyWith(currentPageIndex: index);
@@ -524,6 +523,12 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
   /// or the Blog page stays stale until a hard reload.
   Future<void> refreshAdminBlogPosts() =>
       _loadAdminBlogPosts(ref.read(supabaseBlogServiceProvider));
+
+  /// Re-fetches testimonials (all statuses) after a public submission or an
+  /// admin approve/hide/edit/delete, so both the moderation list and the
+  /// public `visibleTestimonials` feed stay current without a page reload.
+  Future<void> refreshTestimonials() =>
+      _loadTestimonials(ref.read(supabaseTestimonialsServiceProvider));
 
   Future<void> launchEmail({String? subject, String? body}) async {
     final emailUri = Uri(

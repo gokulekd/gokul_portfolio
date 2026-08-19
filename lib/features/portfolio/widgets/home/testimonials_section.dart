@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/providers/portfolio_provider.dart';
-import '../../models/site_content_models.dart';
+import '../../../../core/routes/app_routes.dart';
+import '../../models/testimonial_entry.dart';
 
 // `Testimonial` used to be the hardcoded card data; the section now reads
-// `TestimonialItem` from Firestore (`site_content_models.dart`) via
-// `portfolioProvider.visibleTestimonials`.
+// `TestimonialEntry` from Supabase (`testimonial_entry.dart`) via
+// `portfolioProvider.visibleTestimonials` — populated by real submissions
+// from `/leave-a-review`, approved in the admin portal.
 
 class TestimonialsSectionNew extends ConsumerStatefulWidget {
   const TestimonialsSectionNew({super.key});
@@ -142,38 +145,45 @@ class _TestimonialsSectionNewState
                 ),
               ),
               const SizedBox(height: 60),
-              // Testimonials carousel
-              SizedBox(
-                height: isMobile ? 320 : 360,
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  scrollDirection: Axis.horizontal,
-                  physics: const NeverScrollableScrollPhysics(),
-                  child: Row(
-                    children: [
-                      // Duplicate testimonials for seamless loop
-                      ...List.generate(3, (index) {
-                        return Row(
-                          children:
-                              testimonials
-                                  .map(
-                                    (testimonial) => Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
+              // Testimonials carousel (or an invite to be the first, once
+              // approved submissions run out).
+              if (testimonials.isEmpty)
+                _buildEmptyState(context, isMobile)
+              else ...[
+                SizedBox(
+                  height: isMobile ? 320 : 360,
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    scrollDirection: Axis.horizontal,
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: Row(
+                      children: [
+                        // Duplicate testimonials for seamless loop
+                        ...List.generate(3, (index) {
+                          return Row(
+                            children:
+                                testimonials
+                                    .map(
+                                      (testimonial) => Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                        ),
+                                        child: _buildTestimonialCard(
+                                          testimonial,
+                                          isMobile,
+                                        ),
                                       ),
-                                      child: _buildTestimonialCard(
-                                        testimonial,
-                                        isMobile,
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                        );
-                      }),
-                    ],
+                                    )
+                                    .toList(),
+                          );
+                        }),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 32),
+                _buildShareLink(context),
+              ],
             ],
           ),
         ],
@@ -181,7 +191,76 @@ class _TestimonialsSectionNewState
     );
   }
 
-  Widget _buildTestimonialCard(TestimonialItem testimonial, bool isMobile) {
+  Widget _buildEmptyState(BuildContext context, bool isMobile) {
+    return Container(
+      width: isMobile ? double.infinity : 480,
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+      decoration: BoxDecoration(
+        color: const Color(0xFF17181A),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.rate_review_rounded,
+            size: 32,
+            color: AppColors.primaryGreen.withValues(alpha: 0.8),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No testimonials yet — be the first.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.manrope(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Worked with me? I'd love to hear about it.",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.manrope(fontSize: 14, color: Colors.grey[400]),
+          ),
+          const SizedBox(height: 24),
+          _leaveReviewButton(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShareLink(BuildContext context) {
+    return TextButton.icon(
+      onPressed: () => context.go(AppRoutes.leaveReview),
+      style: TextButton.styleFrom(foregroundColor: AppColors.primaryGreen),
+      icon: const Icon(Icons.add_comment_rounded, size: 16),
+      label: Text(
+        'Worked with me? Share your experience',
+        style: GoogleFonts.manrope(fontWeight: FontWeight.w700, fontSize: 13),
+      ),
+    );
+  }
+
+  Widget _leaveReviewButton(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: () => context.go(AppRoutes.leaveReview),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primaryGreen,
+        foregroundColor: Colors.black,
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        elevation: 0,
+      ),
+      icon: const Icon(Icons.edit_note_rounded, size: 18),
+      label: Text(
+        'Leave a review',
+        style: GoogleFonts.manrope(fontWeight: FontWeight.w800, fontSize: 14),
+      ),
+    );
+  }
+
+  Widget _buildTestimonialCard(TestimonialEntry testimonial, bool isMobile) {
     return Container(
       width: isMobile ? 320 : 400,
       height: isMobile ? 320 : 360,

@@ -437,18 +437,9 @@ class FirebasePortfolioService {
   Future<void> deleteProcessStep(String id) =>
       isEnabled ? _processStepsRepo.delete(id) : Future.value();
 
-  FirestoreListRepository<TestimonialItem> get _testimonialsRepo => _repo(
-    collectionPath: 'testimonials',
-    fromFirestore: TestimonialItem.fromFirestore,
-    toFirestore: (item) => item.toFirestore(),
-  );
-
-  Stream<List<TestimonialItem>> streamTestimonials() =>
-      isEnabled ? _testimonialsRepo.stream() : Stream.value(const []);
-  Future<void> saveTestimonial(TestimonialItem item) =>
-      isEnabled ? _testimonialsRepo.save(item.id, item) : Future.value();
-  Future<void> deleteTestimonial(String id) =>
-      isEnabled ? _testimonialsRepo.delete(id) : Future.value();
+  // Testimonials moved to Supabase (see `SupabaseTestimonialsService`) so
+  // public submissions can carry a moderation status and an uploaded photo —
+  // no Firestore repo for them here anymore.
 
   FirestoreListRepository<FaqItem> get _faqRepo => _repo(
     collectionPath: 'faq',
@@ -571,13 +562,6 @@ class FirebasePortfolioService {
       _processStepsRepo.seedIfEmpty(
         seedOf(
           ProcessStepItem.defaults(),
-          (i) => i.id,
-          (i) => i.toFirestore(),
-        ),
-      ),
-      _testimonialsRepo.seedIfEmpty(
-        seedOf(
-          TestimonialItem.defaults(),
           (i) => i.id,
           (i) => i.toFirestore(),
         ),
