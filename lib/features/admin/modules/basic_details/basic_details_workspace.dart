@@ -31,7 +31,6 @@ class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
   late final TextEditingController _twitterCtrl;
   late final TextEditingController _githubCtrl;
   late final TextEditingController _mediumCtrl;
-  late final TextEditingController _instagramCtrl;
   late final TextEditingController _emailCtrl;
   late final TextEditingController _bioCtrl;
   late final TextEditingController _locationCtrl;
@@ -50,7 +49,6 @@ class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
     _twitterCtrl = TextEditingController(text: d.twitterUrl);
     _githubCtrl = TextEditingController(text: d.githubUrl);
     _mediumCtrl = TextEditingController(text: d.mediumUrl);
-    _instagramCtrl = TextEditingController(text: d.instagramUrl);
     _emailCtrl = TextEditingController(text: d.email);
     _bioCtrl = TextEditingController(text: d.bio);
     _locationCtrl = TextEditingController(text: d.location);
@@ -63,7 +61,6 @@ class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
     _twitterCtrl.text = d.twitterUrl;
     _githubCtrl.text = d.githubUrl;
     _mediumCtrl.text = d.mediumUrl;
-    _instagramCtrl.text = d.instagramUrl;
     _emailCtrl.text = d.email;
     _bioCtrl.text = d.bio;
     _locationCtrl.text = d.location;
@@ -77,7 +74,6 @@ class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
     _twitterCtrl.dispose();
     _githubCtrl.dispose();
     _mediumCtrl.dispose();
-    _instagramCtrl.dispose();
     _emailCtrl.dispose();
     _bioCtrl.dispose();
     _locationCtrl.dispose();
@@ -102,7 +98,6 @@ class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
       twitterUrl: _twitterCtrl.text.trim(),
       githubUrl: _githubCtrl.text.trim(),
       mediumUrl: _mediumCtrl.text.trim(),
-      instagramUrl: _instagramCtrl.text.trim(),
       email: _emailCtrl.text.trim(),
       bio: _bioCtrl.text.trim(),
       location: _locationCtrl.text.trim(),
@@ -231,12 +226,6 @@ class _BasicDetailsWorkspaceState extends ConsumerState<BasicDetailsWorkspace> {
           AdminFormRow(
             compact: widget.isCompact,
             children: [
-              AdminFormField(
-                controller: _instagramCtrl,
-                label: 'Instagram URL',
-                hint: 'https://instagram.com/...',
-                icon: Icons.camera_alt_rounded,
-              ),
               AdminFormField(
                 controller: _emailCtrl,
                 label: 'Official Email',

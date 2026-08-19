@@ -397,9 +397,7 @@ class FooterSection extends ConsumerWidget {
   }
 
   Widget _buildSocialLinks(PortfolioState state, WidgetRef ref) {
-    final links = state.personalInfo.socialLinks
-        .where((l) => l.platform.toLowerCase() != 'instagram')
-        .toList();
+    final links = state.personalInfo.socialLinks;
 
     return Wrap(
       spacing: 16,

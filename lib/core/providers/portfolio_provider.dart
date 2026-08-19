@@ -235,8 +235,6 @@ class PortfolioState {
             SocialLink(platform: 'LinkedIn', url: 'https://linkedin.com/in/gokul-k-s', icon: 'linkedin'),
             SocialLink(platform: 'GitHub', url: 'https://github.com/${GitHubService.username}', icon: 'github'),
             SocialLink(platform: 'Medium', url: 'https://medium.com/@gokulks', icon: 'medium'),
-            SocialLink(platform: 'Instagram', url: 'https://instagram.com/gokulks', icon: 'instagram'),
-            SocialLink(platform: 'Facebook', url: 'https://facebook.com/gokulks', icon: 'facebook'),
           ],
         ),
         experiences: Experience.defaults(),
@@ -421,7 +419,6 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
       if (details.twitterUrl.isNotEmpty) SocialLink(platform: 'Twitter', url: details.twitterUrl, icon: 'twitter'),
       if (details.githubUrl.isNotEmpty) SocialLink(platform: 'GitHub', url: details.githubUrl, icon: 'github'),
       if (details.mediumUrl.isNotEmpty) SocialLink(platform: 'Medium', url: details.mediumUrl, icon: 'medium'),
-      if (details.instagramUrl.isNotEmpty) SocialLink(platform: 'Instagram', url: details.instagramUrl, icon: 'instagram'),
     ];
     state = state.copyWith(
       personalInfo: PersonalInfo(
@@ -436,6 +433,10 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
     );
   }
 
+  // Platforms we no longer want surfaced anywhere on the portfolio, even if
+  // a stale entry still exists in Firestore's managed social links.
+  static const _hiddenPlatforms = {'facebook', 'instagram'};
+
   void _applyManagedSocialLinks(List<ManagedSocialLink> links) {
     if (_hasBasicDetails) return;
     final current = state.personalInfo;
@@ -444,6 +445,7 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
     final emailLink = visible.firstWhereOrNull((l) => l.type == 'email');
     final socialLinks = visible
         .where((l) => l.type != 'email')
+        .where((l) => !_hiddenPlatforms.contains(l.platform.toLowerCase()))
         .map((l) => SocialLink(platform: l.platform, url: l.value, icon: l.platform.toLowerCase()))
         .toList(growable: false);
     state = state.copyWith(

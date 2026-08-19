@@ -203,7 +203,6 @@ class BasicDetails {
     this.twitterUrl = '',
     this.githubUrl = '',
     this.mediumUrl = '',
-    this.instagramUrl = '',
     this.email = '',
     this.bio = '',
     this.location = '',
@@ -216,7 +215,6 @@ class BasicDetails {
   final String twitterUrl;
   final String githubUrl;
   final String mediumUrl;
-  final String instagramUrl;
   final String email;
   final String bio;
   final String location;
@@ -233,7 +231,6 @@ class BasicDetails {
       twitterUrl: data['twitterUrl'] as String? ?? '',
       githubUrl: data['githubUrl'] as String? ?? '',
       mediumUrl: data['mediumUrl'] as String? ?? '',
-      instagramUrl: data['instagramUrl'] as String? ?? '',
       email: data['email'] as String? ?? '',
       bio: data['bio'] as String? ?? '',
       location: data['location'] as String? ?? '',
@@ -249,7 +246,6 @@ class BasicDetails {
       'twitterUrl': twitterUrl,
       'githubUrl': githubUrl,
       'mediumUrl': mediumUrl,
-      'instagramUrl': instagramUrl,
       'email': email,
       'bio': bio,
       'location': location,
@@ -264,7 +260,6 @@ class BasicDetails {
     String? twitterUrl,
     String? githubUrl,
     String? mediumUrl,
-    String? instagramUrl,
     String? email,
     String? bio,
     String? location,
@@ -276,7 +271,6 @@ class BasicDetails {
       twitterUrl: twitterUrl ?? this.twitterUrl,
       githubUrl: githubUrl ?? this.githubUrl,
       mediumUrl: mediumUrl ?? this.mediumUrl,
-      instagramUrl: instagramUrl ?? this.instagramUrl,
       email: email ?? this.email,
       bio: bio ?? this.bio,
       location: location ?? this.location,
@@ -291,7 +285,6 @@ class BasicDetails {
       twitterUrl: '',
       githubUrl: '',
       mediumUrl: '',
-      instagramUrl: '',
       email: 'gokulofficialcommunication@gmail.com',
       bio:
           "I'm dedicated to crafting apps that bring your ideas to life, combining design and development to deliver fast, impactful results.",
@@ -394,19 +387,11 @@ class ManagedSocialLink {
         isVisible: true,
       ),
       ManagedSocialLink(
-        id: 'instagram',
-        platform: 'Instagram',
-        value: 'https://instagram.com/gokulks',
-        type: 'url',
-        displayOrder: 5,
-        isVisible: true,
-      ),
-      ManagedSocialLink(
         id: 'email',
         platform: 'Email',
         value: 'gokulofficialcommunication@gmail.com',
         type: 'email',
-        displayOrder: 6,
+        displayOrder: 5,
         isVisible: true,
       ),
     ];

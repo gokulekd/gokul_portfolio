@@ -172,9 +172,7 @@ class _HeroSectionState extends ConsumerState<HeroSection>
   }
 
   Widget _buildSocialLinks(double socialIconScale, BuildContext context) {
-    final links = ref.watch(portfolioProvider).personalInfo.socialLinks
-        .where((l) => l.platform.toLowerCase() != 'instagram')
-        .toList();
+    final links = ref.watch(portfolioProvider).personalInfo.socialLinks;
     final gap = SizedBox(width: ResponsiveHelper.isMobile(context) ? 16.0 : 24.0);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,

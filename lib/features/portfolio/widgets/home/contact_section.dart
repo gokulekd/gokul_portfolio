@@ -63,15 +63,6 @@ class ContactSection extends ConsumerWidget {
           size: 22,
         ),
       ),
-      SocialPlatform(
-        name: "Instagram",
-        url: urlFor('Instagram'),
-        icon: const FaIcon(
-          FontAwesomeIcons.instagram,
-          color: Colors.black,
-          size: 22,
-        ),
-      ),
     ];
   }
 
@@ -186,19 +177,9 @@ class ContactSection extends ConsumerWidget {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _buildSocialCard(
-                                        platforms[4],
-                                        context,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: _buildGetInTouchCard(context, ref),
-                                    ),
-                                  ],
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: _buildGetInTouchCard(context, ref),
                                 ),
                               ],
                             )
@@ -234,13 +215,6 @@ class ContactSection extends ConsumerWidget {
                                     Expanded(
                                       child: _buildSocialCard(
                                         platforms[3],
-                                        context,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: _buildSocialCard(
-                                        platforms[4],
                                         context,
                                       ),
                                     ),

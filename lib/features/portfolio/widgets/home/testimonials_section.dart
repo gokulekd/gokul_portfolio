@@ -173,7 +173,7 @@ class _TestimonialsSectionNewState
                 _buildShareLink(context),
               ] else ...[
                 SizedBox(
-                  height: isMobile ? 320 : 360,
+                  height: isMobile ? 380 : 420,
                   child: SingleChildScrollView(
                     controller: _scrollController,
                     scrollDirection: Axis.horizontal,
@@ -285,7 +285,7 @@ class _TestimonialsSectionNewState
   Widget _buildTestimonialCard(TestimonialEntry testimonial, bool isMobile) {
     return Container(
       width: isMobile ? 320 : 400,
-      height: isMobile ? 320 : 360,
+      height: isMobile ? 380 : 420,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: const Color(0xFF2C2C2C),
