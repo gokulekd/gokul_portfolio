@@ -154,7 +154,7 @@ class _TestimonialSubmissionPageState
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 620),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _submitted ? _buildSuccess(isMobile) : _buildForm(isMobile),
                 ],
@@ -168,9 +168,11 @@ class _TestimonialSubmissionPageState
 
   Widget _buildForm(bool isMobile) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               '{06} – Share your experience',
@@ -190,6 +192,7 @@ class _TestimonialSubmissionPageState
         const SizedBox(height: 14),
         Text(
           'Write me a review',
+          textAlign: TextAlign.center,
           style: GoogleFonts.manrope(
             fontSize: isMobile ? 34 : 44,
             fontWeight: FontWeight.w800,
@@ -202,6 +205,7 @@ class _TestimonialSubmissionPageState
           "If we've worked together, I'd love a few honest words from you. "
           "Add a photo if you like — it goes a long way. Submissions are "
           "reviewed before they appear on the portfolio.",
+          textAlign: TextAlign.center,
           style: GoogleFonts.manrope(
             fontSize: 15.5,
             color: Colors.white.withValues(alpha: 0.68),
@@ -218,7 +222,7 @@ class _TestimonialSubmissionPageState
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Center(child: _buildAvatarPicker()),
               const SizedBox(height: 16),
@@ -561,10 +565,11 @@ class _FieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           label,
+          textAlign: TextAlign.center,
           style: GoogleFonts.manrope(
             color: Colors.white54,
             fontSize: 12,
@@ -587,6 +592,7 @@ class _StarRatingInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ...List.generate(5, (index) {
           final starValue = index + 1;
