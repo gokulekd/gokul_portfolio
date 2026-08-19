@@ -245,6 +245,7 @@ class _TestimonialSubmissionPageState
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(isMobile ? 24 : 40),
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: const Color(0xFF111111),
             borderRadius: BorderRadius.circular(28),
@@ -422,22 +423,36 @@ class _TestimonialSubmissionPageState
   }
 
   Widget _buildAvatarWheel(bool isMobile) {
+    final headingStyle = GoogleFonts.manrope(
+      color: Colors.white,
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+    );
+
     return Column(
       children: [
-        Text(
-          'Upload a photo -- OR -- Choose a avatar',
-          style: GoogleFonts.manrope(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+        // On a narrow phone "Upload a photo -- OR -- Choose avatar" wraps
+        // mid-sentence at an arbitrary point, so stack it as three short,
+        // centered lines instead of one long one.
+        if (isMobile) ...[
+          Text('Upload a photo', textAlign: TextAlign.center, style: headingStyle),
+          const SizedBox(height: 4),
+          Text('-- OR --', textAlign: TextAlign.center, style: headingStyle),
+          const SizedBox(height: 4),
+          Text('Choose avatar', textAlign: TextAlign.center, style: headingStyle),
+        ] else
+          Text(
+            'Upload a photo -- OR -- Choose avatar',
+            textAlign: TextAlign.center,
+            style: headingStyle,
           ),
-        ),
         const SizedBox(height: 6),
         Text(
           'Scroll left or right — the centered one is selected',
+          textAlign: TextAlign.center,
           style: GoogleFonts.manrope(
             color: Colors.white,
-            fontSize: 14,
+            fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -445,8 +460,8 @@ class _TestimonialSubmissionPageState
         _AvatarWheelPicker(
           itemCount: presetAvatars.length + 1,
           initialIndex: _activeAvatarIndex,
-          viewportFraction: isMobile ? 0.15 : 0.068,
-          itemHeight: isMobile ? 122 : 132,
+          viewportFraction: isMobile ? 0.2 : 0.09,
+          itemHeight: isMobile ? 142 : 152,
           onCenterChanged: _onAvatarWheelCentered,
           onTapCentered: _onAvatarWheelTapCentered,
           itemBuilder:
@@ -458,16 +473,37 @@ class _TestimonialSubmissionPageState
                         isSelected,
                       ),
         ),
+        // Only shows once a photo has actually been picked *and* the upload
+        // tile is the one currently centered — scrolling to a preset avatar
+        // hides it again, since "Change" wouldn't apply to what's selected.
+        if (_avatarBytes != null && _activeAvatarIndex == 0) ...[
+          const SizedBox(height: 16),
+          TextButton.icon(
+            onPressed: _isUploadingAvatar ? null : _pickAvatar,
+            style: TextButton.styleFrom(foregroundColor: AppColors.primaryGreen),
+            icon: const Icon(Icons.sync_alt_rounded, size: 16),
+            label: Text(
+              'Change',
+              style: GoogleFonts.manrope(fontWeight: FontWeight.w700, fontSize: 13),
+            ),
+          ),
+        ],
       ],
     );
   }
 
-  /// The wheel's first slot: shows the picked photo (or a placeholder) with
-  /// a small camera badge. Tapping it while centered opens the file picker.
+  // Base diameter for every wheel circle — the upload tile and preset
+  // avatars share this so the wheel's overlap math stays consistent.
+  static const double _avatarBaseSize = 84;
+
+  /// The wheel's first slot: shows the picked photo, or a plain camera icon
+  /// placeholder. Tapping it while centered opens the file picker. Solid
+  /// (opaque) fill throughout — these circles stack on top of each other in
+  /// the wheel, so any translucency here lets the ones behind bleed through.
   Widget _uploadTileVisual(bool isSelected) {
     return Container(
-      width: 64,
-      height: 64,
+      width: _avatarBaseSize,
+      height: _avatarBaseSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.white,
@@ -476,7 +512,7 @@ class _TestimonialSubmissionPageState
               isSelected
                   ? AppColors.primaryGreen
                   : Colors.white.withValues(alpha: 0.14),
-          width: isSelected ? 2.5 : 1.5,
+          width: isSelected ? 3 : 1.5,
         ),
       ),
       clipBehavior: Clip.antiAlias,
@@ -487,18 +523,22 @@ class _TestimonialSubmissionPageState
             Image.memory(
               _avatarBytes!,
               fit: BoxFit.cover,
-              width: 64,
-              height: 64,
+              width: _avatarBaseSize,
+              height: _avatarBaseSize,
             )
           else
-            Icon(Icons.add_a_photo_rounded, size: 22, color: Colors.black),
+            const Icon(
+              Icons.add_a_photo_rounded,
+              size: 29,
+              color: Colors.black,
+            ),
           if (_isUploadingAvatar)
             Container(
               color: Colors.black54,
               child: const Center(
                 child: SizedBox(
-                  width: 20,
-                  height: 20,
+                  width: 26,
+                  height: 26,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation(AppColors.primaryGreen),
@@ -506,24 +546,6 @@ class _TestimonialSubmissionPageState
                 ),
               ),
             ),
-          Positioned(
-            bottom: -2,
-            right: -2,
-            child: Container(
-              width: 22,
-              height: 22,
-              decoration: BoxDecoration(
-                color: AppColors.primaryGreen,
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF111111), width: 2),
-              ),
-              child: const Icon(
-                Icons.camera_alt_rounded,
-                size: 11,
-                color: Colors.black,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -532,28 +554,30 @@ class _TestimonialSubmissionPageState
   /// Pure visual for one preset avatar circle — no gesture handling. The
   /// wheel picker owns tap-to-select (it also animates the wheel to center
   /// the tapped item), so this just renders the image + selection ring.
+  /// Solid (opaque) fallback fill for the same bleed-through reason as above.
   Widget _avatarThumbVisual(PresetAvatar preset, bool isSelected) {
     return Container(
-      width: 64,
-      height: 64,
+      width: _avatarBaseSize,
+      height: _avatarBaseSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
+        color: const Color(0xFF2A2A2C),
         border: Border.all(
           color: isSelected ? AppColors.primaryGreen : Colors.transparent,
-          width: 2.5,
+          width: 3,
         ),
       ),
-      padding: const EdgeInsets.all(2.5),
+      padding: const EdgeInsets.all(3),
       child: ClipOval(
         child: Image.network(
           preset.url,
           fit: BoxFit.cover,
           errorBuilder:
               (_, __, ___) => Container(
-                color: Colors.white.withValues(alpha: 0.06),
+                color: const Color(0xFF2A2A2C),
                 child: Icon(
                   Icons.person_rounded,
-                  size: 24,
+                  size: 32,
                   color: Colors.white.withValues(alpha: 0.25),
                 ),
               ),
@@ -897,7 +921,7 @@ class _AvatarWheelPickerState extends State<_AvatarWheelPicker>
               onHorizontalDragUpdate: _onDragUpdate,
               onHorizontalDragEnd: _onDragEnd,
               child: Stack(
-                clipBehavior: Clip.none,
+                clipBehavior: Clip.hardEdge,
                 children: [
                   for (final rawIndex in rawIndices)
                     Builder(
