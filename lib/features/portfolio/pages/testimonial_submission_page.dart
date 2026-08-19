@@ -10,6 +10,7 @@ import '../../../core/config/app_colors.dart';
 import '../../../core/providers/service_providers.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/services/supabase_storage_service.dart';
+import '../models/preset_avatars.dart';
 import '../models/testimonial_entry.dart';
 import '../widgets/shared/custom_widgets.dart';
 
@@ -220,6 +221,8 @@ class _TestimonialSubmissionPageState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(child: _buildAvatarPicker()),
+              const SizedBox(height: 16),
+              _buildPresetAvatarPicker(),
               const SizedBox(height: 28),
               Row(
                 children: [
@@ -341,7 +344,17 @@ class _TestimonialSubmissionPageState
             clipBehavior: Clip.antiAlias,
             child: _avatarBytes != null
                 ? Image.memory(_avatarBytes!, fit: BoxFit.cover)
-                : Icon(Icons.person_rounded, size: 40, color: Colors.white.withValues(alpha: 0.25)),
+                : _avatarUrl.isNotEmpty
+                    ? Image.network(
+                        _avatarUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.person_rounded,
+                          size: 40,
+                          color: Colors.white.withValues(alpha: 0.25),
+                        ),
+                      )
+                    : Icon(Icons.person_rounded, size: 40, color: Colors.white.withValues(alpha: 0.25)),
           ),
           Positioned(
             bottom: 0,
@@ -367,6 +380,67 @@ class _TestimonialSubmissionPageState
           ),
         ],
       ),
+    );
+  }
+
+  void _selectPresetAvatar(PresetAvatar preset) {
+    setState(() {
+      _avatarBytes = null;
+      _avatarUrl = preset.url;
+      _errorMessage = null;
+    });
+  }
+
+  Widget _buildPresetAvatarPicker() {
+    return Column(
+      children: [
+        Text(
+          "Don't want to upload a photo? Pick an avatar",
+          style: GoogleFonts.manrope(
+            color: Colors.white.withValues(alpha: 0.45),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          alignment: WrapAlignment.center,
+          children: presetAvatars.map((preset) {
+            final isSelected = _avatarBytes == null && _avatarUrl == preset.url;
+            return GestureDetector(
+              onTap: () => _selectPresetAvatar(preset),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                padding: const EdgeInsets.all(2),
+                child: ClipOval(
+                  child: Image.network(
+                    preset.url,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      child: Icon(
+                        Icons.person_rounded,
+                        size: 18,
+                        color: Colors.white.withValues(alpha: 0.25),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
