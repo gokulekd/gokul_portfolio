@@ -6,6 +6,7 @@ import '../../features/admin/services/admin_auth_service.dart';
 import '../services/contact_service.dart';
 import '../services/firebase_portfolio_service.dart';
 import '../services/supabase_storage_service.dart';
+import '../services/supabase_testimonials_service.dart';
 
 final firebasePortfolioServiceProvider = Provider<FirebasePortfolioService>((ref) {
   return FirebasePortfolioService();
@@ -25,6 +26,10 @@ final supabaseProjectsServiceProvider = Provider<SupabaseProjectsService>((ref) 
 
 final supabaseBlogServiceProvider = Provider<SupabaseBlogService>((ref) {
   return SupabaseBlogService();
+});
+
+final supabaseTestimonialsServiceProvider = Provider<SupabaseTestimonialsService>((ref) {
+  return SupabaseTestimonialsService();
 });
 
 final contactServiceProvider = Provider<ContactService>((ref) {

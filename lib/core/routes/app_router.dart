@@ -53,5 +53,9 @@ final appRouter = GoRouter(
       path: AppRoutes.admin,
       builder: (context, state) => AdminAuthGatePage(),
     ),
+    GoRoute(
+      path: AppRoutes.leaveReview,
+      builder: (context, state) => const TestimonialSubmissionPage(),
+    ),
   ],
 );
