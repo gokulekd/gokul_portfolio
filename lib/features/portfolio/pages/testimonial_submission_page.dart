@@ -11,6 +11,7 @@ import '../../../core/providers/service_providers.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/services/supabase_storage_service.dart';
 import '../models/testimonial_entry.dart';
+import '../widgets/shared/custom_widgets.dart';
 
 /// Public, shareable page (`/leave-a-review`) where friends, coworkers, and
 /// clients can submit a testimonial directly: name, role, an optional photo,
@@ -139,6 +140,8 @@ class _TestimonialSubmissionPageState
     final isMobile = MediaQuery.of(context).size.width < 700;
 
     return Scaffold(
+      appBar: const CustomAppBar(),
+      drawer: const CustomDrawer(),
       backgroundColor: Colors.black,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -152,8 +155,6 @@ class _TestimonialSubmissionPageState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _BackHomeLink(onTap: () => context.go(AppRoutes.home)),
-                  const SizedBox(height: 28),
                   _submitted ? _buildSuccess(isMobile) : _buildForm(isMobile),
                 ],
               ),
@@ -471,34 +472,6 @@ class _TestimonialSubmissionPageState
                 child: Text('Back to portfolio', style: GoogleFonts.manrope(fontWeight: FontWeight.w800)),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BackHomeLink extends StatelessWidget {
-  const _BackHomeLink({required this.onTap});
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.arrow_back_rounded, size: 16, color: Colors.white.withValues(alpha: 0.6)),
-          const SizedBox(width: 6),
-          Text(
-            'Back to portfolio',
-            style: GoogleFonts.manrope(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.white.withValues(alpha: 0.6),
-            ),
           ),
         ],
       ),
