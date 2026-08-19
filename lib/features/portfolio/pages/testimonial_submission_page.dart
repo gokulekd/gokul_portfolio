@@ -226,30 +226,47 @@ class _TestimonialSubmissionPageState
             children: [
               Center(child: _buildAvatarPicker()),
               const SizedBox(height: 16),
-              _buildPresetAvatarPicker(),
+              _buildPresetAvatarPicker(isMobile),
               const SizedBox(height: 28),
-              Row(
-                children: [
-                  Expanded(
-                    child: _FieldLabel(
-                      label: 'Your name',
-                      child: _textField(_nameCtrl, hint: 'e.g. Priya Nair'),
+              if (isMobile) ...[
+                _FieldLabel(
+                  label: 'Your name',
+                  child: _textField(_nameCtrl, hint: 'e.g. Priya Nair'),
+                ),
+                const SizedBox(height: 18),
+                _FieldLabel(
+                  label: 'Your role',
+                  child: _textField(_roleCtrl, hint: 'e.g. Product Designer'),
+                ),
+                const SizedBox(height: 18),
+                _FieldLabel(
+                  label: 'Company / Team (optional)',
+                  child: _textField(_companyCtrl, hint: 'e.g. Acme Studio'),
+                ),
+              ] else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FieldLabel(
+                        label: 'Your name',
+                        child: _textField(_nameCtrl, hint: 'e.g. Priya Nair'),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: _FieldLabel(
-                      label: 'Your role',
-                      child: _textField(_roleCtrl, hint: 'e.g. Product Designer'),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: _FieldLabel(
+                        label: 'Your role',
+                        child: _textField(_roleCtrl, hint: 'e.g. Product Designer'),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              _FieldLabel(
-                label: 'Company / Team (optional)',
-                child: _textField(_companyCtrl, hint: 'e.g. Acme Studio'),
-              ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                _FieldLabel(
+                  label: 'Company / Team (optional)',
+                  child: _textField(_companyCtrl, hint: 'e.g. Acme Studio'),
+                ),
+              ],
               const SizedBox(height: 18),
               _FieldLabel(
                 label: 'Your rating',
@@ -395,7 +412,14 @@ class _TestimonialSubmissionPageState
     });
   }
 
-  Widget _buildPresetAvatarPicker() {
+  Widget _buildPresetAvatarPicker(bool isMobile) {
+    // Grouped by category (id prefix) so mobile can lay them out as three
+    // clean rows — 3 CEO, 3 female, 3 male — instead of one long strip that
+    // wraps mid-group at arbitrary points on a narrow screen.
+    final ceoAvatars = presetAvatars.where((p) => p.id.startsWith('ceo')).toList();
+    final femaleAvatars = presetAvatars.where((p) => p.id.startsWith('female')).toList();
+    final maleAvatars = presetAvatars.where((p) => p.id.startsWith('male')).toList();
+
     return Column(
       children: [
         Text(
@@ -407,44 +431,69 @@ class _TestimonialSubmissionPageState
           ),
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          alignment: WrapAlignment.center,
-          children: presetAvatars.map((preset) {
-            final isSelected = _avatarBytes == null && _avatarUrl == preset.url;
-            return GestureDetector(
-              onTap: () => _selectPresetAvatar(preset),
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected ? AppColors.primaryGreen : Colors.transparent,
-                    width: 2,
-                  ),
-                ),
-                padding: const EdgeInsets.all(2),
-                child: ClipOval(
-                  child: Image.network(
-                    preset.url,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: Colors.white.withValues(alpha: 0.06),
-                      child: Icon(
-                        Icons.person_rounded,
-                        size: 18,
-                        color: Colors.white.withValues(alpha: 0.25),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
+        if (isMobile)
+          Column(
+            children: [
+              _avatarRow(ceoAvatars),
+              const SizedBox(height: 10),
+              _avatarRow(femaleAvatars),
+              const SizedBox(height: 10),
+              _avatarRow(maleAvatars),
+            ],
+          )
+        else
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            alignment: WrapAlignment.center,
+            children: presetAvatars.map(_avatarThumb).toList(),
+          ),
       ],
+    );
+  }
+
+  Widget _avatarRow(List<PresetAvatar> avatars) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (var i = 0; i < avatars.length; i++) ...[
+          if (i > 0) const SizedBox(width: 10),
+          _avatarThumb(avatars[i]),
+        ],
+      ],
+    );
+  }
+
+  Widget _avatarThumb(PresetAvatar preset) {
+    final isSelected = _avatarBytes == null && _avatarUrl == preset.url;
+    return GestureDetector(
+      onTap: () => _selectPresetAvatar(preset),
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        padding: const EdgeInsets.all(2),
+        child: ClipOval(
+          child: Image.network(
+            preset.url,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(
+              color: Colors.white.withValues(alpha: 0.06),
+              child: Icon(
+                Icons.person_rounded,
+                size: 18,
+                color: Colors.white.withValues(alpha: 0.25),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
