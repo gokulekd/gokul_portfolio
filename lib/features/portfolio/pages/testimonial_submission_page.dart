@@ -52,9 +52,10 @@ class _TestimonialSubmissionPageState
   // past the upload tile never wipes a chosen preset, and vice versa.
   int _activeAvatarIndex = 0;
 
-  String get _effectiveAvatarUrl => _activeAvatarIndex == 0
-      ? _uploadedAvatarUrl
-      : presetAvatars[_activeAvatarIndex - 1].url;
+  String get _effectiveAvatarUrl =>
+      _activeAvatarIndex == 0
+          ? _uploadedAvatarUrl
+          : presetAvatars[_activeAvatarIndex - 1].url;
 
   @override
   void dispose() {
@@ -94,7 +95,8 @@ class _TestimonialSubmissionPageState
       _isUploadingAvatar = false;
       _uploadedAvatarUrl = uploaded?.url ?? '';
       if (uploaded == null) {
-        _errorMessage = "Couldn't upload that photo — you can still submit without one.";
+        _errorMessage =
+            "Couldn't upload that photo — you can still submit without one.";
       }
     });
   }
@@ -106,17 +108,29 @@ class _TestimonialSubmissionPageState
     final message = _messageCtrl.text.trim();
 
     if (name.isEmpty || role.isEmpty || message.isEmpty) {
-      setState(() => _errorMessage = 'Please fill in your name, role, and a short message.');
+      setState(
+        () =>
+            _errorMessage =
+                'Please fill in your name, role, and a short message.',
+      );
       return;
     }
     if (message.length < 15) {
-      setState(() => _errorMessage = 'Please write a little more — a sentence or two is perfect.');
+      setState(
+        () =>
+            _errorMessage =
+                'Please write a little more — a sentence or two is perfect.',
+      );
       return;
     }
 
     final service = ref.read(supabaseTestimonialsServiceProvider);
     if (!service.isEnabled) {
-      setState(() => _errorMessage = 'Submissions are temporarily unavailable. Please try again later.');
+      setState(
+        () =>
+            _errorMessage =
+                'Submissions are temporarily unavailable. Please try again later.',
+      );
       return;
     }
 
@@ -145,7 +159,8 @@ class _TestimonialSubmissionPageState
     } else {
       setState(() {
         _isSubmitting = false;
-        _errorMessage = 'Something went wrong submitting your review. Please try again.';
+        _errorMessage =
+            'Something went wrong submitting your review. Please try again.';
       });
     }
   }
@@ -268,7 +283,10 @@ class _TestimonialSubmissionPageState
                     Expanded(
                       child: _FieldLabel(
                         label: 'Your role',
-                        child: _textField(_roleCtrl, hint: 'e.g. Product Designer'),
+                        child: _textField(
+                          _roleCtrl,
+                          hint: 'e.g. Product Designer',
+                        ),
                       ),
                     ),
                   ],
@@ -299,15 +317,24 @@ class _TestimonialSubmissionPageState
               if (_errorMessage != null) ...[
                 const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF7C7C).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFFF7C7C).withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: const Color(0xFFFF7C7C).withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline_rounded, color: Color(0xFFFF7C7C), size: 20),
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        color: Color(0xFFFF7C7C),
+                        size: 20,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -331,28 +358,42 @@ class _TestimonialSubmissionPageState
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryGreen,
                     foregroundColor: Colors.black,
-                    disabledBackgroundColor: AppColors.primaryGreen.withValues(alpha: 0.5),
+                    disabledBackgroundColor: AppColors.primaryGreen.withValues(
+                      alpha: 0.5,
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 22),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
+                    ),
                     elevation: 0,
                   ),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.black),
-                        )
-                      : Text(
-                          'Submit review',
-                          style: GoogleFonts.manrope(fontSize: 17, fontWeight: FontWeight.w800),
-                        ),
+                  child:
+                      _isSubmitting
+                          ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.black,
+                            ),
+                          )
+                          : Text(
+                            'Submit review',
+                            style: GoogleFonts.manrope(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                 ),
               ),
               const SizedBox(height: 14),
               Text(
                 "Your review is sent for a quick check before it goes live — thank you!",
                 textAlign: TextAlign.center,
-                style: GoogleFonts.manrope(fontSize: 13, color: Colors.white.withValues(alpha: 0.4)),
+                style: GoogleFonts.manrope(
+                  fontSize: 13,
+                  color: Colors.white.withValues(alpha: 0.4),
+                ),
               ),
             ],
           ),
@@ -384,10 +425,10 @@ class _TestimonialSubmissionPageState
     return Column(
       children: [
         Text(
-          'Choose a photo',
+          'Upload a photo -- OR -- Choose a avatar',
           style: GoogleFonts.manrope(
-            color: Colors.white.withValues(alpha: 0.45),
-            fontSize: 12,
+            color: Colors.white,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -395,8 +436,8 @@ class _TestimonialSubmissionPageState
         Text(
           'Scroll left or right — the centered one is selected',
           style: GoogleFonts.manrope(
-            color: Colors.white.withValues(alpha: 0.28),
-            fontSize: 11,
+            color: Colors.white,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -408,9 +449,14 @@ class _TestimonialSubmissionPageState
           itemHeight: isMobile ? 122 : 132,
           onCenterChanged: _onAvatarWheelCentered,
           onTapCentered: _onAvatarWheelTapCentered,
-          itemBuilder: (index, isSelected) => index == 0
-              ? _uploadTileVisual(isSelected)
-              : _avatarThumbVisual(presetAvatars[index - 1], isSelected),
+          itemBuilder:
+              (index, isSelected) =>
+                  index == 0
+                      ? _uploadTileVisual(isSelected)
+                      : _avatarThumbVisual(
+                        presetAvatars[index - 1],
+                        isSelected,
+                      ),
         ),
       ],
     );
@@ -424,9 +470,12 @@ class _TestimonialSubmissionPageState
       height: 64,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withValues(alpha: 0.06),
+        color: Colors.white,
         border: Border.all(
-          color: isSelected ? AppColors.primaryGreen : Colors.white.withValues(alpha: 0.14),
+          color:
+              isSelected
+                  ? AppColors.primaryGreen
+                  : Colors.white.withValues(alpha: 0.14),
           width: isSelected ? 2.5 : 1.5,
         ),
       ),
@@ -435,9 +484,14 @@ class _TestimonialSubmissionPageState
         alignment: Alignment.center,
         children: [
           if (_avatarBytes != null)
-            Image.memory(_avatarBytes!, fit: BoxFit.cover, width: 64, height: 64)
+            Image.memory(
+              _avatarBytes!,
+              fit: BoxFit.cover,
+              width: 64,
+              height: 64,
+            )
           else
-            Icon(Icons.add_a_photo_rounded, size: 22, color: Colors.white.withValues(alpha: 0.4)),
+            Icon(Icons.add_a_photo_rounded, size: 22, color: Colors.black),
           if (_isUploadingAvatar)
             Container(
               color: Colors.black54,
@@ -463,7 +517,11 @@ class _TestimonialSubmissionPageState
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFF111111), width: 2),
               ),
-              child: const Icon(Icons.camera_alt_rounded, size: 11, color: Colors.black),
+              child: const Icon(
+                Icons.camera_alt_rounded,
+                size: 11,
+                color: Colors.black,
+              ),
             ),
           ),
         ],
@@ -490,14 +548,15 @@ class _TestimonialSubmissionPageState
         child: Image.network(
           preset.url,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(
-            color: Colors.white.withValues(alpha: 0.06),
-            child: Icon(
-              Icons.person_rounded,
-              size: 24,
-              color: Colors.white.withValues(alpha: 0.25),
-            ),
-          ),
+          errorBuilder:
+              (_, __, ___) => Container(
+                color: Colors.white.withValues(alpha: 0.06),
+                child: Icon(
+                  Icons.person_rounded,
+                  size: 24,
+                  color: Colors.white.withValues(alpha: 0.25),
+                ),
+              ),
         ),
       ),
     );
@@ -517,7 +576,10 @@ class _TestimonialSubmissionPageState
         hintStyle: GoogleFonts.manrope(color: Colors.white24, fontSize: 16),
         filled: true,
         fillColor: Colors.white.withValues(alpha: 0.05),
-        contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: maxLines > 1 ? 18 : 18),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: maxLines > 1 ? 18 : 18,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
@@ -528,7 +590,10 @@ class _TestimonialSubmissionPageState
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primaryGreen, width: 1.5),
+          borderSide: const BorderSide(
+            color: AppColors.primaryGreen,
+            width: 1.5,
+          ),
         ),
       ),
     );
@@ -537,7 +602,10 @@ class _TestimonialSubmissionPageState
   Widget _buildSuccess(bool isMobile) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 28 : 48, vertical: isMobile ? 48 : 64),
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 28 : 48,
+        vertical: isMobile ? 48 : 64,
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFF111111),
         borderRadius: BorderRadius.circular(28),
@@ -548,14 +616,25 @@ class _TestimonialSubmissionPageState
           Container(
             width: 84,
             height: 84,
-            decoration: const BoxDecoration(color: AppColors.primaryGreen, shape: BoxShape.circle),
-            child: const Icon(Icons.check_rounded, color: Colors.black, size: 42),
+            decoration: const BoxDecoration(
+              color: AppColors.primaryGreen,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.check_rounded,
+              color: Colors.black,
+              size: 42,
+            ),
           ),
           const SizedBox(height: 32),
           Text(
             'Thank you!',
             textAlign: TextAlign.center,
-            style: GoogleFonts.manrope(fontSize: isMobile ? 30 : 38, fontWeight: FontWeight.w800, color: Colors.white),
+            style: GoogleFonts.manrope(
+              fontSize: isMobile ? 30 : 38,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 14),
           Text(
@@ -575,35 +654,52 @@ class _TestimonialSubmissionPageState
             alignment: WrapAlignment.center,
             children: [
               OutlinedButton(
-                onPressed: () => setState(() {
-                  _submitted = false;
-                  _nameCtrl.clear();
-                  _roleCtrl.clear();
-                  _companyCtrl.clear();
-                  _messageCtrl.clear();
-                  _rating = 5;
-                  _avatarBytes = null;
-                  _uploadedAvatarUrl = '';
-                  _activeAvatarIndex = 0;
-                }),
+                onPressed:
+                    () => setState(() {
+                      _submitted = false;
+                      _nameCtrl.clear();
+                      _roleCtrl.clear();
+                      _companyCtrl.clear();
+                      _messageCtrl.clear();
+                      _rating = 5;
+                      _avatarBytes = null;
+                      _uploadedAvatarUrl = '';
+                      _activeAvatarIndex = 0;
+                    }),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
-                child: Text('Submit another', style: GoogleFonts.manrope(fontWeight: FontWeight.w700)),
+                child: Text(
+                  'Submit another',
+                  style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
+                ),
               ),
               ElevatedButton(
                 onPressed: () => context.go(AppRoutes.home),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGreen,
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                   elevation: 0,
                 ),
-                child: Text('Back to portfolio', style: GoogleFonts.manrope(fontWeight: FontWeight.w800)),
+                child: Text(
+                  'Back to portfolio',
+                  style: GoogleFonts.manrope(fontWeight: FontWeight.w800),
+                ),
               ),
             ],
           ),
@@ -694,11 +790,11 @@ class _AvatarWheelPickerState extends State<_AvatarWheelPicker>
       vsync: this,
       duration: const Duration(milliseconds: 320),
     )..addListener(() {
-        final anim = _pageAnimation;
-        if (anim == null) return;
-        setState(() => _page = anim.value);
-        _emitCenterIfChanged();
-      });
+      final anim = _pageAnimation;
+      if (anim == null) return;
+      setState(() => _page = anim.value);
+      _emitCenterIfChanged();
+    });
   }
 
   @override
@@ -740,7 +836,8 @@ class _AvatarWheelPickerState extends State<_AvatarWheelPicker>
 
   void _onDragUpdate(DragUpdateDetails details) {
     setState(() {
-      _page = _dragStartPage - (details.globalPosition.dx - _dragStartDx) / _pitch;
+      _page =
+          _dragStartPage - (details.globalPosition.dx - _dragStartDx) / _pitch;
     });
     _emitCenterIfChanged();
   }
@@ -753,9 +850,10 @@ class _AvatarWheelPickerState extends State<_AvatarWheelPicker>
   // paging, then snap to the nearest slot once the wheel goes quiet.
   void _handlePointerSignal(PointerSignalEvent event) {
     if (event is! PointerScrollEvent) return;
-    final delta = event.scrollDelta.dx.abs() > event.scrollDelta.dy.abs()
-        ? event.scrollDelta.dx
-        : event.scrollDelta.dy;
+    final delta =
+        event.scrollDelta.dx.abs() > event.scrollDelta.dy.abs()
+            ? event.scrollDelta.dx
+            : event.scrollDelta.dy;
     if (delta == 0) return;
     _animController.stop();
     setState(() => _page += delta / _pitch);
@@ -786,7 +884,12 @@ class _AvatarWheelPickerState extends State<_AvatarWheelPicker>
             // on top — that's what makes the front avatar sit in front of
             // the ones stacked behind it on *both* sides, not just one.
             final rawIndices = [
-              for (var i = centerRaw - _windowRadius; i <= centerRaw + _windowRadius; i++) i,
+              for (
+                var i = centerRaw - _windowRadius;
+                i <= centerRaw + _windowRadius;
+                i++
+              )
+                i,
             ]..sort((a, b) => (b - _page).abs().compareTo((a - _page).abs()));
 
             return GestureDetector(
@@ -803,7 +906,8 @@ class _AvatarWheelPickerState extends State<_AvatarWheelPicker>
                         final opacity = _opacityFor(delta);
                         if (opacity <= 0.02) return const SizedBox.shrink();
                         final realIndex = _wrap(rawIndex);
-                        final centerX = containerWidth / 2 + (rawIndex - _page) * _pitch;
+                        final centerX =
+                            containerWidth / 2 + (rawIndex - _page) * _pitch;
                         return Positioned(
                           left: centerX - boxSize / 2,
                           top: 0,
@@ -822,7 +926,10 @@ class _AvatarWheelPickerState extends State<_AvatarWheelPicker>
                                       _goTo(rawIndex);
                                     }
                                   },
-                                  child: widget.itemBuilder(realIndex, realIndex == _centerRealIndex),
+                                  child: widget.itemBuilder(
+                                    realIndex,
+                                    realIndex == _centerRealIndex,
+                                  ),
                                 ),
                               ),
                             ),
@@ -868,7 +975,11 @@ class _StarRatingInput extends StatelessWidget {
         const SizedBox(width: 12),
         Text(
           '${value.toInt()}/5',
-          style: GoogleFonts.manrope(color: Colors.white54, fontWeight: FontWeight.w700, fontSize: 14.5),
+          style: GoogleFonts.manrope(
+            color: Colors.white54,
+            fontWeight: FontWeight.w700,
+            fontSize: 14.5,
+          ),
         ),
       ],
     );
