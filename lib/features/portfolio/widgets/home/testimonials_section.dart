@@ -24,6 +24,10 @@ class TestimonialsSectionNew extends ConsumerStatefulWidget {
 class _TestimonialsSectionNewState
     extends ConsumerState<TestimonialsSectionNew>
     with SingleTickerProviderStateMixin {
+  // Below this many reviews, tripling the list for a "seamless loop" just
+  // repeats the same few cards — show them once, statically, instead.
+  static const int _marqueeThreshold = 3;
+
   late ScrollController _scrollController;
   late AnimationController _animationController;
 
@@ -146,10 +150,28 @@ class _TestimonialsSectionNewState
               ),
               const SizedBox(height: 60),
               // Testimonials carousel (or an invite to be the first, once
-              // approved submissions run out).
+              // approved submissions run out). The auto-scrolling loop only
+              // makes sense once there's enough content to actually scroll
+              // through — tripling a single card for a "seamless loop" just
+              // showed the same review three times in a row. Below that
+              // threshold, lay the real cards out once, centered, with no
+              // duplication or motion.
               if (testimonials.isEmpty)
                 _buildEmptyState(context, isMobile)
-              else ...[
+              else if (testimonials.length <= _marqueeThreshold) ...[
+                Center(
+                  child: Wrap(
+                    spacing: 24,
+                    runSpacing: 24,
+                    alignment: WrapAlignment.center,
+                    children: testimonials
+                        .map((t) => _buildTestimonialCard(t, isMobile))
+                        .toList(),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _buildShareLink(context),
+              ] else ...[
                 SizedBox(
                   height: isMobile ? 320 : 360,
                   child: SingleChildScrollView(
