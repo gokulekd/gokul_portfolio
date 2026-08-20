@@ -7,6 +7,7 @@ export 'experience_card.dart';
 export 'footer_section.dart';
 export 'info_pill.dart';
 export 'page_app_bar.dart';
+export 'profile_hero_card.dart';
 export 'project_card.dart';
 export 'scroll_progress_bar.dart';
 export 'social_icon_button.dart';

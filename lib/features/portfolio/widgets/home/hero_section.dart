@@ -20,26 +20,13 @@ class HeroSection extends ConsumerStatefulWidget {
 
 class _HeroSectionState extends ConsumerState<HeroSection>
     with TickerProviderStateMixin {
-  late AnimationController _imageController;
-  late AnimationController _textController;
-  late AnimationController _socialController;
   late AnimationController _taglineController;
   late AnimationController _contentController;
-  late AnimationController _pulseController;
 
-  late Animation<double> _imageScale;
-  late Animation<double> _imageOpacity;
-  late Animation<double> _textOpacity;
-  late Animation<double> _socialOpacity;
   late Animation<double> _taglineOpacity;
   late Animation<double> _contentOpacity;
-  late Animation<double> _pulseAnimation;
 
-  String _displayedName = '';
-  String _displayedTitle = '';
   String _displayedTagline = '';
-  String _fullName = '';
-  String _fullTitle = '';
   String _fullTagline = '';
 
   @override
@@ -50,39 +37,6 @@ class _HeroSectionState extends ConsumerState<HeroSection>
   }
 
   void _initializeAnimations() {
-    // Image animations - smooth fade and scale
-    _imageController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    _imageScale = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _imageController, curve: Curves.easeOutCubic),
-    );
-    _imageOpacity = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _imageController, curve: Curves.easeOut));
-
-    // Text animations - smooth fade
-    _textController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _textOpacity = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeOut));
-
-    // Social icons animations - smooth fade
-    _socialController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _socialOpacity = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _socialController, curve: Curves.easeOut));
-
     // Tagline animations - smooth fade
     _taglineController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -103,36 +57,12 @@ class _HeroSectionState extends ConsumerState<HeroSection>
     ).animate(
       CurvedAnimation(parent: _contentController, curve: Curves.easeOut),
     );
-
-    // Pulse animation - very subtle
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 3000),
-      vsync: this,
-    );
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
   }
 
   void _startAnimations() {
     final state = ref.read(portfolioProvider);
-    _fullName = state.personalInfo.name;
-    _fullTitle = state.personalInfo.title;
     _fullTagline = state.heroTagline;
-
-    // Set initial displayed text immediately
-    _displayedName = _fullName;
-    _displayedTitle = _fullTitle;
     _displayedTagline = _fullTagline;
-
-    // Smooth sequential loading - image first
-    _imageController.forward();
-
-    // Then name and title
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (!mounted) return;
-      _textController.forward();
-    });
 
     // Then content section
     Future.delayed(const Duration(milliseconds: 500), () {
@@ -145,69 +75,6 @@ class _HeroSectionState extends ConsumerState<HeroSection>
       if (!mounted) return;
       _taglineController.forward();
     });
-
-    // Then social icons
-    Future.delayed(const Duration(milliseconds: 900), () {
-      if (!mounted) return;
-      _socialController.forward();
-    });
-
-    // Start subtle animations after everything is loaded
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (!mounted) return;
-      _pulseController.repeat(reverse: true);
-    });
-  }
-
-
-  IconData _iconForPlatform(String platform) {
-    switch (platform.toLowerCase()) {
-      case 'twitter': return FontAwesomeIcons.xTwitter;
-      case 'linkedin': return FontAwesomeIcons.linkedin;
-      case 'github': return FontAwesomeIcons.github;
-      case 'medium': return FontAwesomeIcons.medium;
-      case 'instagram': return FontAwesomeIcons.instagram;
-      default: return FontAwesomeIcons.link;
-    }
-  }
-
-  Widget _buildSocialLinks(double socialIconScale, BuildContext context) {
-    final links = ref.watch(portfolioProvider).personalInfo.socialLinks;
-    final gap = SizedBox(width: ResponsiveHelper.isMobile(context) ? 16.0 : 24.0);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        for (int i = 0; i < links.length; i++) ...[
-          if (i > 0) gap,
-          Transform.scale(
-            scale: socialIconScale,
-            child: _buildAnimatedSocialIcon(
-              SocialIconButton(
-                platform: links[i].platform,
-                url: links[i].url,
-                icon: _iconForPlatform(links[i].platform),
-              ),
-              i,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildAnimatedSocialIcon(Widget child, int index) {
-    return TweenAnimationBuilder<double>(
-      duration: Duration(milliseconds: 400 + (index * 100)),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.easeOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: 0.8 + (value * 0.2), // Scale from 0.8 to 1.0
-          child: Opacity(opacity: value, child: child),
-        );
-      },
-      child: child,
-    );
   }
 
   Widget _buildLargePill(String text, Color backgroundColor, Color textColor, BuildContext context) {
@@ -255,7 +122,7 @@ class _HeroSectionState extends ConsumerState<HeroSection>
   Widget _buildLargeButton(String text, VoidCallback onPressed, BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
-    
+
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
@@ -309,12 +176,8 @@ class _HeroSectionState extends ConsumerState<HeroSection>
 
   @override
   void dispose() {
-    _imageController.dispose();
-    _textController.dispose();
-    _socialController.dispose();
     _taglineController.dispose();
     _contentController.dispose();
-    _pulseController.dispose();
     super.dispose();
   }
 
@@ -323,7 +186,7 @@ class _HeroSectionState extends ConsumerState<HeroSection>
     final state = ref.watch(portfolioProvider);
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
-    
+
     // Responsive values
     final horizontalPadding = isMobile ? 16.0 : isTablet ? 40.0 : 80.0;
     final verticalPadding = isMobile ? 24.0 : isTablet ? 40.0 : 60.0;
@@ -402,91 +265,12 @@ class _HeroSectionState extends ConsumerState<HeroSection>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Profile Image
-        Center(
-          child: AnimatedBuilder(
-            animation: Listenable.merge([
-              _imageController,
-              _pulseController,
-            ]),
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _imageScale.value * _pulseAnimation.value,
-                child: Opacity(
-                  opacity: _imageOpacity.value,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: imageRadius,
-                      backgroundColor: Colors.grey[300],
-                      backgroundImage: const AssetImage(
-                        'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
-                      ),
-                      onBackgroundImageError: (exception, stackTrace) {},
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Available for work badge
-        const AvailableForWorkBadge(),
-        const SizedBox(height: 16),
-
-        // Name and Title
-        AnimatedBuilder(
-          animation: _textController,
-          builder: (context, child) {
-            return Opacity(
-              opacity: _textOpacity.value,
-              child: Column(
-                children: [
-                  Text(
-                    _displayedName,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: nameFontSize,
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _displayedTitle,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: titleFontSize,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 32),
-
-        // Social Links
-        AnimatedBuilder(
-          animation: _socialController,
-          builder: (context, child) {
-            return Opacity(
-              opacity: _socialOpacity.value,
-              child: _buildSocialLinks(socialIconScale, context),
-            );
-          },
+        // Profile Card
+        ProfileHeroCard(
+          imageRadius: imageRadius,
+          nameFontSize: nameFontSize,
+          titleFontSize: titleFontSize,
+          socialIconScale: socialIconScale,
         ),
         const SizedBox(height: 40),
 
@@ -627,100 +411,11 @@ class _HeroSectionState extends ConsumerState<HeroSection>
         // Left Profile Section
         Expanded(
           flex: 2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Profile Image
-              Center(
-                child: AnimatedBuilder(
-                  animation: Listenable.merge([
-                    _imageController,
-                    _pulseController,
-                  ]),
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _imageScale.value * _pulseAnimation.value,
-                      child: Opacity(
-                        opacity: _imageOpacity.value,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            radius: imageRadius,
-                            backgroundColor: Colors.grey[300],
-                            backgroundImage: const AssetImage(
-                              'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
-                            ),
-                            onBackgroundImageError: (exception, stackTrace) {},
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Available for work badge (desktop)
-              const Center(child: AvailableForWorkBadge()),
-              const SizedBox(height: 16),
-
-              // Name and Title
-              Center(
-                child: AnimatedBuilder(
-                  animation: _textController,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _textOpacity.value,
-                      child: Column(
-                        children: [
-                          Text(
-                            _displayedName,
-                            style: GoogleFonts.inter(
-                              fontSize: nameFontSize,
-                              fontWeight: FontWeight.w700,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            _displayedTitle,
-                            style: GoogleFonts.inter(
-                              fontSize: titleFontSize,
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Social Links
-              Center(
-                child: AnimatedBuilder(
-                  animation: _socialController,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _socialOpacity.value,
-                      child: _buildSocialLinks(socialIconScale, context),
-                    );
-                  },
-                ),
-              ),
-            ],
+          child: ProfileHeroCard(
+            imageRadius: imageRadius,
+            nameFontSize: nameFontSize,
+            titleFontSize: titleFontSize,
+            socialIconScale: socialIconScale,
           ),
         ),
 
@@ -848,7 +543,7 @@ class _HeroSectionState extends ConsumerState<HeroSection>
                       child: _buildLargeButton(
                         "See what I can do",
                         () {
-                          
+
                           ref.read(portfolioProvider.notifier).changePage(3);
                           context.go(AppRoutes.projects);
                         },

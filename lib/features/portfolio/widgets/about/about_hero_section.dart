@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
-import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import '../shared/custom_widgets.dart';
 
@@ -17,20 +15,15 @@ class AboutHeroSection extends ConsumerStatefulWidget {
 
 class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
     with TickerProviderStateMixin {
-  late AnimationController _imageController;
   late AnimationController _textController;
   late AnimationController _socialController;
   late AnimationController _taglineController;
   late AnimationController _contentController;
-  late AnimationController _pulseController;
 
-  late Animation<double> _imageScale;
-  late Animation<double> _imageOpacity;
   late Animation<double> _textOpacity;
   late Animation<double> _socialOpacity;
   late Animation<double> _taglineOpacity;
   late Animation<double> _contentOpacity;
-  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
@@ -40,18 +33,6 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
   }
 
   void _initializeAnimations() {
-    _imageController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    _imageScale = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _imageController, curve: Curves.easeOutCubic),
-    );
-    _imageOpacity = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _imageController, curve: Curves.easeOut));
-
     _textController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -84,18 +65,9 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
     _contentOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _contentController, curve: Curves.easeOut),
     );
-
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 3000),
-      vsync: this,
-    );
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
   }
 
   void _startAnimations() {
-    _imageController.forward();
     Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       _textController.forward();
@@ -112,68 +84,44 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
       if (!mounted) return;
       _socialController.forward();
     });
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (!mounted) return;
-      _pulseController.repeat(reverse: true);
-    });
   }
 
   @override
   void dispose() {
-    _imageController.dispose();
     _textController.dispose();
     _socialController.dispose();
     _taglineController.dispose();
     _contentController.dispose();
-    _pulseController.dispose();
     super.dispose();
   }
 
-  Widget _buildAnimatedSocialIcon(Widget child, int index) {
-    return TweenAnimationBuilder<double>(
-      duration: Duration(milliseconds: 400 + (index * 100)),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.easeOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: 0.8 + (value * 0.2),
-          child: Opacity(opacity: value, child: child),
-        );
-      },
-      child: child,
-    );
-  }
-
-  Widget _buildProfileImage(double imageRadius, String profileImageUrl) {
+  Widget _buildExperienceBadge(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([_imageController, _pulseController]),
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _imageScale.value * _pulseAnimation.value,
-          child: Opacity(
-            opacity: _imageOpacity.value,
+      animation: _socialController,
+      builder:
+          (context, child) => Opacity(
+            opacity: _socialOpacity.value,
             child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    blurRadius: 24,
-                    offset: const Offset(0, 12),
-                  ),
-                ],
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 12,
               ),
-              child: CircleAvatar(
-                radius: imageRadius,
-                backgroundColor: Colors.grey[300],
-                backgroundImage: const AssetImage(
-                  'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Text(
+                '3+ YRS EXPERIENCE',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
             ),
           ),
-        );
-      },
     );
   }
 
@@ -183,122 +131,20 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
     double nameFontSize,
     double titleFontSize,
     double socialIconScale,
-    String profileImageUrl,
   ) {
-    final state = ref.watch(portfolioProvider);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Center(child: _buildProfileImage(imageRadius, profileImageUrl)),
-        const SizedBox(height: 16),
-        const Center(child: AvailableForWorkBadge()),
-        const SizedBox(height: 16),
-        Center(
-          child: AnimatedBuilder(
-            animation: _textController,
-            builder:
-                (context, child) => Opacity(
-                  opacity: _textOpacity.value,
-                  child: Column(
-                    children: [
-                      Text(
-                        state.personalInfo.name,
-                        style: GoogleFonts.inter(
-                          fontSize: nameFontSize,
-                          fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        state.personalInfo.title,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: titleFontSize,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-          ),
+        ProfileHeroCard(
+          imageRadius: imageRadius,
+          nameFontSize: nameFontSize,
+          titleFontSize: titleFontSize,
+          socialIconScale: socialIconScale,
         ),
         const SizedBox(height: 32),
-        Center(
-          child: AnimatedBuilder(
-            animation: _socialController,
-            builder:
-                (context, child) => Opacity(
-                  opacity: _socialOpacity.value,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children:
-                        state.personalInfo.socialLinks
-                            .take(3)
-                            .toList()
-                            .asMap()
-                            .entries
-                            .map((entry) {
-                              final index = entry.key;
-                              final link = entry.value;
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  right: index < 2 ? 24 : 0,
-                                ),
-                                child: Transform.scale(
-                                  scale: socialIconScale,
-                                  child: _buildAnimatedSocialIcon(
-                                    SocialIconButton(
-                                      platform: link.platform,
-                                      url: link.url,
-                                      icon: _iconForPlatform(link.platform),
-                                    ),
-                                    index,
-                                  ),
-                                ),
-                              );
-                            })
-                            .toList(),
-                  ),
-                ),
-          ),
-        ),
-        const SizedBox(height: 32),
-        AnimatedBuilder(
-          animation: _socialController,
-          builder:
-              (context, child) => Opacity(
-                opacity: _socialOpacity.value,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Text(
-                      '3+ YRS EXPERIENCE',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-        ),
+        Center(child: _buildExperienceBadge(context)),
       ],
     );
   }
@@ -467,24 +313,6 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
             : isTablet
             ? 18.0
             : 20.0;
-    final greetingFontSize =
-        isMobile
-            ? 36.0
-            : isTablet
-            ? 48.0
-            : 72.0;
-    final taglineFontSize =
-        isMobile
-            ? 28.0
-            : isTablet
-            ? 40.0
-            : 58.0;
-    final bioFontSize =
-        isMobile
-            ? 16.0
-            : isTablet
-            ? 18.0
-            : 20.0;
     final socialIconScale =
         isMobile
             ? 1.2
@@ -497,14 +325,6 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
             : isTablet
             ? 40.0
             : 80.0;
-
-    final state = ref.watch(portfolioProvider);
-    final info = state.personalInfo;
-    final githubStats = state.githubStats;
-    final profileImageUrl =
-        githubStats?.avatarUrl.isNotEmpty == true
-            ? githubStats!.avatarUrl
-            : info.profileImageUrl;
 
     return Container(
       width: double.infinity,
@@ -534,11 +354,7 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
                   imageRadius,
                   nameFontSize,
                   titleFontSize,
-                  greetingFontSize,
-                  taglineFontSize,
-                  bioFontSize,
                   socialIconScale,
-                  profileImageUrl,
                 )
                 : Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -551,7 +367,6 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
                         nameFontSize,
                         titleFontSize,
                         socialIconScale,
-                        profileImageUrl,
                       ),
                     ),
                     SizedBox(width: spacingBetweenSections),
@@ -567,119 +382,19 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
     double imageRadius,
     double nameFontSize,
     double titleFontSize,
-    double greetingFontSize,
-    double taglineFontSize,
-    double bioFontSize,
     double socialIconScale,
-    String profileImageUrl,
   ) {
-    final state = ref.watch(portfolioProvider);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Center(child: _buildProfileImage(imageRadius, profileImageUrl)),
-        const SizedBox(height: 16),
-        const AvailableForWorkBadge(),
-        const SizedBox(height: 16),
-        AnimatedBuilder(
-          animation: _textController,
-          builder:
-              (context, child) => Opacity(
-                opacity: _textOpacity.value,
-                child: Column(
-                  children: [
-                    Text(
-                      state.personalInfo.name,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: nameFontSize,
-                        fontWeight: FontWeight.w700,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      state.personalInfo.title,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: titleFontSize,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-        ),
-        const SizedBox(height: 32),
-        AnimatedBuilder(
-          animation: _socialController,
-          builder:
-              (context, child) => Opacity(
-                opacity: _socialOpacity.value,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children:
-                      state.personalInfo.socialLinks
-                          .take(3)
-                          .toList()
-                          .asMap()
-                          .entries
-                          .map((entry) {
-                            final index = entry.key;
-                            final link = entry.value;
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                right: index < 2 ? 16 : 0,
-                              ),
-                              child: Transform.scale(
-                                scale: socialIconScale,
-                                child: _buildAnimatedSocialIcon(
-                                  SocialIconButton(
-                                    platform: link.platform,
-                                    url: link.url,
-                                    icon: _iconForPlatform(link.platform),
-                                  ),
-                                  index,
-                                ),
-                              ),
-                            );
-                          })
-                          .toList(),
-                ),
-              ),
+        ProfileHeroCard(
+          imageRadius: imageRadius,
+          nameFontSize: nameFontSize,
+          titleFontSize: titleFontSize,
+          socialIconScale: socialIconScale,
         ),
         const SizedBox(height: 24),
-        AnimatedBuilder(
-          animation: _socialController,
-          builder:
-              (context, child) => Opacity(
-                opacity: _socialOpacity.value,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: Text(
-                    '3+ YRS EXPERIENCE',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ),
-              ),
-        ),
+        _buildExperienceBadge(context),
         const SizedBox(height: 40),
         AnimatedBuilder(
           animation: _contentController,
@@ -739,26 +454,5 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
         ),
       ],
     );
-  }
-
-  IconData _iconForPlatform(String platform) {
-    switch (platform.toLowerCase()) {
-      case 'twitter':
-      case 'x':
-      case 'twitter/x':
-        return FontAwesomeIcons.xTwitter;
-      case 'linkedin':
-        return FontAwesomeIcons.linkedinIn;
-      case 'github':
-        return FontAwesomeIcons.github;
-      case 'medium':
-        return FontAwesomeIcons.medium;
-      case 'instagram':
-        return FontAwesomeIcons.instagram;
-      case 'facebook':
-        return FontAwesomeIcons.facebook;
-      default:
-        return FontAwesomeIcons.globe;
-    }
   }
 }
