@@ -47,7 +47,6 @@ class AdminModuleItem {
     required this.title,
     required this.subtitle,
     required this.icon,
-    this.badgeCount,
   });
 
   final AdminModule module;
@@ -55,7 +54,6 @@ class AdminModuleItem {
   final String title;
   final String subtitle;
   final IconData icon;
-  final int? badgeCount;
 }
 
 class AdminMetricItem {

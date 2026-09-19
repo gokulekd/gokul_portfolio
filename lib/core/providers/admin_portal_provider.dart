@@ -25,6 +25,7 @@ class AdminPortalState {
     this.liveSocialLinks = const [],
     this.liveProjects = const [],
     this.liveSubmissions = const [],
+    this.submissionsLoaded = false,
     this.liveBasicDetails,
     this.livePages = const [],
     this.liveResumeConfig,
@@ -40,6 +41,10 @@ class AdminPortalState {
   final List<ManagedSocialLink> liveSocialLinks;
   final List<Project> liveProjects;
   final List<VisitorSubmission> liveSubmissions;
+
+  /// False until the first `submissions` snapshot arrives, so the new-lead
+  /// alert can tell "initial load" apart from "a lead just came in".
+  final bool submissionsLoaded;
   final BasicDetails? liveBasicDetails;
   final List<SitePageConfig> livePages;
   final ResumeConfig? liveResumeConfig;
@@ -55,6 +60,7 @@ class AdminPortalState {
     List<ManagedSocialLink>? liveSocialLinks,
     List<Project>? liveProjects,
     List<VisitorSubmission>? liveSubmissions,
+    bool? submissionsLoaded,
     BasicDetails? Function()? liveBasicDetails,
     List<SitePageConfig>? livePages,
     ResumeConfig? Function()? liveResumeConfig,
@@ -70,6 +76,7 @@ class AdminPortalState {
       liveSocialLinks: liveSocialLinks ?? this.liveSocialLinks,
       liveProjects: liveProjects ?? this.liveProjects,
       liveSubmissions: liveSubmissions ?? this.liveSubmissions,
+      submissionsLoaded: submissionsLoaded ?? this.submissionsLoaded,
       liveBasicDetails: liveBasicDetails != null ? liveBasicDetails() : this.liveBasicDetails,
       livePages: livePages ?? this.livePages,
       liveResumeConfig: liveResumeConfig != null ? liveResumeConfig() : this.liveResumeConfig,
@@ -108,7 +115,7 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
     AdminModuleItem(module: AdminModule.socialContact, group: AdminModuleGroup.content, title: 'Social & Contact', subtitle: 'Channels and links', icon: Icons.alternate_email_rounded),
     AdminModuleItem(module: AdminModule.createPost, group: AdminModuleGroup.publishing, title: 'Create Post', subtitle: 'Write & publish content', icon: Icons.add_circle_outline_rounded),
     AdminModuleItem(module: AdminModule.managePages, group: AdminModuleGroup.publishing, title: 'Manage Pages', subtitle: 'All portfolio pages', icon: Icons.web_rounded),
-    AdminModuleItem(module: AdminModule.submissions, group: AdminModuleGroup.operations, title: 'Visitor Submissions', subtitle: 'Leads inbox', icon: Icons.inbox_rounded, badgeCount: 3),
+    AdminModuleItem(module: AdminModule.submissions, group: AdminModuleGroup.operations, title: 'Visitor Submissions', subtitle: 'Leads inbox', icon: Icons.inbox_rounded),
     AdminModuleItem(module: AdminModule.mediaLibrary, group: AdminModuleGroup.operations, title: 'Media Library', subtitle: 'Images and assets', icon: Icons.perm_media_rounded),
   ];
 
@@ -147,6 +154,7 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
             : null;
         state = state.copyWith(
           liveSubmissions: submissions,
+          submissionsLoaded: true,
           selectedSubmission: updated != null ? () => updated : null,
         );
       }, onError: _handleError);
@@ -299,8 +307,19 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
   void selectModule(AdminModule module) =>
       state = state.copyWith(selectedModule: module);
 
-  void selectSubmission(VisitorSubmission submission) =>
-      state = state.copyWith(selectedSubmission: () => submission);
+  int get unreadSubmissionCount =>
+      state.liveSubmissions.where((s) => s.isUnread).length;
+
+  /// Opening a lead counts as reading it: unread → reviewing, so the inbox
+  /// badge and tab-title count drop as the admin works through new leads.
+  void selectSubmission(VisitorSubmission submission) {
+    state = state.copyWith(selectedSubmission: () => submission);
+    if (!submission.isUnread) return;
+    ref
+        .read(firebasePortfolioServiceProvider)
+        .updateSubmissionStatus(submission.id, SubmissionStatus.reviewing)
+        .then((_) => _clearError(), onError: _handleError);
+  }
 
   Future<void> markSubmissionInProgress() async {
     final sub = state.selectedSubmission;

@@ -356,6 +356,16 @@ unused field, not worth a fix.
 reads from and writes to real, live-updating data, with no fake toggles, no fabricated demo data
 passed off as real, and no stale hardcoded numbers on the admin's own landing page.
 
+### Post-workstream — Lead notifications (Sprint 8, scoped down) ✅ DONE
+**Decision:** in-app realtime alerts only. FCM push needs a sender, and Cloud Functions require
+the Blaze plan (project is on Spark). Formspree already emails every lead, so that stays the
+offline alert. Revisit FCM via a Supabase Edge Function only if background push is wanted later.
+- [x] Nav badge on "Visitor Submissions" was a hardcoded `3` → now the live unread count, hidden at 0 (`AdminModuleItem.badgeCount` removed).
+- [x] `AdminPortalState.submissionsLoaded` flag so the first Firestore snapshot is a baseline, not a burst of "new" leads.
+- [x] `admin_portal_page.dart` (now stateful): `ref.listen` shows a snackbar ("New enquiry from X" / "N new enquiries") with a VIEW action that opens the inbox, and sets the tab title to `(n) Admin — <site title>`, restored on dispose.
+- [x] `selectSubmission` now marks an unread lead `reviewing`, so the badge/title count actually drop as leads are opened (previously only "Mark in progress" cleared unread).
+- [x] Verified with `dart analyze lib` — no new issues. **Not click-tested live:** `flutter` is blocked locally by the un-accepted Xcode license, and `/admin` needs the owner's Google sign-in.
+
 ---
 
 ## Open decisions log

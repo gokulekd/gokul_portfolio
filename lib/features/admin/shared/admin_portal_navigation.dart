@@ -51,6 +51,9 @@ class AdminPortalNavigation extends ConsumerWidget {
                             ...items.map(
                               (item) => _NavItem(
                                 item: item,
+                                badgeCount: item.module == AdminModule.submissions
+                                    ? notifier.unreadSubmissionCount
+                                    : 0,
                                 selected: portalState.selectedModule == item.module,
                                 onTap: () {
                                   notifier.selectModule(item.module);
@@ -158,11 +161,13 @@ class _GroupLabel extends StatelessWidget {
 class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.item,
+    required this.badgeCount,
     required this.selected,
     required this.onTap,
   });
 
   final AdminModuleItem item;
+  final int badgeCount;
   final bool selected;
   final VoidCallback onTap;
 
@@ -228,7 +233,7 @@ class _NavItem extends StatelessWidget {
                   ],
                 ),
               ),
-              if (item.badgeCount != null)
+              if (badgeCount > 0)
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
@@ -241,7 +246,7 @@ class _NavItem extends StatelessWidget {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    item.badgeCount.toString(),
+                    badgeCount.toString(),
                     style: GoogleFonts.manrope(
                       color: selected ? Colors.black : Colors.white,
                       fontSize: 11,

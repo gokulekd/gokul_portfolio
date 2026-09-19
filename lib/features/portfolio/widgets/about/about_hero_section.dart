@@ -16,12 +16,10 @@ class AboutHeroSection extends ConsumerStatefulWidget {
 class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
     with TickerProviderStateMixin {
   late AnimationController _textController;
-  late AnimationController _socialController;
   late AnimationController _taglineController;
   late AnimationController _contentController;
 
   late Animation<double> _textOpacity;
-  late Animation<double> _socialOpacity;
   late Animation<double> _taglineOpacity;
   late Animation<double> _contentOpacity;
 
@@ -41,14 +39,6 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeOut));
-
-    _socialController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _socialOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _socialController, curve: Curves.easeOut),
-    );
 
     _taglineController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -80,49 +70,14 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
       if (!mounted) return;
       _taglineController.forward();
     });
-    Future.delayed(const Duration(milliseconds: 900), () {
-      if (!mounted) return;
-      _socialController.forward();
-    });
   }
 
   @override
   void dispose() {
     _textController.dispose();
-    _socialController.dispose();
     _taglineController.dispose();
     _contentController.dispose();
     super.dispose();
-  }
-
-  Widget _buildExperienceBadge(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _socialController,
-      builder:
-          (context, child) => Opacity(
-            opacity: _socialOpacity.value,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Text(
-                '3+ YRS EXPERIENCE',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
-              ),
-            ),
-          ),
-    );
   }
 
   Widget _buildLeftColumn(
@@ -143,8 +98,6 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
           titleFontSize: titleFontSize,
           socialIconScale: socialIconScale,
         ),
-        const SizedBox(height: 32),
-        Center(child: _buildExperienceBadge(context)),
       ],
     );
   }
@@ -393,8 +346,6 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
           titleFontSize: titleFontSize,
           socialIconScale: socialIconScale,
         ),
-        const SizedBox(height: 24),
-        _buildExperienceBadge(context),
         const SizedBox(height: 40),
         AnimatedBuilder(
           animation: _contentController,
