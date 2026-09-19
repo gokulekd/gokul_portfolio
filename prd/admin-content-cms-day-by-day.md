@@ -377,6 +377,15 @@ helpers (only fed `state.projects`; `fetchUserStats` kept), and the now-unused `
 - `firestore.rules`: removed the `projects` match block **in the file only — not deployed** (ask before `firebase deploy --only firestore:rules`). Any existing docs in the Firestore `projects` collection are orphaned and can be deleted from the console.
 - Verified with `flutter analyze lib` (no new issues). Not runtime-tested: the dev server was left running for the admin session.
 
+### Post-workstream — FCM push via Supabase Edge Function ✅ CODE DONE (needs your setup steps to go live)
+Background push for new leads, staying on Spark: Cloud Functions need Blaze, so the sender is a Supabase Edge Function.
+- **Token registry:** admin browsers register an FCM token in Firestore `admin_push_tokens/{token}` (rules: signed-in only). `PushNotificationService` + a "Notifications" card in Settings (`push_notifications_card.dart`) — button because browsers require a user gesture for the permission prompt.
+- **Trigger:** `ContactService` pings the function after the Firestore write, fire-and-forget, sending **only the submission ID**. `createSubmission` now returns the doc id.
+- **Function** (`supabase/functions/notify-new-lead/`): re-reads the lead from Firestore, rejects unknown / >10 min old / already-notified leads, atomically claims via `pushSentAt` (updateTime precondition), sends FCM v1 to every token, deletes dead tokens. Public endpoint, so notification text never comes from the caller.
+- **Service worker** `web/firebase-messaging-sw.js`: data-only messages, click focuses/opens `/#/admin`.
+- **Config:** `FCM_VAPID_KEY` dart-define (`.env`, `build.sh` warns if missing); `.claude/launch.json` now passes `--dart-define-from-file=.env` so dev runs get Supabase + VAPID.
+- **Verified:** `flutter analyze` clean; function logic run under Node against stubbed Google APIs (10 cases: happy path, replay, lost race, stale, unknown id, id injection, dead-token pruning, no devices, CORS, method). **Not verified end to end:** needs the VAPID key, service-account secret, function deploy, rules deploy — steps in the function's README.
+
 ---
 
 ## Open decisions log

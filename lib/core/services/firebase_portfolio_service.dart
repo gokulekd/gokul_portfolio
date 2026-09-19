@@ -130,14 +130,14 @@ class FirebasePortfolioService {
   /// isn't configured, matching every other write in this service; the
   /// caller (`ContactService`) doesn't let a Firestore failure block the
   /// Formspree email from sending.
-  Future<void> createSubmission({
+  Future<String?> createSubmission({
     required String name,
     required String email,
     required String message,
     String company = '',
   }) async {
-    if (!isEnabled) return;
-    await _firestore.collection('submissions').add({
+    if (!isEnabled) return null;
+    final doc = await _firestore.collection('submissions').add({
       'name': name,
       'email': email,
       'company': company,
@@ -146,6 +146,7 @@ class FirebasePortfolioService {
       'createdAt': FieldValue.serverTimestamp(),
       'notes': <String>[],
     });
+    return doc.id;
   }
 
   Stream<List<SitePageConfig>> streamPageConfigs() {

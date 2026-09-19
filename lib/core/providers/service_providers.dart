@@ -5,6 +5,7 @@ import '../../features/admin/modules/projects/services/supabase_projects_service
 import '../../features/admin/services/admin_auth_service.dart';
 import '../services/contact_service.dart';
 import '../services/firebase_portfolio_service.dart';
+import '../services/push_notification_service.dart';
 import '../services/supabase_storage_service.dart';
 import '../services/supabase_testimonials_service.dart';
 
@@ -30,6 +31,10 @@ final supabaseBlogServiceProvider = Provider<SupabaseBlogService>((ref) {
 
 final supabaseTestimonialsServiceProvider = Provider<SupabaseTestimonialsService>((ref) {
   return SupabaseTestimonialsService();
+});
+
+final pushNotificationServiceProvider = Provider<PushNotificationService>((ref) {
+  return PushNotificationService();
 });
 
 final contactServiceProvider = Provider<ContactService>((ref) {

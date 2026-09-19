@@ -8,6 +8,7 @@ import '../../../../core/providers/admin_portal_provider.dart';
 import '../../shared/admin_portal_components.dart';
 import '../../shared/dialog_widgets.dart';
 import '../../shared/preview_tile.dart';
+import 'push_notifications_card.dart';
 
 class SettingsWorkspace extends ConsumerStatefulWidget {
   const SettingsWorkspace({
@@ -179,6 +180,11 @@ class _SettingsWorkspaceState extends ConsumerState<SettingsWorkspace> {
               ],
             ),
           ),
+
+          const SizedBox(height: 24),
+          SectionLabel(label: 'NOTIFICATIONS'),
+          const SizedBox(height: 12),
+          const PushNotificationsCard(),
 
           const SizedBox(height: 24),
           SectionLabel(label: 'DANGER ZONE'),

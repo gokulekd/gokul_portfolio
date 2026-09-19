@@ -45,11 +45,18 @@ if [[ "${SUPABASE_URL}" == *"YOUR_PROJECT"* || "${SUPABASE_ANON_KEY}" == "YOUR_A
   exit 1
 fi
 
+# Optional: without a VAPID key the site works but admin push can't be enabled.
+if [[ -z "${FCM_VAPID_KEY:-}" || "${FCM_VAPID_KEY}" == "YOUR_VAPID_PUBLIC_KEY" ]]; then
+  echo "WARN: FCM_VAPID_KEY not set — admin push notifications will be disabled in this build." >&2
+  FCM_VAPID_KEY=""
+fi
+
 echo "Building web bundle with Supabase config baked in (${SUPABASE_URL})"
 
 flutter build web --release \
   --dart-define=SUPABASE_URL="${SUPABASE_URL}" \
   --dart-define=SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY}" \
+  --dart-define=FCM_VAPID_KEY="${FCM_VAPID_KEY}" \
   "$@"
 
 echo "Done. Output in build/web — deploy with: firebase deploy --only hosting"
