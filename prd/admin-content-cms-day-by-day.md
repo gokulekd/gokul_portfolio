@@ -308,7 +308,7 @@ getter.
   same live stream — one admin edit updates every consuming page in the same session.
 - [x] Verified with `flutter analyze lib` — no issues.
 
-**Found but out of scope — flagging for a future pass, not fixing today:** the old Firestore
+**✅ Resolved post-workstream (see "Dead `Project` cleanup" below).** Original finding, kept for context — **found but out of scope, not fixed on Day 13:** the old Firestore
 `Project` model (`portfolio_models.dart`) and its admin CRUD (`saveProject`/`deleteProject`,
 `liveProjects`) are fully dead code — nothing on the public site or in the current
 `ProjectsWorkspace` reads them anymore (`AppProject`/Supabase replaced this before this 14-day
@@ -366,6 +366,16 @@ offline alert. Revisit FCM via a Supabase Edge Function only if background push 
 - [x] `selectSubmission` now marks an unread lead `reviewing`, so the badge/title count actually drop as leads are opened (previously only "Mark in progress" cleared unread).
 - [x] Inbox delete: `deleteSubmission` in service + notifier, "Delete" button with a confirm dialog in the detail panel (`firestore.rules` already allowed authed delete). The notifier clears the selection itself, since the stream listener keeps a stale selection when the selected doc disappears.
 - [x] Verified with `dart analyze lib` — no new issues. **Not click-tested live:** `flutter` is blocked locally by the un-accepted Xcode license, and `/admin` needs the owner's Google sign-in.
+
+### Post-workstream — Dead `Project` cleanup ✅ DONE
+Removed the old Firestore `Project` model and everything that only fed it: the `Project` class,
+`state.projects`/`publishedProjects`/`featuredProjects`/`getProjectsByCategory` (public) and
+`liveProjects`/`projects`/`saveProject`/`deleteProject`/`toggleProject*` (admin), the Firestore
+`projects` stream/save/delete/seed + (de)serializers, `GitHubService.fetchRepositories` and its
+helpers (only fed `state.projects`; `fetchUserStats` kept), and the now-unused `isLoadingProjects`.
+- **Log correction:** Day 13 said `Project` had zero consumers. Two were missed: `GitHubService` (feeds `state.projects`, itself dead) and a Settings tile ("Projects: N in collection") that counted the old default projects. The tile now shows the real `AppProject` count.
+- `firestore.rules`: removed the `projects` match block **in the file only — not deployed** (ask before `firebase deploy --only firestore:rules`). Any existing docs in the Firestore `projects` collection are orphaned and can be deleted from the console.
+- Verified with `flutter analyze lib` (no new issues). Not runtime-tested: the dev server was left running for the admin session.
 
 ---
 

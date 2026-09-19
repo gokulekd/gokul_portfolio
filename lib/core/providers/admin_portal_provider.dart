@@ -23,7 +23,6 @@ class AdminPortalState {
     this.selectedModule = AdminModule.dashboard,
     this.liveSections = const [],
     this.liveSocialLinks = const [],
-    this.liveProjects = const [],
     this.liveSubmissions = const [],
     this.submissionsLoaded = false,
     this.liveBasicDetails,
@@ -32,14 +31,12 @@ class AdminPortalState {
     this.liveMediaAssets = const [],
     this.selectedSubmission,
     this.firestoreErrorMessage,
-    this.firestoreProjectsLoaded = false,
     this.liveAppProjects = const [],
   });
 
   final AdminModule selectedModule;
   final List<SiteSectionConfig> liveSections;
   final List<ManagedSocialLink> liveSocialLinks;
-  final List<Project> liveProjects;
   final List<VisitorSubmission> liveSubmissions;
 
   /// False until the first `submissions` snapshot arrives, so the new-lead
@@ -51,14 +48,12 @@ class AdminPortalState {
   final List<MediaAssetRecord> liveMediaAssets;
   final VisitorSubmission? selectedSubmission;
   final String? firestoreErrorMessage;
-  final bool firestoreProjectsLoaded;
   final List<AppProject> liveAppProjects;
 
   AdminPortalState copyWith({
     AdminModule? selectedModule,
     List<SiteSectionConfig>? liveSections,
     List<ManagedSocialLink>? liveSocialLinks,
-    List<Project>? liveProjects,
     List<VisitorSubmission>? liveSubmissions,
     bool? submissionsLoaded,
     BasicDetails? Function()? liveBasicDetails,
@@ -67,14 +62,12 @@ class AdminPortalState {
     List<MediaAssetRecord>? liveMediaAssets,
     VisitorSubmission? Function()? selectedSubmission,
     String? Function()? firestoreErrorMessage,
-    bool? firestoreProjectsLoaded,
     List<AppProject>? liveAppProjects,
   }) {
     return AdminPortalState(
       selectedModule: selectedModule ?? this.selectedModule,
       liveSections: liveSections ?? this.liveSections,
       liveSocialLinks: liveSocialLinks ?? this.liveSocialLinks,
-      liveProjects: liveProjects ?? this.liveProjects,
       liveSubmissions: liveSubmissions ?? this.liveSubmissions,
       submissionsLoaded: submissionsLoaded ?? this.submissionsLoaded,
       liveBasicDetails: liveBasicDetails != null ? liveBasicDetails() : this.liveBasicDetails,
@@ -83,7 +76,6 @@ class AdminPortalState {
       liveMediaAssets: liveMediaAssets ?? this.liveMediaAssets,
       selectedSubmission: selectedSubmission != null ? selectedSubmission() : this.selectedSubmission,
       firestoreErrorMessage: firestoreErrorMessage != null ? firestoreErrorMessage() : this.firestoreErrorMessage,
-      firestoreProjectsLoaded: firestoreProjectsLoaded ?? this.firestoreProjectsLoaded,
       liveAppProjects: liveAppProjects ?? this.liveAppProjects,
     );
   }
@@ -141,11 +133,6 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
         if (links.isNotEmpty) state = state.copyWith(liveSocialLinks: links);
       }, onError: _handleError);
 
-      final s3 = portfolioService.streamProjects().listen((projects) {
-        _clearError();
-        state = state.copyWith(liveProjects: projects, firestoreProjectsLoaded: true);
-      }, onError: _handleError);
-
       final s4 = portfolioService.streamSubmissions().listen((submissions) {
         _clearError();
         final sel = state.selectedSubmission;
@@ -182,7 +169,7 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
       portfolioService.ensurePageConfigSeedData();
 
       ref.onDispose(() {
-        s1.cancel(); s2.cancel(); s3.cancel(); s4.cancel();
+        s1.cancel(); s2.cancel(); s4.cancel();
         s5.cancel(); s6.cancel(); s7.cancel(); s8.cancel();
       });
     }
@@ -207,11 +194,6 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
       state.liveSocialLinks.isNotEmpty
           ? List.unmodifiable(state.liveSocialLinks)
           : ManagedSocialLink.defaultLinks();
-
-  List<Project> get projects =>
-      state.firestoreProjectsLoaded
-          ? List.unmodifiable(state.liveProjects)
-          : Project.defaultPortfolioProjects();
 
   BasicDetails get basicDetails => state.liveBasicDetails ?? BasicDetails.defaults();
 
@@ -379,32 +361,6 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
       _clearError();
     } catch (e) { _handleError(e); }
   }
-
-  Future<void> saveProject(Project project) async {
-    final projects = [...state.liveProjects];
-    final i = projects.indexWhere((p) => p.id == project.id);
-    if (i != -1) { projects[i] = project; } else { projects.add(project); }
-    projects.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
-    state = state.copyWith(liveProjects: projects);
-    try {
-      await ref.read(firebasePortfolioServiceProvider).saveProject(project);
-      _clearError();
-    } catch (e) { _handleError(e); }
-  }
-
-  Future<void> deleteProject(Project project) async {
-    state = state.copyWith(liveProjects: state.liveProjects.where((p) => p.id != project.id).toList());
-    try {
-      await ref.read(firebasePortfolioServiceProvider).deleteProject(project.id);
-      _clearError();
-    } catch (e) { _handleError(e); }
-  }
-
-  Future<void> toggleProjectFeatured(Project project, bool value) =>
-      saveProject(project.copyWith(isFeatured: value));
-
-  Future<void> toggleProjectPublished(Project project, bool value) =>
-      saveProject(project.copyWith(isPublished: value));
 
   Future<bool> saveBasicDetails(BasicDetails details) async {
     state = state.copyWith(liveBasicDetails: () => details);

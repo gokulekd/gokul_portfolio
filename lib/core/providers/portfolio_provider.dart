@@ -20,14 +20,12 @@ class PortfolioState {
     this.appProjects = const [],
     this.resumeConfig,
     this.isAvailableForWork = true,
-    this.isLoadingProjects = false,
     this.isLoadingBlog = false,
     this.githubStats,
     this.sectionVisibility = const {},
     this.pageVisibility = const {},
     required this.personalInfo,
     required this.experiences,
-    required this.projects,
     required this.blogPosts,
     this.currentPageIndex = 0,
     this.heroTagline = '',
@@ -49,14 +47,12 @@ class PortfolioState {
   final List<AppProject> appProjects;
   final ResumeConfig? resumeConfig;
   final bool isAvailableForWork;
-  final bool isLoadingProjects;
   final bool isLoadingBlog;
   final GitHubStats? githubStats;
   final Map<String, bool> sectionVisibility;
   final Map<String, bool> pageVisibility;
   final PersonalInfo personalInfo;
   final List<Experience> experiences;
-  final List<Project> projects;
   final List<BlogPost> blogPosts;
   final int currentPageIndex;
   final String heroTagline;
@@ -82,21 +78,11 @@ class PortfolioState {
   List<AppProject> get featuredAppProjects =>
       publishedAppProjects.where((p) => p.isFeatured).toList();
 
-  List<Project> get publishedProjects =>
-      (projects.where((p) => p.isPublished).toList()
-        ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)));
-
-  List<Project> get featuredProjects =>
-      (publishedProjects.where((p) => p.isFeatured).toList()
-        ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)));
-
   bool isSectionVisible(String key, {bool fallback = true}) =>
       sectionVisibility[key] ?? fallback;
 
   bool isPageVisible(String key) => pageVisibility[key] ?? true;
 
-  List<Project> getProjectsByCategory(String category) =>
-      publishedProjects.where((p) => p.category == category).toList();
 
   List<BlogPost> getBlogPostsByTag(String tag) =>
       blogPosts.where((p) => p.tags.contains(tag)).toList();
@@ -166,14 +152,12 @@ class PortfolioState {
     List<AppProject>? appProjects,
     ResumeConfig? Function()? resumeConfig,
     bool? isAvailableForWork,
-    bool? isLoadingProjects,
     bool? isLoadingBlog,
     GitHubStats? Function()? githubStats,
     Map<String, bool>? sectionVisibility,
     Map<String, bool>? pageVisibility,
     PersonalInfo? personalInfo,
     List<Experience>? experiences,
-    List<Project>? projects,
     List<BlogPost>? blogPosts,
     int? currentPageIndex,
     String? heroTagline,
@@ -195,14 +179,12 @@ class PortfolioState {
       appProjects: appProjects ?? this.appProjects,
       resumeConfig: resumeConfig != null ? resumeConfig() : this.resumeConfig,
       isAvailableForWork: isAvailableForWork ?? this.isAvailableForWork,
-      isLoadingProjects: isLoadingProjects ?? this.isLoadingProjects,
       isLoadingBlog: isLoadingBlog ?? this.isLoadingBlog,
       githubStats: githubStats != null ? githubStats() : this.githubStats,
       sectionVisibility: sectionVisibility ?? this.sectionVisibility,
       pageVisibility: pageVisibility ?? this.pageVisibility,
       personalInfo: personalInfo ?? this.personalInfo,
       experiences: experiences ?? this.experiences,
-      projects: projects ?? this.projects,
       heroTagline: heroTagline ?? this.heroTagline,
       ctaPrimaryLabel: ctaPrimaryLabel ?? this.ctaPrimaryLabel,
       skills: skills ?? this.skills,
@@ -238,7 +220,6 @@ class PortfolioState {
           ],
         ),
         experiences: Experience.defaults(),
-        projects: Project.defaultPortfolioProjects(),
         blogPosts: _defaultBlogPosts,
         heroTagline: HomeHeroContent.defaults().tagline,
         ctaPrimaryLabel: HomeHeroContent.defaults().ctaPrimaryLabel,
@@ -259,7 +240,6 @@ class PortfolioState {
 // ─── Notifier ───────────────────────────────────────────────────────────────
 
 class PortfolioNotifier extends Notifier<PortfolioState> {
-  bool _hasFirestoreProjects = false;
   bool _hasBasicDetails = false;
 
   @override
@@ -278,15 +258,6 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
       final s2 = firebaseService.streamSocialLinks().listen((links) {
         if (links.isEmpty) return;
         _applyManagedSocialLinks(links);
-      });
-
-      final s3 = firebaseService.streamProjects().listen((liveProjects) {
-        if (liveProjects.isEmpty) return;
-        _hasFirestoreProjects = true;
-        state = state.copyWith(
-          projects: liveProjects
-            ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
-        );
       });
 
       final s4 = firebaseService.streamBasicDetails().listen((details) {
@@ -392,7 +363,7 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
       });
 
       ref.onDispose(() {
-        for (final s in [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s15, s16, s17, s18, s19]) {
+        for (final s in [s1, s2, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s15, s16, s17, s18, s19]) {
           s.cancel();
         }
       });
@@ -464,18 +435,10 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
   // ─── Async fetches ───────────────────────────────────────────────────────
 
   Future<void> _fetchGitHubData() async {
-    state = state.copyWith(isLoadingProjects: true);
     try {
-      final results = await Future.wait([
-        GitHubService.fetchRepositories(),
-        GitHubService.fetchUserStats(),
-      ]);
-      if (!_hasFirestoreProjects && (results[0] as List<Project>).isNotEmpty) {
-        state = state.copyWith(projects: results[0] as List<Project>);
-      }
-      state = state.copyWith(githubStats: () => results[1] as GitHubStats?);
+      final stats = await GitHubService.fetchUserStats();
+      state = state.copyWith(githubStats: () => stats);
     } catch (_) {}
-    state = state.copyWith(isLoadingProjects: false);
   }
 
   Future<void> _fetchBlogPosts() async {

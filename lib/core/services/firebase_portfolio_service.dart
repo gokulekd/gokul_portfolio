@@ -55,21 +55,6 @@ class FirebasePortfolioService {
         );
   }
 
-  Stream<List<Project>> streamProjects() {
-    if (!isEnabled) {
-      return Stream.value(const <Project>[]);
-    }
-
-    return _firestore
-        .collection('projects')
-        .orderBy('displayOrder')
-        .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs.map(_projectFromFirestore).toList(growable: false),
-        );
-  }
-
   Future<void> updateSectionVisibility(
     SiteSectionConfig section,
     bool isVisible,
@@ -100,29 +85,6 @@ class FirebasePortfolioService {
   Future<void> deleteSocialLink(String linkId) async {
     if (!isEnabled || linkId.isEmpty) return;
     await _firestore.collection('social_links').doc(linkId).delete();
-  }
-
-  Future<void> saveProject(Project project) async {
-    if (!isEnabled) {
-      return;
-    }
-
-    final projectsRef = _firestore.collection('projects');
-    final docRef =
-        project.id.isEmpty ? projectsRef.doc() : projectsRef.doc(project.id);
-
-    await docRef.set(
-      _projectToFirestore(project.copyWith(id: docRef.id)),
-      SetOptions(merge: true),
-    );
-  }
-
-  Future<void> deleteProject(String projectId) async {
-    if (!isEnabled || projectId.isEmpty) {
-      return;
-    }
-
-    await _firestore.collection('projects').doc(projectId).delete();
   }
 
   Stream<List<VisitorSubmission>> streamSubmissions() {
@@ -254,15 +216,12 @@ class FirebasePortfolioService {
 
     final sectionsRef = _firestore.collection('site_sections');
     final socialRef = _firestore.collection('social_links');
-    final projectsRef = _firestore.collection('projects');
 
     final sectionsSnapshot = await sectionsRef.limit(1).get();
     final socialSnapshot = await socialRef.limit(1).get();
-    final projectsSnapshot = await projectsRef.limit(1).get();
 
     if (sectionsSnapshot.docs.isNotEmpty &&
-        socialSnapshot.docs.isNotEmpty &&
-        projectsSnapshot.docs.isNotEmpty) {
+        socialSnapshot.docs.isNotEmpty) {
       return;
     }
 
@@ -280,12 +239,6 @@ class FirebasePortfolioService {
     if (socialSnapshot.docs.isEmpty) {
       for (final link in ManagedSocialLink.defaultLinks()) {
         batch.set(socialRef.doc(link.id), link.toFirestore());
-      }
-    }
-
-    if (projectsSnapshot.docs.isEmpty) {
-      for (final project in Project.defaultPortfolioProjects()) {
-        batch.set(projectsRef.doc(project.id), _projectToFirestore(project));
       }
     }
 
@@ -596,44 +549,5 @@ class FirebasePortfolioService {
     if (!heroDoc.exists) {
       await saveHomeHero(HomeHeroContent.defaults());
     }
-  }
-
-  Project _projectFromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data() ?? <String, dynamic>{};
-    return Project(
-      id: doc.id,
-      title: data['title'] as String? ?? 'Untitled Project',
-      description: data['description'] as String? ?? '',
-      imageUrl: data['imageUrl'] as String? ?? '',
-      technologies: (data['technologies'] as List<dynamic>? ?? const [])
-          .map((item) => item.toString())
-          .toList(growable: false),
-      githubUrl: data['githubUrl'] as String?,
-      liveUrl: data['liveUrl'] as String?,
-      category: data['category'] as String? ?? 'Mobile App',
-      stars: (data['stars'] as num?)?.toInt() ?? 0,
-      forks: (data['forks'] as num?)?.toInt() ?? 0,
-      isFeatured: data['isFeatured'] as bool? ?? false,
-      isPublished: data['isPublished'] as bool? ?? true,
-      displayOrder: (data['displayOrder'] as num?)?.toInt() ?? 0,
-    );
-  }
-
-  Map<String, dynamic> _projectToFirestore(Project project) {
-    return {
-      'title': project.title,
-      'description': project.description,
-      'imageUrl': project.imageUrl,
-      'technologies': project.technologies,
-      'githubUrl': project.githubUrl,
-      'liveUrl': project.liveUrl,
-      'category': project.category,
-      'stars': project.stars,
-      'forks': project.forks,
-      'isFeatured': project.isFeatured,
-      'isPublished': project.isPublished,
-      'displayOrder': project.displayOrder,
-      'updatedAt': FieldValue.serverTimestamp(),
-    };
   }
 }

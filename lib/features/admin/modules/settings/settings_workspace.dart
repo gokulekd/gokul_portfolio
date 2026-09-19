@@ -295,7 +295,7 @@ class _SettingsWorkspaceState extends ConsumerState<SettingsWorkspace> {
           const SizedBox(height: 10),
           PreviewTile(
             title: 'Projects',
-            value: '${portalNotifier.projects.length} in collection',
+            value: '${ref.watch(adminPortalProvider).liveAppProjects.length} in collection',
             icon: Icons.workspaces_rounded,
             color: const Color(0xFFFFB44C),
           ),
