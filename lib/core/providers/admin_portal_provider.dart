@@ -677,13 +677,6 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
     }
   }
 
-  Future<void> saveBlogSettings(BlogSettings settings) async {
-    try {
-      await ref.read(firebasePortfolioServiceProvider).saveBlogSettings(settings);
-      _clearError();
-    } catch (e) { _handleError(e); }
-  }
-
   void _clearError() {
     if (state.firestoreErrorMessage != null) {
       state = state.copyWith(firestoreErrorMessage: () => null);

@@ -10,7 +10,7 @@ class BlogPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final posts = ref.watch(portfolioProvider).combinedBlogPosts;
+    final posts = ref.watch(portfolioProvider).publicBlogPosts;
 
     return Scaffold(
       appBar: const CustomAppBar(),

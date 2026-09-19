@@ -395,6 +395,11 @@ The owner uses the Android app (Chrome push is disabled on their phone), so push
 - Release signing still uses the debug key; move to a real keystore before any Play Store publish.
 - **Photo in the notification (follow-up):** the launcher icon is now the owner's photo (adaptive + legacy mipmaps), but Android tints a notification's *small* icon to a flat color, so a photo there rendered as a solid square — the small icon is a white bell (`ic_stat_lead`, tinted brand green). To show the photo, Android tokens now get a **data-only** message and a native `LeadMessagingService` (subclass of the plugin's service, which it replaces in the manifest) posts a conversation-style notification with the photo as the sender avatar. This supersedes the `notification`-payload/`new_leads`-channel-from-FCM approach above. Tap → `MainActivity` extra → `gokul_portfolio/push` MethodChannel → `PushNavigation`. Needs `firebase-messaging` declared in the app module (BoM pinned to firebase_core's `FirebaseSDKVersion`, 33.16.0). Verified on device: data push wakes a fully stopped app and posts the notification; photo showed as the right-hand large icon. Whether the *left-hand* avatar renders is up to the OEM notification UI (Xiaomi), not confirmed.
 
+### Post-workstream — Dev.to integration removed ✅ DONE
+The blog was showing two Dev.to articles from `@gokulks` (an account the owner doesn't recognise as theirs — the username was a hard-coded placeholder in `devto_service.dart`). Removed the whole integration rather than just hiding it: `DevToService`, `PortfolioState.blogPosts`/`isLoadingBlog`/`showDevToFeed`/`getBlogPostsByTag`/`refreshBlog`, the Firestore `BlogSettings` singleton + service/notifier methods, and the admin "Show Dev.to feed" switch and tile. `combinedBlogPosts` → `publicBlogPosts` (only published Supabase posts, newest first); blog hero/profile-card/page updated to match. Supersedes the Day 9 "Dev.to stays as a toggleable supplementary feed" decision.
+- `BlogPost.url`/`reactions` (only ever filled from Dev.to) are now unused but left in the model.
+- Until the new build is deployed, the *live* site still runs the old code, which reads `site_sections/blog_settings`; that doc was created with `showDevToFeed: false` to hide the feed in the meantime. Safe to delete after deploying.
+
 ---
 
 ## Open decisions log

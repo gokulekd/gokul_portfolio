@@ -9,7 +9,6 @@ import '../../features/admin/modules/projects/models/app_project.dart';
 import '../../features/portfolio/models/firebase_content_models.dart';
 import '../../features/portfolio/models/portfolio_models.dart';
 import '../../features/portfolio/models/testimonial_entry.dart';
-import '../services/devto_service.dart';
 import '../services/github_service.dart';
 import 'service_providers.dart';
 
@@ -20,13 +19,11 @@ class PortfolioState {
     this.appProjects = const [],
     this.resumeConfig,
     this.isAvailableForWork = true,
-    this.isLoadingBlog = false,
     this.githubStats,
     this.sectionVisibility = const {},
     this.pageVisibility = const {},
     required this.personalInfo,
     required this.experiences,
-    required this.blogPosts,
     this.currentPageIndex = 0,
     this.heroTagline = '',
     this.ctaPrimaryLabel = 'See what I can do',
@@ -41,19 +38,16 @@ class PortfolioState {
     required this.stats,
     required this.resumeHighlights,
     this.adminBlogPosts = const [],
-    this.showDevToFeed = true,
   });
 
   final List<AppProject> appProjects;
   final ResumeConfig? resumeConfig;
   final bool isAvailableForWork;
-  final bool isLoadingBlog;
   final GitHubStats? githubStats;
   final Map<String, bool> sectionVisibility;
   final Map<String, bool> pageVisibility;
   final PersonalInfo personalInfo;
   final List<Experience> experiences;
-  final List<BlogPost> blogPosts;
   final int currentPageIndex;
   final String heroTagline;
   final String ctaPrimaryLabel;
@@ -68,7 +62,6 @@ class PortfolioState {
   final List<StatItem> stats;
   final List<ResumeHighlightGroup> resumeHighlights;
   final List<AdminBlogPost> adminBlogPosts;
-  final bool showDevToFeed;
 
   // ─── Computed ──────────────────────────────────────────────────────────────
 
@@ -83,9 +76,6 @@ class PortfolioState {
 
   bool isPageVisible(String key) => pageVisibility[key] ?? true;
 
-
-  List<BlogPost> getBlogPostsByTag(String tag) =>
-      blogPosts.where((p) => p.tags.contains(tag)).toList();
 
   SocialLink? getSocialLink(String platform) => personalInfo.socialLinks
       .where((s) => s.platform.toLowerCase() == platform.toLowerCase())
@@ -125,13 +115,11 @@ class PortfolioState {
   List<AdminBlogPost> get publishedAdminBlogPosts =>
       adminBlogPosts.where((p) => p.isPublished).toList();
 
-  /// Unified public blog feed: published Supabase-authored posts, plus
-  /// Dev.to articles when `showDevToFeed` is on, newest first. Converts
-  /// `AdminBlogPost` into the existing `BlogPost` shape so the blog page
-  /// widgets (`BlogHeroSection`, `BlogFeaturedSection`, `BlogPostsSection`)
-  /// don't need to know about two different post types.
-  List<BlogPost> get combinedBlogPosts {
-    final admin = publishedAdminBlogPosts.map(
+  /// Public blog feed: the published Supabase-authored posts, newest first.
+  /// Converts `AdminBlogPost` into the `BlogPost` shape the blog page widgets
+  /// (`BlogHeroSection`, `BlogFeaturedSection`, `BlogPostsSection`) render.
+  List<BlogPost> get publicBlogPosts {
+    return publishedAdminBlogPosts.map(
       (p) => BlogPost(
         title: p.title,
         excerpt: p.excerpt,
@@ -142,9 +130,7 @@ class PortfolioState {
         tags: p.tags,
         readingTimeMinutes: p.readingTimeMinutes,
       ),
-    );
-    final devto = showDevToFeed ? blogPosts : const <BlogPost>[];
-    return [...admin, ...devto]
+    ).toList()
       ..sort((a, b) => b.publishDate.compareTo(a.publishDate));
   }
 
@@ -152,13 +138,11 @@ class PortfolioState {
     List<AppProject>? appProjects,
     ResumeConfig? Function()? resumeConfig,
     bool? isAvailableForWork,
-    bool? isLoadingBlog,
     GitHubStats? Function()? githubStats,
     Map<String, bool>? sectionVisibility,
     Map<String, bool>? pageVisibility,
     PersonalInfo? personalInfo,
     List<Experience>? experiences,
-    List<BlogPost>? blogPosts,
     int? currentPageIndex,
     String? heroTagline,
     String? ctaPrimaryLabel,
@@ -173,13 +157,11 @@ class PortfolioState {
     List<StatItem>? stats,
     List<ResumeHighlightGroup>? resumeHighlights,
     List<AdminBlogPost>? adminBlogPosts,
-    bool? showDevToFeed,
   }) {
     return PortfolioState(
       appProjects: appProjects ?? this.appProjects,
       resumeConfig: resumeConfig != null ? resumeConfig() : this.resumeConfig,
       isAvailableForWork: isAvailableForWork ?? this.isAvailableForWork,
-      isLoadingBlog: isLoadingBlog ?? this.isLoadingBlog,
       githubStats: githubStats != null ? githubStats() : this.githubStats,
       sectionVisibility: sectionVisibility ?? this.sectionVisibility,
       pageVisibility: pageVisibility ?? this.pageVisibility,
@@ -198,8 +180,6 @@ class PortfolioState {
       stats: stats ?? this.stats,
       resumeHighlights: resumeHighlights ?? this.resumeHighlights,
       adminBlogPosts: adminBlogPosts ?? this.adminBlogPosts,
-      showDevToFeed: showDevToFeed ?? this.showDevToFeed,
-      blogPosts: blogPosts ?? this.blogPosts,
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
     );
   }
@@ -220,7 +200,6 @@ class PortfolioState {
           ],
         ),
         experiences: Experience.defaults(),
-        blogPosts: _defaultBlogPosts,
         heroTagline: HomeHeroContent.defaults().tagline,
         ctaPrimaryLabel: HomeHeroContent.defaults().ctaPrimaryLabel,
         skills: SkillItem.defaults(),
@@ -234,7 +213,6 @@ class PortfolioState {
         resumeHighlights: ResumeHighlightGroup.defaults(),
       );
 
-  static const List<BlogPost> _defaultBlogPosts = [];
 }
 
 // ─── Notifier ───────────────────────────────────────────────────────────────
@@ -355,15 +333,8 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
         );
       });
 
-      // Blog *post content* lives in Supabase now (Day 9) — this just
-      // streams the "show Dev.to feed" toggle, still a lightweight
-      // Firestore singleton like Home Hero.
-      final s19 = firebaseService.streamBlogSettings().listen((settings) {
-        state = state.copyWith(showDevToFeed: settings.showDevToFeed);
-      });
-
       ref.onDispose(() {
-        for (final s in [s1, s2, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s15, s16, s17, s18, s19]) {
+        for (final s in [s1, s2, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s15, s16, s17, s18]) {
           s.cancel();
         }
       });
@@ -371,7 +342,6 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
 
     Future.microtask(() {
       _fetchGitHubData();
-      _fetchBlogPosts();
       _loadAppProjects(projectsService);
       _loadAdminBlogPosts(ref.read(supabaseBlogServiceProvider));
       _loadTestimonials(ref.read(supabaseTestimonialsServiceProvider));
@@ -441,15 +411,6 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
     } catch (_) {}
   }
 
-  Future<void> _fetchBlogPosts() async {
-    state = state.copyWith(isLoadingBlog: true);
-    try {
-      final posts = await DevToService.fetchArticles();
-      if (posts.isNotEmpty) state = state.copyWith(blogPosts: posts);
-    } catch (_) {}
-    state = state.copyWith(isLoadingBlog: false);
-  }
-
   Future<void> _loadAppProjects(dynamic projectsService) async {
     final list = await projectsService.fetchProjects();
     state = state.copyWith(appProjects: list);
@@ -473,7 +434,6 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
       state = state.copyWith(isAvailableForWork: !state.isAvailableForWork);
 
   Future<void> refreshProjects() => _fetchGitHubData();
-  Future<void> refreshBlog() => _fetchBlogPosts();
 
   /// Re-fetches Supabase-backed `AppProject`s so the public site (home
   /// featured section + full Projects page) picks up admin edits without a

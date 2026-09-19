@@ -453,28 +453,6 @@ class FirebasePortfolioService {
   Future<void> deleteResumeHighlight(String id) =>
       isEnabled ? _resumeHighlightsRepo.delete(id) : Future.value();
 
-  // ─── Blog settings (singleton) ───────────────────────────────────────────
-  // Blog post content itself lives in Supabase (see `SupabaseBlogService`) —
-  // this just holds the "show Dev.to feed" site-wide toggle, same pattern as
-  // Home Hero above.
-
-  Stream<BlogSettings> streamBlogSettings() {
-    if (!isEnabled) return Stream.value(BlogSettings.defaults());
-    return _firestore
-        .collection('site_sections')
-        .doc('blog_settings')
-        .snapshots()
-        .map((doc) => doc.exists ? BlogSettings.fromFirestore(doc) : BlogSettings.defaults());
-  }
-
-  Future<void> saveBlogSettings(BlogSettings settings) async {
-    if (!isEnabled) return;
-    await _firestore
-        .collection('site_sections')
-        .doc('blog_settings')
-        .set(settings.toFirestore(), SetOptions(merge: true));
-  }
-
   // ─── Content list seeding ────────────────────────────────────────────────
   //
   // Seeds every collection above with the content that is (or was) hardcoded

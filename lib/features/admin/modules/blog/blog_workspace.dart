@@ -9,7 +9,6 @@ import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/providers/service_providers.dart';
 import '../../../../core/services/supabase_storage_service.dart';
 import '../../../../core/supabase/supabase_bootstrap.dart';
-import '../../../portfolio/models/firebase_content_models.dart';
 import '../../models/admin_portal_models.dart';
 import '../../shared/admin_portal_components.dart';
 import '../../shared/dialog_widgets.dart';
@@ -17,7 +16,7 @@ import '../../shared/preview_tile.dart';
 import '../projects/widgets/form_widgets.dart';
 import 'models/admin_blog_post.dart';
 
-/// Firestore-backed Dev.to toggle + Supabase-backed post list/edit/delete.
+/// Supabase-backed post list/edit/delete.
 /// Post *authoring* (the rich compose UX) lives in `CreatePostWorkspace` —
 /// this is the manage/list surface, same division of labor as the original
 /// nav copy described ("Manage article states, metadata, and publishing
@@ -293,8 +292,6 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
   @override
   Widget build(BuildContext context) {
     final posts = ref.watch(portfolioProvider.select((s) => s.adminBlogPosts));
-    final devToCount = ref.watch(portfolioProvider.select((s) => s.blogPosts.length));
-    final showDevToFeed = ref.watch(portfolioProvider.select((s) => s.showDevToFeed));
 
     final filtered = switch (_filter) {
       'Published' => posts.where((p) => p.isPublished).toList(),
@@ -313,37 +310,11 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
             eyebrow: 'BLOG CMS',
             title: 'Posts & articles',
             description:
-                '${posts.length} portfolio posts (Supabase) · $devToCount synced from Dev.to.',
+                '${posts.length} portfolio posts.',
             action: AdminPrimaryButton(
               label: 'New post',
               icon: Icons.add_rounded,
               onPressed: () => _openDialog(posts),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Show Dev.to feed on the public blog page',
-                    style: GoogleFonts.manrope(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w600),
-                  ),
-                ),
-                Switch(
-                  value: showDevToFeed,
-                  onChanged: (v) => ref
-                      .read(adminPortalProvider.notifier)
-                      .saveBlogSettings(BlogSettings(showDevToFeed: v)),
-                  activeThumbColor: AppColors.primaryGreen,
-                ),
-              ],
             ),
           ),
           const SizedBox(height: 16),
@@ -457,13 +428,6 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
             value: '$draftCount unpublished',
             icon: Icons.edit_note_rounded,
             color: const Color(0xFFFFB44C),
-          ),
-          const SizedBox(height: 12),
-          PreviewTile(
-            title: 'Dev.to feed',
-            value: showDevToFeed ? '$devToCount articles shown' : 'Hidden from public page',
-            icon: Icons.sync_rounded,
-            color: const Color(0xFFB57AFF),
           ),
         ],
       ),

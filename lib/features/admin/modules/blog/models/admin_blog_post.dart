@@ -5,9 +5,8 @@
 /// (project banners/icons, resume, media library), so this follows the same
 /// pattern as `AppProject`.
 ///
-/// Distinct from the read-only `BlogPost` model in `portfolio_models.dart`,
-/// which represents articles pulled live from the Dev.to API and stays a
-/// supplementary feed (toggled via `BlogSettings`).
+/// Converted to the public-facing `BlogPost` shape in `portfolio_models.dart`
+/// by `PortfolioState.publicBlogPosts`.
 class AdminBlogPost {
   const AdminBlogPost({
     this.id = '',
