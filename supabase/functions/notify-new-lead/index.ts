@@ -1,5 +1,5 @@
-// Sends an FCM web-push to the admin's registered browsers when a visitor
-// submits the contact form.
+// Sends an FCM push to the admin's registered devices (the Android app and/or
+// web browsers) when a visitor submits the contact form.
 //
 // Flow: the public contact form writes the lead to Firestore, then calls this
 // function with ONLY the submission ID. We re-read the lead from Firestore and
@@ -7,6 +7,12 @@
 // Guards against abuse of a public endpoint:
 //   - the submission must exist and be < MAX_AGE_MS old
 //   - it is atomically "claimed" (pushSentAt) so retries/replays send nothing
+//
+// Per-platform message (the token doc's `platform` field; missing => web):
+//   android  `notification` payload, shown by the system even when the app is
+//            closed, on the high-importance "new_leads" channel created by
+//            MainActivity.
+//   web      data-only; web/firebase-messaging-sw.js renders it.
 //
 // Secrets (set with `supabase secrets set`, never committed):
 //   FIREBASE_SERVICE_ACCOUNT  full JSON of a Firebase service-account key
@@ -128,11 +134,14 @@ Deno.serve(async (req: Request) => {
   );
   if (!claim.ok) return json(req, { skipped: "already notified" });
 
-  // 3. Every registered admin browser.
+  // 3. Every registered admin device.
   const tokensRes = await fetch(`${fs}/admin_push_tokens?pageSize=${MAX_TOKENS}`, { headers: auth });
   if (!tokensRes.ok) return json(req, { error: `token list failed: ${tokensRes.status}` }, 502);
   const tokenDocs: FsDoc[] = (await tokensRes.json()).documents ?? [];
-  const tokens = tokenDocs.map((d) => decodeURIComponent(d.name.split("/").pop()!));
+  const tokens = tokenDocs.map((d) => ({
+    token: decodeURIComponent(d.name.split("/").pop()!),
+    platform: String(d.fields?.platform?.stringValue ?? "web"),
+  }));
   if (tokens.length === 0) return json(req, { sent: 0, note: "no registered devices" });
 
   const name = String(f.name?.stringValue ?? "Someone").slice(0, 60);
@@ -148,12 +157,22 @@ Deno.serve(async (req: Request) => {
   let sent = 0;
   let failed = 0;
   let removed = 0;
-  await Promise.all(tokens.map(async (token) => {
+  await Promise.all(tokens.map(async ({ token, platform }) => {
     const res = await fetch(`https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`, {
       method: "POST",
       headers: { ...auth, "Content-Type": "application/json" },
       body: JSON.stringify({
-        message: { token, data, webpush: { headers: { Urgency: "high", TTL: "86400" } } },
+        message: platform === "android"
+          ? {
+            token,
+            notification: { title: data.title, body: data.body },
+            data: { url: data.url, submissionId },
+            android: {
+              priority: "HIGH",
+              notification: { channel_id: "new_leads", tag: submissionId },
+            },
+          }
+          : { token, data, webpush: { headers: { Urgency: "high", TTL: "86400" } } },
       }),
     });
     if (res.ok) {

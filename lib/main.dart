@@ -7,12 +7,15 @@ import 'core/supabase/supabase_bootstrap.dart';
 import 'core/providers/portfolio_provider.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/routes/app_router.dart';
+import 'core/services/push_navigation.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseBootstrap.initialize();
   await SupabaseBootstrap.initialize();
-  runApp(const ProviderScope(child: MyApp()));
+  final container = ProviderContainer();
+  runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
+  PushNavigation.attach(container);
 }
 
 class MyApp extends ConsumerWidget {

@@ -1,7 +1,7 @@
 # notify-new-lead
 
-Supabase Edge Function that sends an FCM web-push to the admin's browsers when a
-visitor submits the contact form. Lets the project stay on Firebase's free Spark
+Supabase Edge Function that sends an FCM push to the admin's devices (the Android
+app and/or web browsers) when a visitor submits the contact form. Lets the project stay on Firebase's free Spark
 plan (Cloud Functions would need Blaze).
 
 ```
@@ -46,6 +46,16 @@ Close the admin tab (or switch to another tab), submit the contact form from a
 different tab/device, and a "New enquiry from …" notification should appear.
 Clicking it opens `/#/admin`. Check function logs with
 `supabase functions logs notify-new-lead --project-ref <project-ref>`.
+
+## Android app
+
+The Android app registers its own token (Settings → Notifications → Turn on; no
+VAPID key needed) with `platform: android`. For those tokens the function sends a
+`notification` payload on the high-importance `new_leads` channel (created in
+`MainActivity`), which the system shows even when the app is closed — a data-only
+message would be dropped in the background. Tapping it opens the Submissions
+inbox (`PushNavigation`). Build/install: `flutter build apk --release
+--dart-define-from-file=.env`. Redeploy this function after changing `index.ts`.
 
 ## Notes
 

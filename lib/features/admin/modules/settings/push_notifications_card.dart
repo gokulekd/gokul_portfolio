@@ -82,25 +82,25 @@ class _PushNotificationsCardState extends ConsumerState<PushNotificationsCard> {
     return switch (_state) {
       null => (
         title: 'Checking…',
-        detail: 'Looking up this browser\'s notification status.',
+        detail: 'Looking up this device\'s notification status.',
         canToggle: false,
       ),
       PushState.on => (
         title: 'Push alerts are on',
         detail:
-            'This browser gets a notification for every new enquiry, even when the portal is closed.',
+            'This device gets a notification for every new enquiry, even when the app is closed.',
         canToggle: true,
       ),
       PushState.off => (
         title: 'Push alerts are off',
         detail:
-            'Turn on to get a notification for new enquiries when the portal isn\'t open.',
+            'Turn on to get a notification for new enquiries when the app isn\'t open.',
         canToggle: true,
       ),
       PushState.blocked => (
         title: 'Notifications are blocked',
         detail:
-            'Allow notifications for this site in your browser\'s site settings, then reload.',
+            'Allow notifications for this app in your device (or browser site) settings, then reopen it.',
         canToggle: false,
       ),
       PushState.notConfigured => (
@@ -111,7 +111,7 @@ class _PushNotificationsCardState extends ConsumerState<PushNotificationsCard> {
       ),
       PushState.unsupported => (
         title: 'Not supported here',
-        detail: 'This browser or build can\'t receive web push notifications.',
+        detail: 'This device or browser can\'t receive push notifications.',
         canToggle: false,
       ),
     };

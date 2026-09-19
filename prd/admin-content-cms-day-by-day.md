@@ -386,6 +386,14 @@ Background push for new leads, staying on Spark: Cloud Functions need Blaze, so 
 - **Config:** `FCM_VAPID_KEY` dart-define (`.env`, `build.sh` warns if missing); `.claude/launch.json` now passes `--dart-define-from-file=.env` so dev runs get Supabase + VAPID.
 - **Verified:** `flutter analyze` clean; function logic run under Node against stubbed Google APIs (10 cases: happy path, replay, lost race, stale, unknown id, id injection, dead-token pruning, no devices, CORS, method). **Not verified end to end:** needs the VAPID key, service-account secret, function deploy, rules deploy — steps in the function's README.
 
+### Post-workstream — Android app push ✅ DONE
+The owner uses the Android app (Chrome push is disabled on their phone), so push now targets native FCM.
+- **Token registry:** `PushNotificationService` supports Android (no VAPID key) and tags each `admin_push_tokens` doc with `platform`. The function sends Android tokens a `notification` payload on the high-importance `new_leads` channel (data-only messages are dropped by Android in the background); web/legacy tokens keep the data-only format.
+- **Android setup:** applied the missing `com.google.gms.google-services` Gradle plugin, added INTERNET + POST_NOTIFICATIONS to the main manifest (release builds otherwise only got INTERNET from the debug manifest), created the channel in `MainActivity`, and wired `proguard-rules.pro` into the release build with a Play Core `-dontwarn` (R8 failed on it). Release is still signed with the debug key, whose SHA-1 is registered in Firebase, so Google sign-in works.
+- **Tap handling:** `PushNavigation` opens the Submissions inbox on notification tap (cold start + background).
+- **Verified on device (Android 15):** with the app backgrounded, a lead triggered a system notification from the app (tag = submission id, importance high); function returned `sent: 2, failed: 0`. Gotcha found on the way: the function must be redeployed (`supabase functions deploy`) after each change — it was still v1 during the first Android test.
+- Release signing still uses the debug key; move to a real keystore before any Play Store publish.
+
 ---
 
 ## Open decisions log
