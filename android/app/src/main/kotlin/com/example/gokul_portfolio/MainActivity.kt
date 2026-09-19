@@ -1,27 +1,48 @@
 package com.example.gokul_portfolio
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.os.Build
+import android.content.Intent
 import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
+    private var channel: MethodChannel? = null
+    private var launchedFromLeadPush = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        createLeadsChannel()
+        LeadNotifications.ensureChannel(this)
+        launchedFromLeadPush = intent?.getBooleanExtra(EXTRA_OPEN_INBOX, false) == true
     }
 
-    /// FCM notification messages are shown by the system on this channel (its id
-    /// is set as the default in AndroidManifest and by the notify-new-lead
-    /// function). HIGH importance makes new-enquiry alerts heads-up.
-    private fun createLeadsChannel() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        val channel = NotificationChannel(
-            "new_leads",
-            "New enquiries",
-            NotificationManager.IMPORTANCE_HIGH,
-        ).apply { description = "Alerts when a visitor submits the contact form" }
-        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+    /// Bridge so Dart (PushNavigation) can open the leads inbox when the owner
+    /// taps a new-enquiry notification: `consumeLaunchAction` covers a cold
+    /// start, `openInbox` is pushed to Dart if the app was already running.
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_NAME).also {
+            it.setMethodCallHandler { call, result ->
+                if (call.method == "consumeLaunchAction") {
+                    result.success(launchedFromLeadPush)
+                    launchedFromLeadPush = false
+                } else {
+                    result.notImplemented()
+                }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.getBooleanExtra(EXTRA_OPEN_INBOX, false)) {
+            channel?.invokeMethod("openInbox", null)
+        }
+    }
+
+    companion object {
+        const val EXTRA_OPEN_INBOX = "open_leads_inbox"
+        const val CHANNEL_NAME = "gokul_portfolio/push"
     }
 }

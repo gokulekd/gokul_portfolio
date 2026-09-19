@@ -50,11 +50,17 @@ Clicking it opens `/#/admin`. Check function logs with
 ## Android app
 
 The Android app registers its own token (Settings → Notifications → Turn on; no
-VAPID key needed) with `platform: android`. For those tokens the function sends a
-`notification` payload on the high-importance `new_leads` channel (created in
-`MainActivity`), which the system shows even when the app is closed — a data-only
-message would be dropped in the background. Tapping it opens the Submissions
-inbox (`PushNavigation`). Build/install: `flutter build apk --release
+VAPID key needed) with `platform: android`. For those tokens the function sends a **data-only,
+high-priority** message. `LeadMessagingService` (native Kotlin, replaces the Flutter
+plugin's service in the manifest) builds the notification itself on the
+high-importance `new_leads` channel, as a conversation with the owner's photo
+(`res/drawable-nodpi/notification_avatar.png`) as the avatar — a plain FCM
+`notification` payload can't set a large icon, and the small icon is always a
+flat tinted glyph (`ic_stat_lead`). Nothing is posted while the app is on screen
+(the in-app snackbar covers it). Tapping it opens the Submissions inbox
+(`MainActivity` → `PushNavigation` over the `gokul_portfolio/push` channel).
+On Xiaomi/Redmi phones, keep Autostart on and battery on "No restrictions" so a
+force-closed app can still receive it. Build/install: `flutter build apk --release
 --dart-define-from-file=.env`. Redeploy this function after changing `index.ts`.
 
 ## Notes

@@ -9,9 +9,10 @@
 //   - it is atomically "claimed" (pushSentAt) so retries/replays send nothing
 //
 // Per-platform message (the token doc's `platform` field; missing => web):
-//   android  `notification` payload, shown by the system even when the app is
-//            closed, on the high-importance "new_leads" channel created by
-//            MainActivity.
+//   android  data-only, high priority. LeadMessagingService (native) builds the
+//            notification so it can carry the owner's photo as the large icon —
+//            an FCM `notification` payload can't set one. It posts on the
+//            high-importance "new_leads" channel.
 //   web      data-only; web/firebase-messaging-sw.js renders it.
 //
 // Secrets (set with `supabase secrets set`, never committed):
@@ -165,12 +166,8 @@ Deno.serve(async (req: Request) => {
         message: platform === "android"
           ? {
             token,
-            notification: { title: data.title, body: data.body },
-            data: { url: data.url, submissionId },
-            android: {
-              priority: "HIGH",
-              notification: { channel_id: "new_leads", tag: submissionId },
-            },
+            data,
+            android: { priority: "HIGH", ttl: "86400s" },
           }
           : { token, data, webpush: { headers: { Urgency: "high", TTL: "86400" } } },
       }),

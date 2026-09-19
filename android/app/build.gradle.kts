@@ -44,6 +44,16 @@ android {
     }
 }
 
+dependencies {
+    // NotificationCompat / NotificationManagerCompat for LeadMessagingService.
+    implementation("androidx.core:core-ktx:1.13.1")
+    // LeadMessagingService subclasses the FCM service; the Flutter plugin keeps
+    // this SDK private, so declare it here. Keep the BoM in step with firebase_core
+    // (its android/gradle.properties FirebaseSDKVersion) so versions don't clash.
+    implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
+    implementation("com.google.firebase:firebase-messaging")
+}
+
 flutter {
     source = "../.."
 }
