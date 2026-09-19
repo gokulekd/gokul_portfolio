@@ -150,6 +150,11 @@ class FirebasePortfolioService {
         .update({'status': status.name});
   }
 
+  Future<void> deleteSubmission(String id) async {
+    if (!isEnabled || id.isEmpty) return;
+    await _firestore.collection('submissions').doc(id).delete();
+  }
+
   Future<void> addSubmissionNote(String id, String note) async {
     if (!isEnabled || id.isEmpty || note.trim().isEmpty) return;
     await _firestore.collection('submissions').doc(id).update({

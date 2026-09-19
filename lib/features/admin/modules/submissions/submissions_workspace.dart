@@ -86,6 +86,46 @@ class SubmissionsWorkspace extends ConsumerWidget {
     );
   }
 
+  void _confirmDelete(BuildContext context, WidgetRef ref, VisitorSubmission sub) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1C1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Delete submission?',
+          style: GoogleFonts.manrope(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          'This permanently removes ${sub.name}\'s enquiry and its notes. This can\'t be undone.',
+          style: GoogleFonts.manrope(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.manrope(color: Colors.white54),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ref.read(adminPortalProvider.notifier).deleteSubmission(sub);
+            },
+            child: Text(
+              'Delete',
+              style: GoogleFonts.manrope(color: const Color(0xFFFF7C7C)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(adminPortalProvider);
@@ -225,6 +265,11 @@ class SubmissionsWorkspace extends ConsumerWidget {
                       label: 'Add note',
                       icon: Icons.sticky_note_2_rounded,
                       onPressed: () => _showAddNoteDialog(context, ref),
+                    ),
+                    AdminGhostButton(
+                      label: 'Delete',
+                      icon: Icons.delete_outline_rounded,
+                      onPressed: () => _confirmDelete(context, ref, selectedSub),
                     ),
                   ],
                 ),

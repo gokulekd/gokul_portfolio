@@ -330,6 +330,18 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
     } catch (e) { _handleError(e); }
   }
 
+  Future<void> deleteSubmission(VisitorSubmission submission) async {
+    try {
+      await ref.read(firebasePortfolioServiceProvider).deleteSubmission(submission.id);
+      // The stream listener only refreshes a selection that still exists, so
+      // clear it here or the detail panel keeps showing the deleted lead.
+      if (state.selectedSubmission?.id == submission.id) {
+        state = state.copyWith(selectedSubmission: () => null);
+      }
+      _clearError();
+    } catch (e) { _handleError(e); }
+  }
+
   Future<void> addSubmissionNote(String note) async {
     final sub = state.selectedSubmission;
     if (sub == null) return;

@@ -364,6 +364,7 @@ offline alert. Revisit FCM via a Supabase Edge Function only if background push 
 - [x] `AdminPortalState.submissionsLoaded` flag so the first Firestore snapshot is a baseline, not a burst of "new" leads.
 - [x] `admin_portal_page.dart` (now stateful): `ref.listen` shows a snackbar ("New enquiry from X" / "N new enquiries") with a VIEW action that opens the inbox, and sets the tab title to `(n) Admin — <site title>`, restored on dispose.
 - [x] `selectSubmission` now marks an unread lead `reviewing`, so the badge/title count actually drop as leads are opened (previously only "Mark in progress" cleared unread).
+- [x] Inbox delete: `deleteSubmission` in service + notifier, "Delete" button with a confirm dialog in the detail panel (`firestore.rules` already allowed authed delete). The notifier clears the selection itself, since the stream listener keeps a stale selection when the selected doc disappears.
 - [x] Verified with `dart analyze lib` — no new issues. **Not click-tested live:** `flutter` is blocked locally by the un-accepted Xcode license, and `/admin` needs the owner's Google sign-in.
 
 ---
