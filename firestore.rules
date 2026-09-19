@@ -93,14 +93,14 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
 
-    // Contact form — public write (visitors), authenticated read (admin)
-    // FCM web-push registrations for the admin's browsers. Only a signed-in
-    // admin can read/write; the notify-new-lead Edge Function reads these with
-    // a service account (which bypasses rules).
+    // FCM push registrations for the admin's devices (the Android app and web
+    // browsers). Only a signed-in admin can read/write; the notify-new-lead
+    // Edge Function reads these with a service account (which bypasses rules).
     match /admin_push_tokens/{token} {
       allow read, write: if request.auth != null;
     }
 
+    // Contact form — public write (visitors), authenticated read (admin)
     match /submissions/{docId} {
       allow read: if request.auth != null;
       allow create: if true;
