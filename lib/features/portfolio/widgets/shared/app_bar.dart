@@ -22,10 +22,6 @@ void _handleHomeNav() {
   appRouter.go(AppRoutes.home);
 }
 
-void _handleResumeNav() {
-  appRouter.go(AppRoutes.resume);
-}
-
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const CustomAppBar({super.key});
 
@@ -38,7 +34,6 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
       {'title': 'Home', 'index': 0, 'pageKey': SitePageKeys.home},
       {'title': 'About me', 'index': 1, 'pageKey': SitePageKeys.about},
       {'title': 'My Work', 'index': 3, 'pageKey': SitePageKeys.myWork},
-      {'title': 'Resume', 'action': 'resume', 'pageKey': SitePageKeys.resume},
       {'title': 'Blog', 'index': 4, 'pageKey': SitePageKeys.blog},
       {'title': 'Contact me', 'index': 5},
     ];
@@ -186,9 +181,6 @@ Builder(builder: (context) {
                                       onPressed: () {
                                         if (isHome) {
                                           _handleHomeNav();
-                                        } else if (item['action'] ==
-                                            'resume') {
-                                          _handleResumeNav();
                                         } else {
                                           _navigateToPage(item);
                                         }

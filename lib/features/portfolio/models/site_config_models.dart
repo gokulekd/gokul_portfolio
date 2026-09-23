@@ -206,7 +206,6 @@ class SitePageKeys {
   static const String home = 'home';
   static const String about = 'about';
   static const String myWork = 'my_work';
-  static const String resume = 'resume';
   static const String blog = 'blog';
 }
 
@@ -302,22 +301,13 @@ class SitePageConfig {
         displayOrder: 3,
       ),
       SitePageConfig(
-        id: SitePageKeys.resume,
-        key: SitePageKeys.resume,
-        title: 'Resume',
-        route: '/resume',
-        description: 'Downloadable CV and career highlights.',
-        isVisible: true,
-        displayOrder: 4,
-      ),
-      SitePageConfig(
         id: SitePageKeys.blog,
         key: SitePageKeys.blog,
         title: 'Blog',
         route: '/blog',
         description: 'Articles, thoughts, and editorial content.',
         isVisible: true,
-        displayOrder: 5,
+        displayOrder: 4,
       ),
     ];
   }

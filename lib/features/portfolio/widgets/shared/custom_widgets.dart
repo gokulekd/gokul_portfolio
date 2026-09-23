@@ -4,6 +4,7 @@ export 'custom_button.dart';
 export 'drawer.dart';
 export 'experience_card.dart';
 export 'footer_section.dart';
+export 'hero_action_button.dart';
 export 'hero_stat.dart';
 export 'info_pill.dart';
 export 'page_app_bar.dart';

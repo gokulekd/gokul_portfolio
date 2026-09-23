@@ -33,10 +33,9 @@ final appRouter = GoRouter(
         projectId: state.pathParameters['id'] ?? '',
       ),
     ),
-    GoRoute(
-      path: AppRoutes.resume,
-      builder: (context, state) => const ResumePage(),
-    ),
+    // The Resume page was folded into About (CV download lives in its hero);
+    // keep old /resume links working.
+    GoRoute(path: AppRoutes.resume, redirect: (context, state) => AppRoutes.about),
     GoRoute(
       path: AppRoutes.blog,
       builder: (context, state) => const BlogPage(),

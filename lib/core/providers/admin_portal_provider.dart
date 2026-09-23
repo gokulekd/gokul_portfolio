@@ -184,8 +184,14 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
   bool get isFirebaseConnected =>
       ref.read(firebasePortfolioServiceProvider).isEnabled;
 
-  List<SitePageConfig> get pageConfigs =>
-      state.livePages.isNotEmpty ? state.livePages : SitePageConfig.defaultPages();
+  /// Live page docs for pages the site still has; stale docs (like the
+  /// removed Resume page) are left out.
+  List<SitePageConfig> get pageConfigs {
+    final defaults = SitePageConfig.defaultPages();
+    final known = defaults.map((p) => p.key).toSet();
+    final live = state.livePages.where((p) => known.contains(p.key)).toList();
+    return live.isNotEmpty ? live : defaults;
+  }
 
   List<SiteSectionConfig> get sectionConfigs =>
       state.liveSections.isNotEmpty ? state.liveSections : SiteSectionConfig.defaultSections();

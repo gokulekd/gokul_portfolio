@@ -20,7 +20,6 @@ class SiteStructureWorkspace extends ConsumerWidget {
     SitePageKeys.home: Icons.home_rounded,
     SitePageKeys.about: Icons.person_rounded,
     SitePageKeys.myWork: Icons.workspaces_rounded,
-    SitePageKeys.resume: Icons.description_rounded,
     SitePageKeys.blog: Icons.edit_note_rounded,
   };
 
@@ -28,7 +27,6 @@ class SiteStructureWorkspace extends ConsumerWidget {
     SitePageKeys.home: AppColors.primaryGreen,
     SitePageKeys.about: Color(0xFF5CD6FF),
     SitePageKeys.myWork: Color(0xFFFFB44C),
-    SitePageKeys.resume: Color(0xFFFF7C7C),
     SitePageKeys.blog: Color(0xFFB57AFF),
   };
 

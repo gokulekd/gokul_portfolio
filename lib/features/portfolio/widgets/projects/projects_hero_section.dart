@@ -6,28 +6,28 @@ import '../../../../core/config/app_colors.dart';
 import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import '../shared/custom_widgets.dart';
-import 'resume_components.dart';
 
-/// Strengths typed out one after another in the hero subtitle.
-const _kStrengths = [
-  'Flutter apps.',
-  'pixel-perfect UI.',
-  'clean architecture.',
+/// Kinds of work typed out one after another in the hero subtitle.
+const _kWork = [
+  'mobile apps.',
   'cross-platform products.',
-  'things that ship.',
+  'polished interfaces.',
+  'full-stack solutions.',
+  'ideas as real apps.',
 ];
 
-/// Resume page hero, laid out like the About and Blog page heroes: the
-/// profile card on the left, and a "My resume" heading with an animated
-/// subtitle, intro, CV download CTA and stats on the right.
-class ResumeHeroSection extends ConsumerStatefulWidget {
-  const ResumeHeroSection({super.key});
+/// My Work page hero, laid out like the About and Blog page heroes:
+/// the profile card on the left, and a "My work" heading with an animated
+/// subtitle, intro, CTAs and project stats on the right.
+class ProjectsHeroSection extends ConsumerStatefulWidget {
+  const ProjectsHeroSection({super.key});
 
   @override
-  ConsumerState<ResumeHeroSection> createState() => _ResumeHeroSectionState();
+  ConsumerState<ProjectsHeroSection> createState() =>
+      _ProjectsHeroSectionState();
 }
 
-class _ResumeHeroSectionState extends ConsumerState<ResumeHeroSection>
+class _ProjectsHeroSectionState extends ConsumerState<ProjectsHeroSection>
     with TickerProviderStateMixin {
   late final AnimationController _textController;
   late final AnimationController _contentController;
@@ -168,9 +168,9 @@ class _ResumeHeroSectionState extends ConsumerState<ResumeHeroSection>
     final textAlign = centered ? TextAlign.center : TextAlign.start;
     final wrapAlign = centered ? WrapAlignment.center : WrapAlignment.start;
 
-    final roles = state.visibleExperiences.length;
-    final skills = state.visibleSkills.length;
-    final apps = state.appProjects.length;
+    final projects = state.publishedAppProjects;
+    final featured = state.featuredAppProjects.length;
+    final techCount = projects.expand((p) => p.techStack).toSet().length;
 
     return Column(
       crossAxisAlignment: crossAlign,
@@ -194,7 +194,7 @@ class _ResumeHeroSectionState extends ConsumerState<ResumeHeroSection>
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Portfolio / Resume',
+                    'Portfolio / My Work',
                     style: GoogleFonts.manrope(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -206,7 +206,7 @@ class _ResumeHeroSectionState extends ConsumerState<ResumeHeroSection>
               ),
               SizedBox(height: isMobile ? 12 : 16),
               Text(
-                'My resume',
+                'My work',
                 textAlign: textAlign,
                 style: GoogleFonts.inter(
                   fontSize:
@@ -223,8 +223,8 @@ class _ResumeHeroSectionState extends ConsumerState<ResumeHeroSection>
               ),
               SizedBox(height: isMobile ? 20 : 28),
               TypewriterSubtitle(
-                prefix: 'I build ',
-                words: _kStrengths,
+                prefix: 'I ship ',
+                words: _kWork,
                 textAlign: textAlign,
                 fontSize:
                     isMobile
@@ -242,8 +242,8 @@ class _ResumeHeroSectionState extends ConsumerState<ResumeHeroSection>
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 620),
             child: Text(
-              'A clean snapshot of my work, experience, strengths, and the '
-              'product thinking I bring into every Flutter build.',
+              'A curated collection of projects I have built with passion, '
+              'from mobile apps to full-stack solutions.',
               textAlign: textAlign,
               style: GoogleFonts.manrope(
                 fontSize:
@@ -270,44 +270,41 @@ class _ResumeHeroSectionState extends ConsumerState<ResumeHeroSection>
                 runSpacing: 14,
                 alignment: wrapAlign,
                 children: [
-                  ResumeActionButton(
-                    label: 'Download CV',
-                    icon: Icons.download_rounded,
+                  HeroActionButton(
+                    label: 'Start a project',
+                    icon: Icons.rocket_launch_outlined,
                     isPrimary: true,
-                    onPressed:
-                        () =>
-                            ref.read(portfolioProvider.notifier).launchResume(),
-                  ),
-                  ResumeActionButton(
-                    label: 'Email me',
-                    icon: Icons.north_east_rounded,
                     onPressed:
                         () =>
                             ref.read(portfolioProvider.notifier).launchEmail(),
                   ),
+                  HeroActionButton(
+                    label: 'Download CV',
+                    icon: Icons.download_rounded,
+                    onPressed:
+                        () =>
+                            ref.read(portfolioProvider.notifier).launchResume(),
+                  ),
                 ],
               ),
-              if (roles > 0 || skills > 0 || apps > 0) ...[
+              if (projects.isNotEmpty) ...[
                 SizedBox(height: isMobile ? 28 : 36),
                 Wrap(
                   spacing: isMobile ? 24 : 36,
                   runSpacing: 16,
                   alignment: wrapAlign,
                   children: [
-                    if (roles > 0)
+                    HeroStat(
+                      value: '${projects.length}',
+                      label: projects.length == 1 ? 'Project' : 'Projects',
+                    ),
+                    if (featured > 0)
+                      HeroStat(value: '$featured', label: 'Featured'),
+                    if (techCount > 0)
                       HeroStat(
-                        value: '$roles',
-                        label: roles == 1 ? 'Role' : 'Roles',
-                      ),
-                    if (apps > 0)
-                      HeroStat(
-                        value: '$apps',
-                        label: apps == 1 ? 'App shipped' : 'Apps shipped',
-                      ),
-                    if (skills > 0)
-                      HeroStat(
-                        value: '$skills',
-                        label: skills == 1 ? 'Skill' : 'Skills',
+                        value: '$techCount',
+                        label:
+                            techCount == 1 ? 'Technology' : 'Technologies',
                       ),
                   ],
                 ),

@@ -81,6 +81,15 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
     super.dispose();
   }
 
+  Widget _downloadCvButton() {
+    return HeroActionButton(
+      label: 'Download CV',
+      icon: Icons.download_rounded,
+      isPrimary: true,
+      onPressed: () => ref.read(portfolioProvider.notifier).launchResume(),
+    );
+  }
+
   Widget _buildLeftColumn(
     BuildContext context,
     double imageRadius,
@@ -188,19 +197,26 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
           builder:
               (context, child) => Opacity(
                 opacity: _taglineOpacity.value,
-                child: Text(
-                  "Let's create something amazing together!",
-                  style: GoogleFonts.manrope(
-                    fontSize:
-                        isMobile
-                            ? 16
-                            : isTablet
-                            ? 18
-                            : 20,
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    height: 1.4,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Let's create something amazing together!",
+                      style: GoogleFonts.manrope(
+                        fontSize:
+                            isMobile
+                                ? 16
+                                : isTablet
+                                ? 18
+                                : 20,
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    _downloadCvButton(),
+                  ],
                 ),
               ),
         ),
@@ -350,15 +366,21 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
           builder:
               (context, child) => Opacity(
                 opacity: _taglineOpacity.value,
-                child: Text(
-                  "Let's create something amazing together!",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.manrope(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    height: 1.4,
-                  ),
+                child: Column(
+                  children: [
+                    Text(
+                      "Let's create something amazing together!",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.manrope(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _downloadCvButton(),
+                  ],
                 ),
               ),
         ),

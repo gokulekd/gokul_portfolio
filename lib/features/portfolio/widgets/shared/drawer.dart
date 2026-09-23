@@ -20,10 +20,6 @@ void _handleHomeNav() {
   appRouter.go(AppRoutes.home);
 }
 
-void _handleResumeNav() {
-  appRouter.go(AppRoutes.resume);
-}
-
 class CustomDrawer extends ConsumerWidget {
   const CustomDrawer({super.key});
 
@@ -35,7 +31,6 @@ class CustomDrawer extends ConsumerWidget {
       {'title': 'Home', 'index': 0, 'icon': Icons.home, 'pageKey': SitePageKeys.home},
       {'title': 'About me', 'index': 1, 'icon': Icons.person, 'pageKey': SitePageKeys.about},
       {'title': 'My Work', 'index': 3, 'icon': Icons.folder, 'pageKey': SitePageKeys.myWork},
-      {'title': 'Resume', 'action': 'resume', 'icon': Icons.description, 'pageKey': SitePageKeys.resume},
       {'title': 'Blog', 'index': 4, 'icon': Icons.article, 'pageKey': SitePageKeys.blog},
       {'title': 'Contact me', 'index': 5, 'icon': Icons.contact_mail},
     ];
@@ -127,9 +122,7 @@ class CustomDrawer extends ConsumerWidget {
                     ),
                     onTap: () {
                       Navigator.pop(context);
-                      if (item['action'] == 'resume') {
-                        _handleResumeNav();
-                      } else if (item['title'] == 'Home') {
+                      if (item['title'] == 'Home') {
                         _handleHomeNav();
                       } else {
                         _navigateToPage(item);

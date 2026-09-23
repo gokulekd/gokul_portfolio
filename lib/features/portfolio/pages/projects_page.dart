@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../widgets/shared/custom_widgets.dart';
 import '../widgets/projects/projects_components.dart';
+import '../widgets/projects/projects_hero_section.dart';
 
 class ProjectsPage extends StatelessWidget {
   const ProjectsPage({super.key});
