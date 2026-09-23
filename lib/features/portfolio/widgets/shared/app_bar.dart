@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/config/app_colors.dart';
 import '../../models/firebase_content_models.dart';
 import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/providers/theme_provider.dart';
@@ -207,20 +208,39 @@ Builder(builder: (context) {
     );
   }
 
+  /// Theme icon with an on/off switch beside it; tapping either toggles
+  /// between light and dark mode.
   Widget _buildThemeToggle(WidgetRef ref) {
-    final themeNotifier = ref.watch(themeProvider.notifier);
-    final isDark = themeNotifier.isDarkMode;
+    final isDark = ref.watch(themeProvider) == ThemeMode.dark;
+    final themeNotifier = ref.read(themeProvider.notifier);
+
     return Tooltip(
       message: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-      child: IconButton(
-        onPressed: () => themeNotifier.toggleTheme(),
-        icon: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: Icon(
-            isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-            key: ValueKey(isDark),
-            color: isDark ? Colors.amber : Colors.black54,
-            size: 22,
+      child: Semantics(
+        button: true,
+        toggled: isDark,
+        label: 'Dark mode',
+        child: InkWell(
+          onTap: themeNotifier.toggleTheme,
+          borderRadius: BorderRadius.circular(999),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: Icon(
+                    isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                    key: ValueKey(isDark),
+                    color: isDark ? Colors.amber : Colors.black54,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _ThemeSwitch(isOn: isDark),
+              ],
+            ),
           ),
         ),
       ),
@@ -229,4 +249,47 @@ Builder(builder: (context) {
 
   @override
   Size get preferredSize => const Size.fromHeight(80.0);
+}
+
+/// Compact switch drawn in the theme toggle: a grey track in light mode, a
+/// green track in dark mode, with the white knob sliding across.
+class _ThemeSwitch extends StatelessWidget {
+  const _ThemeSwitch({required this.isOn});
+
+  final bool isOn;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOut,
+      width: 40,
+      height: 22,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: isOn ? AppColors.primaryGreen : Colors.black.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: AnimatedAlign(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        alignment: isOn ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 3,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
