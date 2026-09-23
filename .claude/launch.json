@@ -4,8 +4,27 @@
     {
       "name": "flutter_web",
       "runtimeExecutable": "flutter",
-      "runtimeArgs": ["run", "-d", "chrome", "--web-port", "8765", "--dart-define-from-file=.env"],
+      "runtimeArgs": [
+        "run",
+        "-d",
+        "chrome",
+        "--web-port",
+        "8765",
+        "--dart-define-from-file=.env"
+      ],
       "port": 8765
+    },
+    {
+      "name": "web_release_static",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8767",
+        "-d",
+        "build/web"
+      ],
+      "port": 8767
     }
   ]
 }

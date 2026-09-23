@@ -10,6 +10,9 @@ class AppRoutes {
   static const String skills = '/skills';
   static const String admin = '/admin';
   static const String projectDetail = '/projects/:id';
+  static const String blogDetail = '/blog/:id';
+
+  static String blogPost(String id) => '/blog/$id';
   static const String leaveReview = '/leave-a-review';
 
   static const Map<int, String> indexToRoute = {

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../../models/portfolio_models.dart';
 import '../../../../core/utils/responsive_helper.dart';
 
@@ -15,109 +16,9 @@ String formatDate(DateTime date) {
   return '${date.day} ${monthNames[date.month - 1]} ${date.year}';
 }
 
-void showBlogPost(BuildContext context, BlogPost post) {
-  final colorScheme = Theme.of(context).colorScheme;
-
-  showDialog(
-    context: context,
-    builder: (_) => Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 700, maxHeight: 720),
-        padding: const EdgeInsets.all(24),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                post.title,
-                style: GoogleFonts.inter(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                  height: 1.1,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 16,
-                runSpacing: 10,
-                children: [
-                  MetaText(
-                    icon: FontAwesomeIcons.calendarDays,
-                    label: formatDate(post.publishDate),
-                    color: colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                  MetaText(
-                    icon: FontAwesomeIcons.user,
-                    label: post.author,
-                    color: colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                  MetaText(
-                    icon: FontAwesomeIcons.clock,
-                    label: '${post.readingTimeMinutes} min read',
-                    color: colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              Text(
-                post.content,
-                style: GoogleFonts.manrope(
-                  fontSize: 16,
-                  height: 1.8,
-                  color: colorScheme.onSurface.withValues(alpha: 0.78),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: post.tags
-                    .map(
-                      (tag) => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.darkGreen.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          tag,
-                          style: GoogleFonts.manrope(
-                            fontSize: 12,
-                            color: AppColors.darkGreen,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList(growable: false),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => context.pop(),
-                    child: Text(
-                      'Close',
-                      style: GoogleFonts.manrope(
-                        fontSize: 16,
-                        color: colorScheme.onSurface.withValues(alpha: 0.65),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
+/// Opens the dedicated reader page for [post].
+void openBlogPost(BuildContext context, BlogPost post) {
+  context.go(AppRoutes.blogPost(post.id));
 }
 
 class EmptyBlogState extends StatelessWidget {
@@ -545,7 +446,7 @@ class FeaturedPostCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () => showBlogPost(context, post),
+                  onPressed: () => openBlogPost(context, post),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: const Color(0xFF143927),

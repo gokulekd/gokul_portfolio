@@ -1,4 +1,5 @@
 export 'pages/about_page.dart';
+export 'pages/blog_detail_page.dart';
 export 'pages/blog_page.dart';
 export 'pages/contact_page.dart';
 export 'pages/experience_page.dart';

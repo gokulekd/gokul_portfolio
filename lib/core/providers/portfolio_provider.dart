@@ -121,6 +121,7 @@ class PortfolioState {
   List<BlogPost> get publicBlogPosts {
     return publishedAdminBlogPosts.map(
       (p) => BlogPost(
+        id: p.id,
         title: p.title,
         excerpt: p.excerpt,
         content: p.content,

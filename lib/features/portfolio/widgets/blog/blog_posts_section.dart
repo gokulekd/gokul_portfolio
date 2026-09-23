@@ -40,13 +40,7 @@ class BlogPostsSection extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           if (remainingPosts.isEmpty)
-            BlogCard(
-              title: posts.first.title,
-              excerpt: posts.first.excerpt,
-              imageUrl: posts.first.imageUrl,
-              publishDate: posts.first.publishDate,
-              tags: posts.first.tags,
-            )
+            BlogPostTile(post: posts.first)
           else
             LayoutBuilder(
               builder: (context, constraints) {
@@ -93,7 +87,7 @@ class BlogPostTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(12),
-      onTap: () => showBlogPost(context, post),
+      onTap: () => openBlogPost(context, post),
       child: BlogCard(
         title: post.title,
         excerpt: post.excerpt,

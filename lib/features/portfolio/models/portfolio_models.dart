@@ -116,6 +116,7 @@ class Experience {
 }
 
 class BlogPost {
+  final String id;
   final String title;
   final String excerpt;
   final String content;
@@ -128,6 +129,7 @@ class BlogPost {
   final int reactions;
 
   BlogPost({
+    this.id = '',
     required this.title,
     required this.excerpt,
     required this.content,

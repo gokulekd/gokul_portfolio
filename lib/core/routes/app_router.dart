@@ -42,6 +42,12 @@ final appRouter = GoRouter(
       builder: (context, state) => const BlogPage(),
     ),
     GoRoute(
+      path: AppRoutes.blogDetail,
+      builder: (context, state) => BlogDetailPage(
+        postId: state.pathParameters['id'] ?? '',
+      ),
+    ),
+    GoRoute(
       path: AppRoutes.contact,
       builder: (context, state) => const ContactPage(),
     ),
