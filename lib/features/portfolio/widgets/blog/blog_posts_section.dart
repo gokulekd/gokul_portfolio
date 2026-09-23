@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../models/portfolio_models.dart';
+import '../../../../core/utils/blog_source.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import 'blog_components.dart';
 
@@ -128,6 +129,7 @@ class _BlogPostTileState extends State<BlogPostTile> {
     final muted = colorScheme.onSurface.withValues(alpha: 0.55);
     final accent = blogAccent(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final source = BlogSource.fromUrl(post.url);
     const radius = 20.0;
 
     return MouseRegion(
@@ -165,7 +167,9 @@ class _BlogPostTileState extends State<BlogPostTile> {
                     ),
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
-                      child:
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
                           post.imageUrl.isEmpty
                               ? _ImagePlaceholder(color: colorScheme.onSurface)
                               : Image.network(
@@ -176,6 +180,14 @@ class _BlogPostTileState extends State<BlogPostTile> {
                                       color: colorScheme.onSurface,
                                     ),
                               ),
+                          if (source != null)
+                            Positioned(
+                              top: 14,
+                              left: 14,
+                              child: BlogSourceBadge(source: source),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                   Expanded(
@@ -260,7 +272,9 @@ class _BlogPostTileState extends State<BlogPostTile> {
                                 offset: Offset(_hovered ? 0.15 : 0, 0),
                                 duration: const Duration(milliseconds: 200),
                                 child: Icon(
-                                  Icons.arrow_forward_rounded,
+                                  source != null
+                                      ? Icons.north_east_rounded
+                                      : Icons.arrow_forward_rounded,
                                   size: 20,
                                   color: _hovered ? accent : muted,
                                 ),
@@ -301,6 +315,7 @@ class BlogPostListItem extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final muted = colorScheme.onSurface.withValues(alpha: 0.55);
     final accent = blogAccent(context);
+    final source = BlogSource.fromUrl(post.url);
 
     return InkWell(
       onTap: () => openBlogPost(context, post),
@@ -359,13 +374,22 @@ class BlogPostListItem extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Text(
-                    '${formatDate(post.publishDate)}  ·  ${post.readingTimeMinutes} min read',
-                    style: GoogleFonts.manrope(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: muted,
-                    ),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      if (source != null)
+                        BlogSourceBadge(source: source, subtle: true),
+                      Text(
+                        '${formatDate(post.publishDate)}  ·  ${post.readingTimeMinutes} min read',
+                        style: GoogleFonts.manrope(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: muted,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

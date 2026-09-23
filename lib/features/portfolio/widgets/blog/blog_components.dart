@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/utils/blog_source.dart';
 import '../../models/portfolio_models.dart';
 import '../../../../core/utils/responsive_helper.dart';
 
@@ -51,9 +53,72 @@ List<BoxShadow> blogCardShadow(BuildContext context, {required bool hovered}) {
   ];
 }
 
-/// Opens the dedicated reader page for [post].
+/// Opens the dedicated reader page for [post], or the original page in a
+/// new tab for posts published elsewhere (Medium, LinkedIn...).
 void openBlogPost(BuildContext context, BlogPost post) {
+  final url = post.url;
+  if (url != null && url.isNotEmpty) {
+    launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+      webOnlyWindowName: '_blank',
+    );
+    return;
+  }
   context.go(AppRoutes.blogPost(post.id));
+}
+
+/// "Medium" / "LinkedIn"... pill for posts published elsewhere. Solid (for
+/// laying over a cover image) or [subtle] (inline with text).
+class BlogSourceBadge extends StatelessWidget {
+  const BlogSourceBadge({super.key, required this.source, this.subtle = false});
+
+  final BlogSource source;
+  final bool subtle;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = _isDark(context);
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+    final background =
+        subtle
+            ? onSurface.withValues(alpha: isDark ? 0.08 : 0.05)
+            : (isDark ? const Color(0xE6161817) : const Color(0xF2FFFFFF));
+    final textColor = subtle ? onSurface.withValues(alpha: 0.75) : onSurface;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+        boxShadow:
+            subtle
+                ? null
+                : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(source.icon, size: 12, color: source.color ?? textColor),
+          const SizedBox(width: 6),
+          Text(
+            source.name,
+            style: GoogleFonts.manrope(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w800,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class EmptyBlogState extends StatelessWidget {
@@ -268,6 +333,7 @@ class FeaturedPostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
+    final source = BlogSource.fromUrl(post.url);
 
     return Container(
       width: double.infinity,
@@ -302,7 +368,9 @@ class FeaturedPostCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
-                    'FEATURED',
+                    source == null
+                        ? 'FEATURED'
+                        : 'FEATURED · ON ${source.name.toUpperCase()}',
                     style: GoogleFonts.manrope(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -418,10 +486,15 @@ class FeaturedPostCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.auto_stories_outlined, size: 18),
+                      Icon(
+                        source == null
+                            ? Icons.auto_stories_outlined
+                            : source.icon,
+                        size: 18,
+                      ),
                       const SizedBox(width: 10),
                       Text(
-                        'Read Story',
+                        source == null ? 'Read Story' : 'Read on ${source.name}',
                         style: GoogleFonts.manrope(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,

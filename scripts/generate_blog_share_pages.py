@@ -36,10 +36,9 @@ OUT_DIR = Path(__file__).resolve().parent.parent / "build" / "web" / "blog"
 def fetch_posts(supabase_url: str, anon_key: str) -> list[dict]:
     # curl rather than urllib: python.org builds on macOS ship without CA
     # certificates, while curl uses the system trust store.
-    query = (
-        "select=id,title,excerpt,cover_image_url,author_name,created_at"
-        "&is_published=eq.true"
-    )
+    # select=* rather than a column list, so this keeps working on a
+    # database that hasn't added the newer optional columns (external_url).
+    query = "select=*&is_published=eq.true"
     result = subprocess.run(
         [
             "curl", "--silent", "--show-error", "--fail", "--max-time", "30",
@@ -115,7 +114,8 @@ def render_page(post: dict) -> str:
     image = post.get("cover_image_url") or ""
     author = post.get("author_name") or SITE_NAME
     share_url = f"{SITE_URL}/blog/{post_id}"
-    app_url = f"/#/blog/{post_id}"
+    # Posts published elsewhere (Medium, LinkedIn...) forward to the original.
+    app_url = post.get("external_url") or f"/#/blog/{post_id}"
 
     e = lambda value: html.escape(value, quote=True)  # noqa: E731
     image_tags = ""

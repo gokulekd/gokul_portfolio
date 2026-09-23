@@ -125,6 +125,7 @@ class PortfolioState {
         author: p.authorName.isNotEmpty ? p.authorName : personalInfo.name,
         tags: p.tags,
         readingTimeMinutes: p.readingTimeMinutes,
+        url: p.isExternal ? p.externalUrl : null,
         isFeatured: p.isFeatured,
       ),
     ).toList()

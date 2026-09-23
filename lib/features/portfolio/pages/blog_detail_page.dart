@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/config/app_colors.dart';
 import '../../../core/providers/portfolio_provider.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/utils/blog_source.dart';
 import '../../../core/utils/native_share.dart';
 import '../../../core/utils/responsive_helper.dart';
 import '../models/portfolio_models.dart';
@@ -110,6 +111,24 @@ class _BlogDetailPageState extends ConsumerState<BlogDetailPage> {
                     color: AppColors.primaryGreen,
                   )
                   : _NotFound(onBack: _goBack),
+        ),
+      );
+    }
+
+    // Published elsewhere: there's no body to render here, so point to the
+    // original (a button rather than an auto-redirect, which popup blockers
+    // would stop).
+    final externalUrl = post.url;
+    if (externalUrl != null && externalUrl.isNotEmpty) {
+      return Scaffold(
+        appBar: const CustomAppBar(),
+        drawer: const CustomDrawer(),
+        body: Center(
+          child: _ExternalPostNotice(
+            post: post,
+            onOpen: () => openBlogPost(context, post),
+            onBack: _goBack,
+          ),
         ),
       );
     }
@@ -1018,6 +1037,80 @@ class _NotFound extends StatelessWidget {
           child: Text('Back to blog', style: GoogleFonts.manrope(fontSize: 15)),
         ),
       ],
+    );
+  }
+}
+
+class _ExternalPostNotice extends StatelessWidget {
+  const _ExternalPostNotice({
+    required this.post,
+    required this.onOpen,
+    required this.onBack,
+  });
+
+  final BlogPost post;
+  final VoidCallback onOpen;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final source = BlogSource.fromUrl(post.url)!;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BlogSourceBadge(source: source, subtle: true),
+            const SizedBox(height: 18),
+            Text(
+              post.title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                height: 1.25,
+                color: onSurface,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'This story is published on ${source.name}.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.manrope(
+                fontSize: 15,
+                color: onSurface.withValues(alpha: 0.65),
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: onOpen,
+              icon: const Icon(Icons.north_east_rounded, size: 18),
+              label: Text(
+                'Read on ${source.name}',
+                style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryGreen,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                elevation: 0,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: onBack,
+              child: Text('Back to blog', style: GoogleFonts.manrope(fontSize: 15)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

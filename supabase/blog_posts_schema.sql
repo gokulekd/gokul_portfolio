@@ -20,6 +20,11 @@ create table if not exists public.blog_posts (
   created_at timestamptz not null default now()
 );
 
+-- Posts published elsewhere (Medium, LinkedIn...): the blog card links out
+-- to this URL instead of the in-app reader. Empty for posts written here.
+alter table public.blog_posts
+  add column if not exists external_url text not null default '';
+
 alter table public.blog_posts enable row level security;
 
 drop policy if exists "Public can read blog posts" on public.blog_posts;

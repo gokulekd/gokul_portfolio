@@ -15,6 +15,7 @@ import '../../shared/dialog_widgets.dart';
 import '../../shared/preview_tile.dart';
 import '../projects/widgets/form_widgets.dart';
 import 'models/admin_blog_post.dart';
+import 'services/link_preview_service.dart';
 
 /// Supabase-backed post list/edit/delete.
 /// Post *authoring* (the rich compose UX) lives in `CreatePostWorkspace` —
@@ -31,6 +32,7 @@ class BlogWorkspace extends ConsumerStatefulWidget {
 
 class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
   String _filter = 'All';
+  final _linkPreview = LinkPreviewService();
 
   Future<void> _pickAndUploadCover(
     BuildContext ctx,
@@ -91,7 +93,12 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
     }
   }
 
-  void _openDialog(List<AdminBlogPost> posts, {AdminBlogPost? existing}) {
+  void _openDialog(
+    List<AdminBlogPost> posts, {
+    AdminBlogPost? existing,
+    bool fromLink = false,
+  }) {
+    final linkCtrl = TextEditingController(text: existing?.externalUrl ?? '');
     final titleCtrl = TextEditingController(text: existing?.title ?? '');
     final excerptCtrl = TextEditingController(text: existing?.excerpt ?? '');
     final contentCtrl = TextEditingController(text: existing?.content ?? '');
@@ -103,6 +110,55 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
     int readTime = existing?.readingTimeMinutes ?? 5;
     bool isPublished = existing?.isPublished ?? true;
     bool isFeatured = existing?.isFeatured ?? false;
+    final showLink = fromLink || (existing?.isExternal ?? false);
+    var isFetching = false;
+    // Original publish date from the fetched page, so a Medium post from
+    // last year doesn't show up as today's newest post.
+    DateTime? fetchedDate;
+
+    Future<void> fetchFromLink(BuildContext ctx, StateSetter setDlg) async {
+      final url = _normalizeUrl(linkCtrl.text);
+      if (url == null) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(
+            content: Text('Paste a full link, e.g. https://medium.com/…',
+                style: GoogleFonts.manrope(color: Colors.white)),
+            backgroundColor: Colors.orange.withValues(alpha: 0.85),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        );
+        return;
+      }
+      linkCtrl.text = url;
+      setDlg(() => isFetching = true);
+      final preview = await _linkPreview.fetch(url);
+      if (!ctx.mounted) return;
+      setDlg(() {
+        isFetching = false;
+        if (preview == null) return;
+        if (preview.title.isNotEmpty) titleCtrl.text = preview.title;
+        if (preview.description.isNotEmpty) excerptCtrl.text = preview.description;
+        if (preview.imageUrl.isNotEmpty) {
+          coverUrlCtrl.text = preview.imageUrl;
+          coverPreview = preview.imageUrl;
+        }
+        fetchedDate = preview.publishedAt;
+      });
+      if (preview == null) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Couldn't read that page. Fill in the title and excerpt yourself.",
+              style: GoogleFonts.manrope(color: Colors.white),
+            ),
+            backgroundColor: Colors.orange.withValues(alpha: 0.85),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        );
+      }
+    }
 
     showDialog<void>(
       context: context,
@@ -111,7 +167,11 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
           backgroundColor: const Color(0xFF1A1C1F),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
-            existing == null ? 'New post' : 'Edit post',
+            existing != null
+                ? 'Edit post'
+                : showLink
+                    ? 'Add post from link'
+                    : 'New post',
             style: GoogleFonts.manrope(color: Colors.white, fontWeight: FontWeight.w700),
           ),
           content: SizedBox(
@@ -120,6 +180,53 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (showLink) ...[
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: DialogField(
+                            controller: linkCtrl,
+                            label: 'Post link (Medium, LinkedIn, Notion, Reddit…)',
+                            hint: 'https://medium.com/@you/your-post',
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        SizedBox(
+                          height: 48,
+                          child: TextButton.icon(
+                            onPressed: isFetching ? null : () => fetchFromLink(ctx, setDlg),
+                            style: TextButton.styleFrom(
+                              backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.14),
+                              foregroundColor: AppColors.primaryGreen,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            icon: isFetching
+                                ? const SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation(AppColors.primaryGreen),
+                                    ),
+                                  )
+                                : const Icon(Icons.auto_awesome_rounded, size: 16),
+                            label: Text('Fetch',
+                                style: GoogleFonts.manrope(fontWeight: FontWeight.w700)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Fetch fills in the title, excerpt and cover. Tapping the card opens this link.',
+                        style: GoogleFonts.manrope(color: Colors.white30, fontSize: 11.5),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                  ],
                   GestureDetector(
                     onTap: isUploading
                         ? null
@@ -180,13 +287,15 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
                     hint: 'Short summary shown in the blog list…',
                     maxLines: 3,
                   ),
-                  const SizedBox(height: 14),
-                  DialogField(
-                    controller: contentCtrl,
-                    label: 'Content',
-                    hint: 'Full post body…',
-                    maxLines: 8,
-                  ),
+                  if (!showLink) ...[
+                    const SizedBox(height: 14),
+                    DialogField(
+                      controller: contentCtrl,
+                      label: 'Content',
+                      hint: 'Full post body…',
+                      maxLines: 8,
+                    ),
+                  ],
                   const SizedBox(height: 14),
                   TechStackInput(
                     tags: tags,
@@ -250,6 +359,8 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
                 final title = titleCtrl.text.trim();
                 final excerpt = excerptCtrl.text.trim();
                 if (title.isEmpty || excerpt.isEmpty) return;
+                final externalUrl = showLink ? _normalizeUrl(linkCtrl.text) : null;
+                if (showLink && externalUrl == null) return;
                 final post = AdminBlogPost(
                   id: existing?.id ?? '',
                   title: title,
@@ -263,7 +374,8 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
                   isPublished: isPublished,
                   isFeatured: isFeatured,
                   displayOrder: existing?.displayOrder ?? posts.length + 1,
-                  createdAt: existing?.createdAt ?? DateTime.now(),
+                  externalUrl: externalUrl ?? '',
+                  createdAt: fetchedDate ?? existing?.createdAt ?? DateTime.now(),
                 );
                 final ok = await ref.read(adminPortalProvider.notifier).saveBlogPost(post);
                 if (ctx.mounted) Navigator.of(ctx).pop();
@@ -289,6 +401,17 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
     );
   }
 
+  /// Adds a missing https:// and rejects anything that isn't a web URL.
+  String? _normalizeUrl(String raw) {
+    var text = raw.trim();
+    if (text.isEmpty) return null;
+    if (!text.contains('://')) text = 'https://$text';
+    final uri = Uri.tryParse(text);
+    if (uri == null || !uri.hasAuthority || !uri.host.contains('.')) return null;
+    if (uri.scheme != 'http' && uri.scheme != 'https') return null;
+    return uri.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     final posts = ref.watch(portfolioProvider.select((s) => s.adminBlogPosts));
@@ -311,10 +434,21 @@ class _BlogWorkspaceState extends ConsumerState<BlogWorkspace> {
             title: 'Posts & articles',
             description:
                 '${posts.length} portfolio posts.',
-            action: AdminPrimaryButton(
-              label: 'New post',
-              icon: Icons.add_rounded,
-              onPressed: () => _openDialog(posts),
+            action: Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                AdminGhostButton(
+                  label: 'Add from link',
+                  icon: Icons.link_rounded,
+                  onPressed: () => _openDialog(posts, fromLink: true),
+                ),
+                AdminPrimaryButton(
+                  label: 'New post',
+                  icon: Icons.add_rounded,
+                  onPressed: () => _openDialog(posts),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 16),

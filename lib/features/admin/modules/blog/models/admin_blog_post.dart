@@ -5,6 +5,10 @@
 /// (project banners/icons, resume, media library), so this follows the same
 /// pattern as `AppProject`.
 ///
+/// A post with a non-empty [externalUrl] was published elsewhere (Medium,
+/// LinkedIn, dev.to...): the blog page shows it as a card with a platform
+/// badge and opens the original in a new tab instead of the in-app reader.
+///
 /// Converted to the public-facing `BlogPost` shape in `portfolio_models.dart`
 /// by `PortfolioState.publicBlogPosts`.
 class AdminBlogPost {
@@ -20,6 +24,7 @@ class AdminBlogPost {
     this.isPublished = true,
     this.isFeatured = false,
     this.displayOrder = 0,
+    this.externalUrl = '',
     required this.createdAt,
   });
 
@@ -34,7 +39,10 @@ class AdminBlogPost {
   final bool isPublished;
   final bool isFeatured;
   final int displayOrder;
+  final String externalUrl;
   final DateTime createdAt;
+
+  bool get isExternal => externalUrl.isNotEmpty;
 
   AdminBlogPost copyWith({
     String? id,
@@ -48,6 +56,7 @@ class AdminBlogPost {
     bool? isPublished,
     bool? isFeatured,
     int? displayOrder,
+    String? externalUrl,
     DateTime? createdAt,
   }) {
     return AdminBlogPost(
@@ -62,6 +71,7 @@ class AdminBlogPost {
       isPublished: isPublished ?? this.isPublished,
       isFeatured: isFeatured ?? this.isFeatured,
       displayOrder: displayOrder ?? this.displayOrder,
+      externalUrl: externalUrl ?? this.externalUrl,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -78,6 +88,9 @@ class AdminBlogPost {
     'is_published': isPublished,
     'is_featured': isFeatured,
     'display_order': displayOrder,
+    // Only sent when set, so native posts still save on a database that
+    // hasn't run the `external_url` migration yet.
+    if (externalUrl.isNotEmpty) 'external_url': externalUrl,
     'created_at': createdAt.toIso8601String(),
   };
 
@@ -93,6 +106,7 @@ class AdminBlogPost {
     isPublished: json['is_published'] as bool? ?? true,
     isFeatured: json['is_featured'] as bool? ?? false,
     displayOrder: json['display_order'] as int? ?? 0,
+    externalUrl: json['external_url'] as String? ?? '',
     createdAt: json['created_at'] != null
         ? DateTime.parse(json['created_at'] as String)
         : DateTime.now(),
