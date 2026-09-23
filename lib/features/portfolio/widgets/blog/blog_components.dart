@@ -16,6 +16,41 @@ String formatDate(DateTime date) {
   return '${date.day} ${monthNames[date.month - 1]} ${date.year}';
 }
 
+bool _isDark(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark;
+
+/// Green for small accent text and icons (tags, links). Brighter in dark mode
+/// so it stays readable on near-black backgrounds.
+Color blogAccent(BuildContext context) =>
+    _isDark(context) ? const Color(0xFF34D399) : AppColors.darkGreen;
+
+/// Card fill that lifts off the page background in both themes.
+Color blogCardColor(BuildContext context) =>
+    _isDark(context)
+        ? const Color(0xFF161817)
+        : Theme.of(context).colorScheme.surface;
+
+/// Card shadow: a soft drop shadow in light mode, a faint green glow in dark
+/// mode (black shadows are invisible there).
+List<BoxShadow> blogCardShadow(BuildContext context, {required bool hovered}) {
+  if (_isDark(context)) {
+    return [
+      BoxShadow(
+        color: AppColors.primaryGreen.withValues(alpha: hovered ? 0.14 : 0.0),
+        blurRadius: 32,
+        offset: const Offset(0, 8),
+      ),
+    ];
+  }
+  return [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: hovered ? 0.08 : 0.03),
+      blurRadius: hovered ? 28 : 12,
+      offset: Offset(0, hovered ? 12 : 4),
+    ),
+  ];
+}
+
 /// Opens the dedicated reader page for [post].
 void openBlogPost(BuildContext context, BlogPost post) {
   context.go(AppRoutes.blogPost(post.id));

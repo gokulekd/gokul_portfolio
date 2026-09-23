@@ -116,6 +116,8 @@ class _BlogPostTileState extends State<BlogPostTile> {
     final post = widget.post;
     final colorScheme = Theme.of(context).colorScheme;
     final muted = colorScheme.onSurface.withValues(alpha: 0.55);
+    final accent = blogAccent(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     const radius = 20.0;
 
     return MouseRegion(
@@ -129,7 +131,7 @@ class _BlogPostTileState extends State<BlogPostTile> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            color: colorScheme.surface,
+            color: blogCardColor(context),
             borderRadius: BorderRadius.circular(radius),
             border: Border.all(
               color:
@@ -137,13 +139,7 @@ class _BlogPostTileState extends State<BlogPostTile> {
                       ? AppColors.primaryGreen.withValues(alpha: 0.5)
                       : colorScheme.onSurface.withValues(alpha: 0.08),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: _hovered ? 0.08 : 0.03),
-                blurRadius: _hovered ? 28 : 12,
-                offset: Offset(0, _hovered ? 12 : 4),
-              ),
-            ],
+            boxShadow: blogCardShadow(context, hovered: _hovered),
           ),
           child: Material(
             type: MaterialType.transparency,
@@ -198,7 +194,7 @@ class _BlogPostTileState extends State<BlogPostTile> {
                               letterSpacing: -0.3,
                               color:
                                   _hovered
-                                      ? AppColors.darkGreen
+                                      ? accent
                                       : colorScheme.onSurface,
                             ),
                           ),
@@ -232,8 +228,9 @@ class _BlogPostTileState extends State<BlogPostTile> {
                                             vertical: 5,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: AppColors.darkGreen
-                                                .withValues(alpha: 0.08),
+                                            color: accent.withValues(
+                                              alpha: isDark ? 0.14 : 0.08,
+                                            ),
                                             borderRadius: BorderRadius.circular(
                                               12,
                                             ),
@@ -243,7 +240,7 @@ class _BlogPostTileState extends State<BlogPostTile> {
                                             style: GoogleFonts.manrope(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w700,
-                                              color: AppColors.darkGreen,
+                                              color: accent,
                                             ),
                                           ),
                                         ),
@@ -258,7 +255,7 @@ class _BlogPostTileState extends State<BlogPostTile> {
                                 child: Icon(
                                   Icons.arrow_forward_rounded,
                                   size: 20,
-                                  color: _hovered ? AppColors.darkGreen : muted,
+                                  color: _hovered ? accent : muted,
                                 ),
                               ),
                             ],

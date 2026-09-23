@@ -51,33 +51,46 @@ class BlogHeroSection extends ConsumerWidget {
                   ],
         ),
       ),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          hPad,
-          isMobile ? 40 : 72,
-          hPad,
-          isMobile ? 48 : 80,
+      // Soft green glow behind the latest-post card.
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            center: const Alignment(0.55, -0.1),
+            radius: 1.1,
+            colors: [
+              AppColors.primaryGreen.withValues(alpha: isDark ? 0.10 : 0.07),
+              AppColors.primaryGreen.withValues(alpha: 0),
+            ],
+          ),
         ),
-        child:
-            latest == null
-                ? intro
-                : isMobile || isTablet
-                ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    intro,
-                    const SizedBox(height: 40),
-                    _LatestPostCard(post: latest),
-                  ],
-                )
-                : Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(flex: 6, child: intro),
-                    const SizedBox(width: 64),
-                    Expanded(flex: 5, child: _LatestPostCard(post: latest)),
-                  ],
-                ),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            hPad,
+            isMobile ? 40 : 72,
+            hPad,
+            isMobile ? 48 : 80,
+          ),
+          child:
+              latest == null
+                  ? intro
+                  : isMobile || isTablet
+                  ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      intro,
+                      const SizedBox(height: 40),
+                      _LatestPostCard(post: latest),
+                    ],
+                  )
+                  : Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(flex: 6, child: intro),
+                      const SizedBox(width: 64),
+                      Expanded(flex: 5, child: _LatestPostCard(post: latest)),
+                    ],
+                  ),
+        ),
       ),
     );
   }
@@ -312,20 +325,26 @@ class _LatestPostCardState extends State<_LatestPostCard> {
         duration: const Duration(milliseconds: 200),
         transform: Matrix4.translationValues(0, _hovered ? -4 : 0, 0),
         decoration: BoxDecoration(
-          color: colorScheme.surface,
+          color: blogCardColor(context),
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
-            color: _hovered
-                ? AppColors.primaryGreen.withValues(alpha: 0.5)
-                : colorScheme.onSurface.withValues(alpha: 0.08),
+            color:
+                _hovered
+                    ? AppColors.primaryGreen.withValues(alpha: 0.5)
+                    : colorScheme.onSurface.withValues(alpha: 0.08),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: _hovered ? 0.1 : 0.06),
-              blurRadius: 36,
-              offset: const Offset(0, 20),
-            ),
-          ],
+          boxShadow:
+              Theme.of(context).brightness == Brightness.dark
+                  ? blogCardShadow(context, hovered: _hovered)
+                  : [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: _hovered ? 0.1 : 0.06,
+                      ),
+                      blurRadius: 36,
+                      offset: const Offset(0, 20),
+                    ),
+                  ],
         ),
         child: Material(
           type: MaterialType.transparency,
@@ -354,11 +373,12 @@ class _LatestPostCardState extends State<_LatestPostCard> {
                             Image.network(
                               post.imageUrl,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => ColoredBox(
-                                color: colorScheme.onSurface.withValues(
-                                  alpha: 0.05,
-                                ),
-                              ),
+                              errorBuilder:
+                                  (_, __, ___) => ColoredBox(
+                                    color: colorScheme.onSurface.withValues(
+                                      alpha: 0.05,
+                                    ),
+                                  ),
                             ),
                           Positioned(
                             top: 12,
@@ -421,9 +441,7 @@ class _LatestPostCardState extends State<_LatestPostCard> {
                           style: GoogleFonts.manrope(
                             fontSize: 14,
                             height: 1.6,
-                            color: colorScheme.onSurface.withValues(
-                              alpha: 0.7,
-                            ),
+                            color: colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                         const SizedBox(height: 18),
@@ -434,17 +452,17 @@ class _LatestPostCardState extends State<_LatestPostCard> {
                               style: GoogleFonts.manrope(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.darkGreen,
+                                color: blogAccent(context),
                               ),
                             ),
                             const SizedBox(width: 6),
                             AnimatedSlide(
                               offset: Offset(_hovered ? 0.25 : 0, 0),
                               duration: const Duration(milliseconds: 200),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.arrow_forward_rounded,
                                 size: 18,
-                                color: AppColors.darkGreen,
+                                color: blogAccent(context),
                               ),
                             ),
                           ],

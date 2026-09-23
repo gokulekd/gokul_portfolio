@@ -261,7 +261,7 @@ class _ArticleHeader extends StatelessWidget {
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.2,
-                  color: AppColors.darkGreen,
+                  color: blogAccent(context),
                 ),
               ),
               const SizedBox(height: 16),
@@ -599,6 +599,7 @@ class _AuthorCard extends ConsumerWidget {
     final isMobile = ResponsiveHelper.isMobile(context);
     final colorScheme = Theme.of(context).colorScheme;
     final muted = colorScheme.onSurface.withValues(alpha: 0.6);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final text = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -673,9 +674,11 @@ class _AuthorCard extends ConsumerWidget {
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 22 : 28),
       decoration: BoxDecoration(
-        color: AppColors.darkGreen.withValues(alpha: 0.05),
+        color: blogAccent(context).withValues(alpha: isDark ? 0.07 : 0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.darkGreen.withValues(alpha: 0.12)),
+        border: Border.all(
+          color: blogAccent(context).withValues(alpha: isDark ? 0.22 : 0.12),
+        ),
       ),
       child: isMobile
           ? Column(
