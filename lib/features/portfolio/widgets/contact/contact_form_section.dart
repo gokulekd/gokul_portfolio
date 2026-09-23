@@ -8,7 +8,6 @@ import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/providers/service_providers.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import '../../../../core/routes/app_routes.dart';
-import 'contact_closing_section.dart' show AccentWaveDivider;
 
 IconData _iconForPlatform(String platform) {
   switch (platform.toLowerCase()) {
@@ -626,4 +625,53 @@ class SuccessDialogState extends State<SuccessDialog>
       ),
     );
   }
+}
+
+class AccentWaveDivider extends StatelessWidget {
+  const AccentWaveDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 280,
+      height: 14,
+      child: CustomPaint(painter: WaveLinePainter()),
+    );
+  }
+}
+
+class WaveLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint =
+        Paint()
+          ..color = AppColors.primaryGreen.withValues(alpha: 0.78)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.4;
+
+    final path = Path();
+    const waveWidth = 12.0;
+    final halfHeight = size.height / 2;
+    path.moveTo(0, halfHeight);
+
+    for (double x = 0; x < size.width; x += waveWidth) {
+      path.quadraticBezierTo(
+        x + waveWidth / 4,
+        0,
+        x + waveWidth / 2,
+        halfHeight,
+      );
+      path.quadraticBezierTo(
+        x + 3 * waveWidth / 4,
+        size.height,
+        x + waveWidth,
+        halfHeight,
+      );
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

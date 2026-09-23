@@ -21,10 +21,6 @@ class ContactPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const ContactHeroSection(),
-            ContactChannelsSection(info: state.personalInfo),
-            SocialLinksSection(
-              links: state.personalInfo.socialLinks,
-            ),
             Padding(
               padding: EdgeInsets.fromLTRB(
                 ResponsiveHelper.isMobile(context)
@@ -42,7 +38,10 @@ class ContactPage extends ConsumerWidget {
               ),
               child: const ContactFormSection(),
             ),
-            const ContactClosingSection(),
+            SocialLinksSection(
+              links: state.personalInfo.socialLinks,
+            ),
+            SizedBox(height: ResponsiveHelper.isMobile(context) ? 48 : 80),
             const FooterSection(),
           ],
         ),
