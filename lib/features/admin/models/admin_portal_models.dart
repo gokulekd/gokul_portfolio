@@ -10,7 +10,6 @@ enum AdminModule {
   skillsExperience,
   education,
   experienceStrengths,
-  resumeHighlights,
   developmentAreas,
   achievements,
   guidingPrinciples,

@@ -439,20 +439,6 @@ class FirebasePortfolioService {
   Future<void> deleteStat(String id) =>
       isEnabled ? _statsRepo.delete(id) : Future.value();
 
-  FirestoreListRepository<ResumeHighlightGroup> get _resumeHighlightsRepo =>
-      _repo(
-        collectionPath: 'resume_highlights',
-        fromFirestore: ResumeHighlightGroup.fromFirestore,
-        toFirestore: (item) => item.toFirestore(),
-      );
-
-  Stream<List<ResumeHighlightGroup>> streamResumeHighlights() =>
-      isEnabled ? _resumeHighlightsRepo.stream() : Stream.value(const []);
-  Future<void> saveResumeHighlight(ResumeHighlightGroup item) =>
-      isEnabled ? _resumeHighlightsRepo.save(item.id, item) : Future.value();
-  Future<void> deleteResumeHighlight(String id) =>
-      isEnabled ? _resumeHighlightsRepo.delete(id) : Future.value();
-
   // ─── Content list seeding ────────────────────────────────────────────────
   //
   // Seeds every collection above with the content that is (or was) hardcoded
@@ -511,13 +497,6 @@ class FirebasePortfolioService {
       ),
       _statsRepo.seedIfEmpty(
         seedOf(StatItem.defaults(), (i) => i.id, (i) => i.toFirestore()),
-      ),
-      _resumeHighlightsRepo.seedIfEmpty(
-        seedOf(
-          ResumeHighlightGroup.defaults(),
-          (i) => i.id,
-          (i) => i.toFirestore(),
-        ),
       ),
     ]);
 

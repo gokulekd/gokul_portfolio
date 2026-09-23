@@ -36,7 +36,6 @@ class PortfolioState {
     required this.faqItems,
     required this.devAreas,
     required this.stats,
-    required this.resumeHighlights,
     this.adminBlogPosts = const [],
   });
 
@@ -60,7 +59,6 @@ class PortfolioState {
   final List<FaqItem> faqItems;
   final List<DevAreaItem> devAreas;
   final List<StatItem> stats;
-  final List<ResumeHighlightGroup> resumeHighlights;
   final List<AdminBlogPost> adminBlogPosts;
 
   // ─── Computed ──────────────────────────────────────────────────────────────
@@ -109,9 +107,6 @@ class PortfolioState {
 
   List<StatItem> get visibleStats => stats.where((s) => s.isVisible).toList();
 
-  List<ResumeHighlightGroup> get visibleResumeHighlights =>
-      resumeHighlights.where((r) => r.isVisible).toList();
-
   List<AdminBlogPost> get publishedAdminBlogPosts =>
       adminBlogPosts.where((p) => p.isPublished).toList();
 
@@ -157,7 +152,6 @@ class PortfolioState {
     List<FaqItem>? faqItems,
     List<DevAreaItem>? devAreas,
     List<StatItem>? stats,
-    List<ResumeHighlightGroup>? resumeHighlights,
     List<AdminBlogPost>? adminBlogPosts,
   }) {
     return PortfolioState(
@@ -180,7 +174,6 @@ class PortfolioState {
       faqItems: faqItems ?? this.faqItems,
       devAreas: devAreas ?? this.devAreas,
       stats: stats ?? this.stats,
-      resumeHighlights: resumeHighlights ?? this.resumeHighlights,
       adminBlogPosts: adminBlogPosts ?? this.adminBlogPosts,
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
     );
@@ -212,7 +205,6 @@ class PortfolioState {
         faqItems: FaqItem.defaults(),
         devAreas: DevAreaItem.defaults(),
         stats: StatItem.defaults(),
-        resumeHighlights: ResumeHighlightGroup.defaults(),
       );
 
 }
@@ -328,15 +320,8 @@ class PortfolioNotifier extends Notifier<PortfolioState> {
         );
       });
 
-      final s18 = firebaseService.streamResumeHighlights().listen((list) {
-        if (list.isEmpty) return;
-        state = state.copyWith(
-          resumeHighlights: list..sort((a, b) => a.displayOrder.compareTo(b.displayOrder)),
-        );
-      });
-
       ref.onDispose(() {
-        for (final s in [s1, s2, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s15, s16, s17, s18]) {
+        for (final s in [s1, s2, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s15, s16, s17]) {
           s.cancel();
         }
       });

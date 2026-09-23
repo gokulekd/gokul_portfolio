@@ -97,7 +97,6 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
     AdminModuleItem(module: AdminModule.skillsExperience, group: AdminModuleGroup.content, title: 'Skills & Experience', subtitle: 'Skills and timeline', icon: Icons.stacked_line_chart_rounded),
     AdminModuleItem(module: AdminModule.education, group: AdminModuleGroup.content, title: 'Education', subtitle: 'Formal education timeline', icon: Icons.school_rounded),
     AdminModuleItem(module: AdminModule.experienceStrengths, group: AdminModuleGroup.content, title: 'Experience Strengths', subtitle: 'What I bring cards', icon: Icons.fitness_center_rounded),
-    AdminModuleItem(module: AdminModule.resumeHighlights, group: AdminModuleGroup.content, title: 'Resume Highlights', subtitle: 'Skills & strengths snapshot', icon: Icons.summarize_rounded),
     AdminModuleItem(module: AdminModule.developmentAreas, group: AdminModuleGroup.content, title: 'Development Areas', subtitle: 'Scrolling specialities', icon: Icons.apps_rounded),
     AdminModuleItem(module: AdminModule.achievements, group: AdminModuleGroup.content, title: 'Achievements', subtitle: 'Proof and metrics', icon: Icons.workspace_premium_rounded),
     AdminModuleItem(module: AdminModule.guidingPrinciples, group: AdminModuleGroup.content, title: 'Guiding Principles', subtitle: 'Core operating values', icon: Icons.auto_awesome_rounded),
@@ -246,7 +245,6 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
         AdminModule.skillsExperience => 'Skills & Experience',
         AdminModule.education => 'Education',
         AdminModule.experienceStrengths => 'Experience Strengths',
-        AdminModule.resumeHighlights => 'Resume Highlights',
         AdminModule.developmentAreas => 'Development Areas',
         AdminModule.achievements => 'Achievements',
         AdminModule.guidingPrinciples => 'Guiding Principles',
@@ -273,7 +271,6 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
         AdminModule.skillsExperience => 'Manage stack percentages, marquee content, and experience timeline entries.',
         AdminModule.education => 'Manage the formal education and self-learning entries shown on the About page.',
         AdminModule.experienceStrengths => 'Manage the "what I bring" strength cards shown on the Experience page.',
-        AdminModule.resumeHighlights => 'Manage the skills/strengths snapshot cards shown on the Resume page.',
         AdminModule.developmentAreas => 'Keep the scrolling service and specialisation content aligned with current offerings.',
         AdminModule.achievements => 'Publish proof points, results, and milestone-driven credibility markers.',
         AdminModule.guidingPrinciples => 'Shape the values and creative principles that sit behind the work.',
@@ -635,20 +632,6 @@ class AdminPortalNotifier extends Notifier<AdminPortalState> {
   Future<void> deleteStat(String id) async {
     try {
       await ref.read(firebasePortfolioServiceProvider).deleteStat(id);
-      _clearError();
-    } catch (e) { _handleError(e); }
-  }
-
-  Future<void> saveResumeHighlight(ResumeHighlightGroup item) async {
-    try {
-      await ref.read(firebasePortfolioServiceProvider).saveResumeHighlight(item);
-      _clearError();
-    } catch (e) { _handleError(e); }
-  }
-
-  Future<void> deleteResumeHighlight(String id) async {
-    try {
-      await ref.read(firebasePortfolioServiceProvider).deleteResumeHighlight(id);
       _clearError();
     } catch (e) { _handleError(e); }
   }
