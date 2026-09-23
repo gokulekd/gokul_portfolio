@@ -130,6 +130,7 @@ class PortfolioState {
         author: p.authorName.isNotEmpty ? p.authorName : personalInfo.name,
         tags: p.tags,
         readingTimeMinutes: p.readingTimeMinutes,
+        isFeatured: p.isFeatured,
       ),
     ).toList()
       ..sort((a, b) => b.publishDate.compareTo(a.publishDate));

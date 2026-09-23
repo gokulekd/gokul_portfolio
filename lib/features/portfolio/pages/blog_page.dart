@@ -11,6 +11,10 @@ class BlogPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final posts = ref.watch(portfolioProvider).publicBlogPosts;
+    // Only posts flagged as featured in the admin panel get the spotlight
+    // (newest first); without one, every post goes in the grid.
+    final featuredPost = posts.where((p) => p.isFeatured).firstOrNull;
+    final gridPosts = posts.where((p) => p != featuredPost).toList();
 
     return Scaffold(
       appBar: const CustomAppBar(),
@@ -28,9 +32,16 @@ class BlogPage extends ConsumerWidget {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  BlogHeroSection(featuredPost: posts.first),
-                  BlogFeaturedSection(featuredPost: posts.first),
-                  BlogPostsSection(posts: posts),
+                  BlogHeroSection(featuredPost: featuredPost),
+                  if (featuredPost != null)
+                    BlogFeaturedSection(featuredPost: featuredPost),
+                  if (gridPosts.isNotEmpty)
+                    BlogPostsSection(
+                      posts: gridPosts,
+                      eyebrow: featuredPost != null
+                          ? '{02} - All Posts'
+                          : '{01} - All Posts',
+                    ),
                   const FooterSection(),
                 ],
               ),

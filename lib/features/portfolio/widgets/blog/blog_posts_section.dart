@@ -7,9 +7,14 @@ import '../../../../core/utils/responsive_helper.dart';
 import 'blog_components.dart';
 
 class BlogPostsSection extends StatelessWidget {
-  const BlogPostsSection({super.key, required this.posts});
+  const BlogPostsSection({
+    super.key,
+    required this.posts,
+    this.eyebrow = '{02} - All Posts',
+  });
 
   final List<BlogPost> posts;
+  final String eyebrow;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +26,6 @@ class BlogPostsSection extends StatelessWidget {
             : isTablet
             ? 48.0
             : 88.0;
-    final remainingPosts = posts.length > 1 ? posts.sublist(1) : posts;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -34,7 +38,7 @@ class BlogPostsSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           BlogSectionHeading(
-            eyebrow: '{02} - All Posts',
+            eyebrow: eyebrow,
             title: 'Blogs shown directly underneath the hero.',
             description:
                 'Browse through the writing archive in a cleaner card layout that is easier to scan on desktop and mobile.',
@@ -54,7 +58,7 @@ class BlogPostsSection extends StatelessWidget {
               return Column(
                 children: [
                   for (int start = 0;
-                      start < remainingPosts.length;
+                      start < posts.length;
                       start += columns) ...[
                     if (start > 0) const SizedBox(height: gap),
                     IntrinsicHeight(
@@ -64,9 +68,9 @@ class BlogPostsSection extends StatelessWidget {
                           for (int i = 0; i < columns; i++) ...[
                             if (i > 0) const SizedBox(width: gap),
                             Expanded(
-                              child: start + i < remainingPosts.length
+                              child: start + i < posts.length
                                   ? BlogPostTile(
-                                    post: remainingPosts[start + i],
+                                    post: posts[start + i],
                                   )
                                   : const SizedBox.shrink(),
                             ),

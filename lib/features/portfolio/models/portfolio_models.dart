@@ -127,6 +127,7 @@ class BlogPost {
   final int readingTimeMinutes;
   final String? url;
   final int reactions;
+  final bool isFeatured;
 
   BlogPost({
     this.id = '',
@@ -140,6 +141,7 @@ class BlogPost {
     this.readingTimeMinutes = 5,
     this.url,
     this.reactions = 0,
+    this.isFeatured = false,
   });
 }
 
