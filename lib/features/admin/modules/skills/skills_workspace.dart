@@ -273,7 +273,7 @@ class _SkillsWorkspaceState extends ConsumerState<SkillsWorkspace> {
                     controller: descriptionCtrl,
                     label: 'Description',
                     hint: 'What the role involved…',
-                    maxLines: 3,
+                    maxLines: 6,
                   ),
                   const SizedBox(height: 14),
                   DialogField(
@@ -321,7 +321,9 @@ class _SkillsWorkspaceState extends ConsumerState<SkillsWorkspace> {
                       .map((t) => t.trim())
                       .where((t) => t.isNotEmpty)
                       .toList(),
-                  displayOrder: (index ?? experiences.length) + 1,
+                  // Edits keep their place; a new role goes to the top,
+                  // since the timeline lists the latest job first.
+                  displayOrder: existing?.displayOrder ?? _topOrder(experiences),
                   isVisible: isVisible,
                 );
                 ref.read(adminPortalProvider.notifier).saveExperience(experience);
@@ -333,6 +335,28 @@ class _SkillsWorkspaceState extends ConsumerState<SkillsWorkspace> {
         ),
       ),
     );
+  }
+
+  int _topOrder(List<Experience> experiences) =>
+      experiences.isEmpty
+          ? 0
+          : experiences
+                  .map((e) => e.displayOrder)
+                  .reduce((a, b) => a < b ? a : b) -
+              1;
+
+  /// Swaps two timeline entries, then re-saves any entry whose stored order
+  /// doesn't match its new position, which also repairs duplicate orders.
+  void _moveExperience(List<Experience> experiences, int from, int to) {
+    final reordered = List.of(experiences);
+    final moved = reordered.removeAt(from);
+    reordered.insert(to, moved);
+    final notifier = ref.read(adminPortalProvider.notifier);
+    for (var i = 0; i < reordered.length; i++) {
+      if (reordered[i].displayOrder != i) {
+        notifier.saveExperience(reordered[i].copyWith(displayOrder: i));
+      }
+    }
   }
 
   @override
@@ -430,7 +454,7 @@ class _SkillsWorkspaceState extends ConsumerState<SkillsWorkspace> {
             eyebrow: 'EXPERIENCE',
             title: 'Work experience timeline',
             description:
-                'Shared across About, Experience, and Resume pages — edit once, updates everywhere.',
+                'Shared across the About and Experience pages — edit once, updates everywhere. Latest role first.',
             action: AdminPrimaryButton(
               label: 'Add experience',
               icon: Icons.add_rounded,
@@ -465,6 +489,13 @@ class _SkillsWorkspaceState extends ConsumerState<SkillsWorkspace> {
                   onToggle: (v) => ref
                       .read(adminPortalProvider.notifier)
                       .saveExperience(entry.value.copyWith(isVisible: v)),
+                  showReorder: true,
+                  onMoveUp: entry.key > 0
+                      ? () => _moveExperience(experiences, entry.key, entry.key - 1)
+                      : null,
+                  onMoveDown: entry.key < experiences.length - 1
+                      ? () => _moveExperience(experiences, entry.key, entry.key + 1)
+                      : null,
                 ),
               ),
             ),

@@ -60,6 +60,7 @@ class EducationWorkspace extends ConsumerWidget {
       },
       onDelete: (id) =>
           ref.read(adminPortalProvider.notifier).deleteEducation(id),
+      allowReorder: true,
     );
   }
 }

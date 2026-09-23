@@ -56,6 +56,7 @@ class ContentListWorkspace extends StatefulWidget {
     this.liveItems,
     this.onSave,
     this.onDelete,
+    this.allowReorder = false,
   });
 
   final AdminModule module;
@@ -84,6 +85,11 @@ class ContentListWorkspace extends StatefulWidget {
 
   /// Called with the item's id when the admin deletes it.
   final Future<void> Function(String id)? onDelete;
+
+  /// Shows move up/down buttons on each row. A move re-saves both swapped
+  /// items through [onSave] with their new positions, so only enable it
+  /// where `onSave` derives the stored order from `index`.
+  final bool allowReorder;
 
   @override
   State<ContentListWorkspace> createState() => _ContentListWorkspaceState();
@@ -228,6 +234,17 @@ class _ContentListWorkspaceState extends State<ContentListWorkspace> {
     );
   }
 
+  void _move(int from, int to) {
+    final a = _items[from];
+    final b = _items[to];
+    setState(() {
+      _items[from] = b;
+      _items[to] = a;
+    });
+    widget.onSave?.call(a, to);
+    widget.onSave?.call(b, from);
+  }
+
   @override
   Widget build(BuildContext context) {
     final liveCount = _items.where((i) => i.isVisible).length;
@@ -273,6 +290,13 @@ class _ContentListWorkspaceState extends State<ContentListWorkspace> {
                     setState(() => _items[e.key] = updated);
                     widget.onSave?.call(updated, e.key);
                   },
+                  showReorder: widget.allowReorder,
+                  onMoveUp:
+                      e.key > 0 ? () => _move(e.key, e.key - 1) : null,
+                  onMoveDown:
+                      e.key < _items.length - 1
+                          ? () => _move(e.key, e.key + 1)
+                          : null,
                 ),
               ),
             ),
@@ -337,12 +361,21 @@ class ContentItemRow extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onToggle,
+    this.showReorder = false,
+    this.onMoveUp,
+    this.onMoveDown,
   });
 
   final ContentItem item;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final ValueChanged<bool> onToggle;
+
+  /// Shows move up/down arrows; a null callback disables that arrow (first
+  /// or last row).
+  final bool showReorder;
+  final VoidCallback? onMoveUp;
+  final VoidCallback? onMoveDown;
 
   @override
   Widget build(BuildContext context) {
@@ -440,6 +473,32 @@ class ContentItemRow extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               ),
+              if (showReorder) ...[
+                IconButton(
+                  onPressed: onMoveUp,
+                  tooltip: 'Move up',
+                  icon: const Icon(Icons.arrow_upward_rounded, size: 18),
+                  color: Colors.white54,
+                  disabledColor: Colors.white12,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
+                ),
+                IconButton(
+                  onPressed: onMoveDown,
+                  tooltip: 'Move down',
+                  icon: const Icon(Icons.arrow_downward_rounded, size: 18),
+                  color: Colors.white54,
+                  disabledColor: Colors.white12,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
+                ),
+              ],
               IconButton(
                 onPressed: onDelete,
                 icon: const Icon(
