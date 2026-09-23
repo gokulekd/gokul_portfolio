@@ -38,6 +38,7 @@ class BlogPage extends ConsumerWidget {
                   if (gridPosts.isNotEmpty)
                     BlogPostsSection(
                       posts: gridPosts,
+                      searchablePosts: posts,
                       eyebrow: featuredPost != null
                           ? '{02} - All Posts'
                           : '{01} - All Posts',
