@@ -352,7 +352,10 @@ class _ShareButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final link = Uri.base.toString();
+    // Built from the post id rather than read from the address bar: when the
+    // page is opened from the blog list, it builds before the browser URL
+    // switches from /#/blog to the post, so the address bar is stale here.
+    final link = '${Uri.base.origin}/#${AppRoutes.blogPost(post.id)}';
     final encodedLink = Uri.encodeComponent(link);
     final encodedTitle = Uri.encodeComponent(post.title);
     final color = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
