@@ -1,21 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/config/app_colors.dart';
 import '../../../core/providers/portfolio_provider.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/utils/native_share.dart';
 import '../../../core/utils/responsive_helper.dart';
 import '../models/portfolio_models.dart';
 import '../widgets/blog/blog_components.dart';
 import '../widgets/blog/blog_posts_section.dart';
 import '../widgets/shared/custom_widgets.dart';
 
-const _kAuthorPhoto = 'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg';
+const _kAuthorPhoto =
+    'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg';
 
 /// Width of the text column — a comfortable ~70 characters per line.
 const _kTextWidth = 700.0;
@@ -36,6 +40,10 @@ class BlogDetailPage extends ConsumerStatefulWidget {
 class _BlogDetailPageState extends ConsumerState<BlogDetailPage> {
   final _scrollController = ScrollController();
   final _progress = ValueNotifier<double>(0);
+
+  /// Whether the phone reading bar is shown: once past the article header,
+  /// and hidden again at the very end where the author card and footer are.
+  final _showBar = ValueNotifier<bool>(false);
   bool _isFetching = false;
 
   @override
@@ -63,12 +71,14 @@ class _BlogDetailPageState extends ConsumerState<BlogDetailPage> {
     final position = _scrollController.position;
     final max = position.maxScrollExtent;
     _progress.value = max <= 0 ? 0 : (position.pixels / max).clamp(0.0, 1.0);
+    _showBar.value = position.pixels > 320 && _progress.value < 0.9;
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     _progress.dispose();
+    _showBar.dispose();
     super.dispose();
   }
 
@@ -94,9 +104,12 @@ class _BlogDetailPageState extends ConsumerState<BlogDetailPage> {
         appBar: const CustomAppBar(),
         drawer: const CustomDrawer(),
         body: Center(
-          child: _isFetching
-              ? const CircularProgressIndicator(color: AppColors.primaryGreen)
-              : _NotFound(onBack: _goBack),
+          child:
+              _isFetching
+                  ? const CircularProgressIndicator(
+                    color: AppColors.primaryGreen,
+                  )
+                  : _NotFound(onBack: _goBack),
         ),
       );
     }
@@ -126,12 +139,12 @@ class _BlogDetailPageState extends ConsumerState<BlogDetailPage> {
                         child: Image.network(
                           post.imageUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => ColoredBox(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.05),
-                          ),
+                          errorBuilder:
+                              (_, __, ___) => ColoredBox(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.05),
+                              ),
                         ),
                       ),
                     ),
@@ -163,6 +176,27 @@ class _BlogDetailPageState extends ConsumerState<BlogDetailPage> {
               ],
             ),
           ),
+          if (isMobile)
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 12,
+              child: SafeArea(
+                top: false,
+                child: _MobileReadingBar(
+                  post: post,
+                  progress: _progress,
+                  visible: _showBar,
+                  onBack: _goBack,
+                  onTop:
+                      () => _scrollController.animateTo(
+                        0,
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeOutCubic,
+                      ),
+                ),
+              ),
+            ),
           // Reading progress bar.
           Positioned(
             top: 0,
@@ -170,12 +204,13 @@ class _BlogDetailPageState extends ConsumerState<BlogDetailPage> {
             right: 0,
             child: ValueListenableBuilder<double>(
               valueListenable: _progress,
-              builder: (context, value, _) => LinearProgressIndicator(
-                value: value,
-                minHeight: 3,
-                backgroundColor: Colors.transparent,
-                color: AppColors.primaryGreen,
-              ),
+              builder:
+                  (context, value, _) => LinearProgressIndicator(
+                    value: value,
+                    minHeight: 3,
+                    backgroundColor: Colors.transparent,
+                    color: AppColors.primaryGreen,
+                  ),
             ),
           ),
         ],
@@ -270,7 +305,7 @@ class _ArticleHeader extends StatelessWidget {
               child: Text(
                 post.title,
                 style: GoogleFonts.inter(
-                  fontSize: isMobile ? 34 : 48,
+                  fontSize: isMobile ? 30 : 48,
                   fontWeight: FontWeight.w800,
                   color: colorScheme.onSurface,
                   height: 1.12,
@@ -322,12 +357,15 @@ class _ArticleHeader extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           '${post.readingTimeMinutes} min read  ·  ${formatDate(post.publishDate)}',
-                          style: GoogleFonts.manrope(fontSize: 13, color: muted),
+                          style: GoogleFonts.manrope(
+                            fontSize: 13,
+                            color: muted,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  _ShareButtons(post: post),
+                  _ShareButtons(post: post, compact: isMobile),
                 ],
               ),
             ),
@@ -338,10 +376,51 @@ class _ArticleHeader extends StatelessWidget {
   }
 }
 
+// A plain path, not the /#/ app route: link previews (WhatsApp, LinkedIn, X)
+// never see anything after #. /blog/<id> is a static page with this post's
+// preview tags that forwards to the app (built by
+// scripts/generate_blog_share_pages.py). Always the canonical www host, and
+// built from the post id rather than the address bar, which is stale when
+// arriving from the blog list.
+String _shareLink(BlogPost post) => 'https://www.gokulks.in/blog/${post.id}';
+
+Future<void> _copyLink(BuildContext context, BlogPost post) async {
+  await Clipboard.setData(ClipboardData(text: _shareLink(post)));
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Link copied'),
+      behavior: SnackBarBehavior.floating,
+      width: 200,
+      duration: Duration(seconds: 2),
+    ),
+  );
+}
+
+/// Opens the phone's share sheet (WhatsApp, LinkedIn, Messages...), or copies
+/// the link where there is none.
+Future<void> _shareNatively(BuildContext context, BlogPost post) async {
+  if (hasNativeShare) {
+    try {
+      await SharePlus.instance.share(
+        ShareParams(uri: Uri.parse(_shareLink(post)), title: post.title),
+      );
+      return;
+    } catch (_) {
+      // Fall through to copying the link.
+    }
+  }
+  if (context.mounted) await _copyLink(context, post);
+}
+
 class _ShareButtons extends StatelessWidget {
-  const _ShareButtons({required this.post});
+  const _ShareButtons({required this.post, this.compact = false});
 
   final BlogPost post;
+
+  /// A single share-sheet button instead of copy/LinkedIn/X, for phones
+  /// where the byline has no room for three icons.
+  final bool compact;
 
   Future<void> _open(String url) async {
     final uri = Uri.parse(url);
@@ -352,16 +431,11 @@ class _ShareButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // A plain path, not the /#/ app route: link previews (WhatsApp, LinkedIn,
-    // X) never see anything after #. /blog/<id> is a static page with this
-    // post's preview tags that forwards to the app (built by
-    // scripts/generate_blog_share_pages.py). Always the canonical www host,
-    // and built from the post id rather than the address bar, which is
-    // stale when arriving from the blog list.
-    final link = 'https://www.gokulks.in/blog/${post.id}';
-    final encodedLink = Uri.encodeComponent(link);
+    final encodedLink = Uri.encodeComponent(_shareLink(post));
     final encodedTitle = Uri.encodeComponent(post.title);
-    final color = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
+    final color = Theme.of(
+      context,
+    ).colorScheme.onSurface.withValues(alpha: 0.6);
 
     Widget button(IconData icon, String tooltip, VoidCallback onPressed) {
       return IconButton(
@@ -372,21 +446,22 @@ class _ShareButtons extends StatelessWidget {
       );
     }
 
+    if (compact) {
+      return button(
+        FontAwesomeIcons.shareNodes,
+        'Share',
+        () => _shareNatively(context, post),
+      );
+    }
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        button(FontAwesomeIcons.link, 'Copy link', () async {
-          await Clipboard.setData(ClipboardData(text: link));
-          if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Link copied'),
-              behavior: SnackBarBehavior.floating,
-              width: 200,
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }),
+        button(
+          FontAwesomeIcons.link,
+          'Copy link',
+          () => _copyLink(context, post),
+        ),
         button(
           FontAwesomeIcons.linkedinIn,
           'Share on LinkedIn',
@@ -402,6 +477,117 @@ class _ShareButtons extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Floating bar shown on phones while reading: back, time left, back to top
+/// and share.
+class _MobileReadingBar extends StatelessWidget {
+  const _MobileReadingBar({
+    required this.post,
+    required this.progress,
+    required this.visible,
+    required this.onBack,
+    required this.onTop,
+  });
+
+  final BlogPost post;
+  final ValueListenable<double> progress;
+  final ValueListenable<bool> visible;
+  final VoidCallback onBack;
+  final VoidCallback onTop;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final muted = colorScheme.onSurface.withValues(alpha: 0.7);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: visible,
+      builder:
+          (context, show, child) => IgnorePointer(
+            ignoring: !show,
+            child: AnimatedSlide(
+              offset: Offset(0, show ? 0 : 1.6),
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              child: AnimatedOpacity(
+                opacity: show ? 1 : 0,
+                duration: const Duration(milliseconds: 200),
+                child: child,
+              ),
+            ),
+          ),
+      child: Container(
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          color: blogCardColor(context),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: colorScheme.onSurface.withValues(alpha: 0.1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.12),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            IconButton(
+              tooltip: 'All stories',
+              onPressed: onBack,
+              icon: Icon(Icons.arrow_back_rounded, color: muted),
+            ),
+            Expanded(
+              child: ValueListenableBuilder<double>(
+                valueListenable: progress,
+                builder: (context, value, _) {
+                  final left = (post.readingTimeMinutes * (1 - value)).ceil();
+                  return Text(
+                    left <= 0 ? 'Almost done' : '$left min left',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.manrope(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: muted,
+                    ),
+                  );
+                },
+              ),
+            ),
+            IconButton(
+              tooltip: 'Back to top',
+              onPressed: onTop,
+              icon: Icon(Icons.vertical_align_top_rounded, color: muted),
+            ),
+            const SizedBox(width: 2),
+            FilledButton.icon(
+              onPressed: () => _shareNatively(context, post),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primaryGreen,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                visualDensity: VisualDensity.compact,
+              ),
+              icon: const FaIcon(FontAwesomeIcons.shareNodes, size: 14),
+              label: Text(
+                'Share',
+                style: GoogleFonts.manrope(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -433,7 +619,8 @@ class _ArticleContent extends StatelessWidget {
 
     final widgets = <Widget>[];
     for (final block in blocks) {
-      final isCapsHeading = !block.contains('\n') &&
+      final isCapsHeading =
+          !block.contains('\n') &&
           block.length <= 80 &&
           RegExp('[A-Z]').hasMatch(block) &&
           block == block.toUpperCase();
@@ -443,10 +630,7 @@ class _ArticleContent extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: isMobile ? 16 : 24, bottom: 16),
             child: Text(
-              _sentenceCase(
-                block.replaceFirst(RegExp(r'^#+\s*'), ''),
-                casing,
-              ),
+              _sentenceCase(block.replaceFirst(RegExp(r'^#+\s*'), ''), casing),
               style: GoogleFonts.inter(
                 fontSize: isMobile ? 24 : 28,
                 fontWeight: FontWeight.w700,
@@ -463,7 +647,8 @@ class _ArticleContent extends StatelessWidget {
       // A short first line without end punctuation followed by more text is
       // a subheading, e.g. "Riverpod\nMade by the author of Provider...".
       final lines = block.split('\n');
-      final isSubheading = lines.length > 1 &&
+      final isSubheading =
+          lines.length > 1 &&
           lines.first.length <= 60 &&
           !RegExp(r'[.,:;!?]$').hasMatch(lines.first.trim()) &&
           !RegExp(r'^([-*>]|#)').hasMatch(lines.first);
@@ -714,8 +899,8 @@ class _AuthorCard extends ConsumerWidget {
               label: 'Email me',
               icon: Icons.north_east_rounded,
               isPrimary: true,
-              onPressed: () =>
-                  ref.read(portfolioProvider.notifier).launchEmail(),
+              onPressed:
+                  () => ref.read(portfolioProvider.notifier).launchEmail(),
             ),
             BlogHeroActionButton(
               label: 'About me',
@@ -743,19 +928,20 @@ class _AuthorCard extends ConsumerWidget {
           color: blogAccent(context).withValues(alpha: isDark ? 0.22 : 0.12),
         ),
       ),
-      child: isMobile
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [avatar, const SizedBox(height: 16), text],
-            )
-          : Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                avatar,
-                const SizedBox(width: 24),
-                Expanded(child: text),
-              ],
-            ),
+      child:
+          isMobile
+              ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [avatar, const SizedBox(height: 16), text],
+              )
+              : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  avatar,
+                  const SizedBox(width: 24),
+                  Expanded(child: text),
+                ],
+              ),
     );
   }
 }
@@ -776,11 +962,12 @@ class _MoreStories extends StatelessWidget {
       color: colorScheme.onSurface.withValues(alpha: 0.03),
       child: _Constrained(
         maxWidth: 1200,
-        hPad: isMobile
-            ? 20
-            : isTablet
-            ? 48
-            : 88,
+        hPad:
+            isMobile
+                ? 20
+                : isTablet
+                ? 48
+                : 88,
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: isMobile ? 48 : 72),
           child: Column(
