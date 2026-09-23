@@ -51,9 +51,10 @@ class BlogPostsSection extends StatelessWidget {
   }
 }
 
-/// Responsive grid of [BlogPostTile]s (3 or 2 columns by width) laid out in
-/// equal-height rows. On narrow screens it becomes a compact list of
-/// [BlogPostListItem]s so more posts fit on a phone screen.
+/// Responsive list of posts: a 3- or 2-column grid of equal-height
+/// [BlogPostTile]s on wide screens, and a list of [BlogPostListItem]s below
+/// 1000px (roomier on tablets, compact on phones) so posts never end up
+/// orphaned in a half-empty row.
 class BlogPostGrid extends StatelessWidget {
   const BlogPostGrid({super.key, required this.posts});
 
@@ -64,12 +65,14 @@ class BlogPostGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         const gap = 24.0;
-        if (constraints.maxWidth < 640) {
+        if (constraints.maxWidth < 1000) {
+          final large = constraints.maxWidth >= 600;
           return Column(
             children: [
               for (int i = 0; i < posts.length; i++)
                 BlogPostListItem(
                   post: posts[i],
+                  large: large,
                   showDivider: i != posts.length - 1,
                 ),
             ],
@@ -278,17 +281,20 @@ class _BlogPostTileState extends State<BlogPostTile> {
   }
 }
 
-/// Compact, Medium-style list row for phones: text on the left, a square
-/// thumbnail on the right.
+/// Medium-style list row: text on the left, a 16:9 thumbnail on the right.
 class BlogPostListItem extends StatelessWidget {
   const BlogPostListItem({
     super.key,
     required this.post,
     this.showDivider = true,
+    this.large = false,
   });
 
   final BlogPost post;
   final bool showDivider;
+
+  /// Bigger type and thumbnail for tablets.
+  final bool large;
 
   @override
   Widget build(BuildContext context) {
@@ -299,7 +305,7 @@ class BlogPostListItem extends StatelessWidget {
     return InkWell(
       onTap: () => openBlogPost(context, post),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: EdgeInsets.symmetric(vertical: large ? 28 : 20),
         decoration: BoxDecoration(
           border:
               showDivider
@@ -334,7 +340,7 @@ class BlogPostListItem extends StatelessWidget {
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
-                      fontSize: 17,
+                      fontSize: large ? 21 : 17,
                       fontWeight: FontWeight.w700,
                       height: 1.3,
                       letterSpacing: -0.2,
@@ -347,7 +353,7 @@ class BlogPostListItem extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.manrope(
-                      fontSize: 13,
+                      fontSize: large ? 15 : 13,
                       height: 1.5,
                       color: colorScheme.onSurface.withValues(alpha: 0.65),
                     ),
@@ -364,15 +370,15 @@ class BlogPostListItem extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: large ? 28 : 16),
             // 16:9 like the covers, so their title text isn't cropped.
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: SizedBox(
-                  width: 112,
-                  height: 63,
+                  width: large ? 224 : 112,
+                  height: large ? 126 : 63,
                   child:
                       post.imageUrl.isEmpty
                           ? _ImagePlaceholder(color: colorScheme.onSurface)

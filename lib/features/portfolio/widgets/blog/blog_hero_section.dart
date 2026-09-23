@@ -84,7 +84,7 @@ class BlogHeroSection extends ConsumerWidget {
                     children: [
                       intro,
                       const SizedBox(height: 40),
-                      _LatestPostCard(post: latest),
+                      _LatestPostCard(post: latest, horizontal: true),
                     ],
                   )
                   : Row(
@@ -304,9 +304,12 @@ class _HeroStat extends StatelessWidget {
 
 /// Clickable preview of the newest post.
 class _LatestPostCard extends StatefulWidget {
-  const _LatestPostCard({required this.post});
+  const _LatestPostCard({required this.post, this.horizontal = false});
 
   final BlogPost post;
+
+  /// Image beside the text instead of above it (used on tablets).
+  final bool horizontal;
 
   @override
   State<_LatestPostCard> createState() => _LatestPostCardState();
@@ -321,6 +324,115 @@ class _LatestPostCardState extends State<_LatestPostCard> {
     final colorScheme = Theme.of(context).colorScheme;
     final muted = colorScheme.onSurface.withValues(alpha: 0.55);
     const radius = 28.0;
+
+    final image = ClipRRect(
+      borderRadius: BorderRadius.circular(radius - 10),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (post.imageUrl.isEmpty)
+              ColoredBox(color: colorScheme.onSurface.withValues(alpha: 0.05))
+            else
+              Image.network(
+                post.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder:
+                    (_, __, ___) => ColoredBox(
+                      color: colorScheme.onSurface.withValues(alpha: 0.05),
+                    ),
+              ),
+            Positioned(
+              top: 12,
+              left: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryGreen,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'LATEST',
+                  style: GoogleFonts.manrope(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    final details = Padding(
+      padding: const EdgeInsets.fromLTRB(12, 20, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${formatDate(post.publishDate)}  ·  ${post.readingTimeMinutes} min read',
+            style: GoogleFonts.manrope(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: muted,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            post.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              height: 1.3,
+              letterSpacing: -0.4,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            post.excerpt,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.manrope(
+              fontSize: 14,
+              height: 1.6,
+              color: colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Text(
+                'Read the story',
+                style: GoogleFonts.manrope(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: blogAccent(context),
+                ),
+              ),
+              const SizedBox(width: 6),
+              AnimatedSlide(
+                offset: Offset(_hovered ? 0.25 : 0, 0),
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 18,
+                  color: blogAccent(context),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -358,125 +470,19 @@ class _LatestPostCardState extends State<_LatestPostCard> {
             onTap: () => openBlogPost(context, post),
             child: Padding(
               padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(radius - 10),
-                    child: AspectRatio(
-                      aspectRatio: 16 / 9,
-                      child: Stack(
-                        fit: StackFit.expand,
+              child:
+                  widget.horizontal
+                      ? Row(
                         children: [
-                          if (post.imageUrl.isEmpty)
-                            ColoredBox(
-                              color: colorScheme.onSurface.withValues(
-                                alpha: 0.05,
-                              ),
-                            )
-                          else
-                            Image.network(
-                              post.imageUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder:
-                                  (_, __, ___) => ColoredBox(
-                                    color: colorScheme.onSurface.withValues(
-                                      alpha: 0.05,
-                                    ),
-                                  ),
-                            ),
-                          Positioned(
-                            top: 12,
-                            left: 12,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryGreen,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                'LATEST',
-                                style: GoogleFonts.manrope(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.8,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
+                          Expanded(flex: 5, child: image),
+                          const SizedBox(width: 8),
+                          Expanded(flex: 6, child: details),
                         ],
+                      )
+                      : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [image, details],
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 20, 12, 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${formatDate(post.publishDate)}  ·  ${post.readingTimeMinutes} min read',
-                          style: GoogleFonts.manrope(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: muted,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          post.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            height: 1.3,
-                            letterSpacing: -0.4,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          post.excerpt,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.manrope(
-                            fontSize: 14,
-                            height: 1.6,
-                            color: colorScheme.onSurface.withValues(alpha: 0.7),
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                        Row(
-                          children: [
-                            Text(
-                              'Read the story',
-                              style: GoogleFonts.manrope(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: blogAccent(context),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            AnimatedSlide(
-                              offset: Offset(_hovered ? 0.25 : 0, 0),
-                              duration: const Duration(milliseconds: 200),
-                              child: Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 18,
-                                color: blogAccent(context),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ),
