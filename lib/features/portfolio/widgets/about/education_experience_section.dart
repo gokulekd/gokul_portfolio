@@ -3,266 +3,103 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
-import '../../models/portfolio_models.dart';
 import '../../models/site_content_models.dart';
 import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../experience/experience_components.dart' show TimelineExperienceCard;
 
-// `EducationEntry` used to be the hardcoded panel data; the section now
-// reads `EducationItem` from Firestore (`site_content_models.dart`) via
-// `portfolioProvider.visibleEducation`, same as the Experience timeline
-// already did via `visibleExperiences`.
-
+/// About page "Work Experience" and "Formal Education" sections, each with
+/// the same left-aligned heading as My Work's Featured Projects and every
+/// entry listed in full below it. Experience reads `visibleExperiences`,
+/// education reads `visibleEducation`, both from Firestore.
 class EducationExperienceSection extends ConsumerWidget {
   const EducationExperienceSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(portfolioProvider);
-    final isCompact =
-        ResponsiveHelper.isMobile(context) ||
-        ResponsiveHelper.isTablet(context);
+    final education = state.visibleEducation;
+    final experiences = state.visibleExperiences;
+    final isMobile = ResponsiveHelper.isMobile(context);
+    final isTablet = ResponsiveHelper.isTablet(context);
+    final hPad =
+        isMobile
+            ? 20.0
+            : isTablet
+            ? 48.0
+            : 88.0;
+    final sectionGap = isMobile ? 48.0 : 80.0;
+    final cardGap = isMobile ? 16.0 : 24.0;
 
-    return isCompact
-        ? Column(
-          children: [
-            EducationPanel(entries: state.visibleEducation),
-            const SizedBox(height: 20),
-            ExperiencePanel(experiences: state.visibleExperiences),
-          ],
-        )
-        : Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: EducationPanel(entries: state.visibleEducation)),
-            const SizedBox(width: 24),
-            Expanded(
-              child: ExperiencePanel(
-                experiences: state.visibleExperiences,
-              ),
-            ),
-          ],
-        );
-  }
-}
-
-class EducationPanel extends StatelessWidget {
-  const EducationPanel({super.key, required this.entries});
-
-  final List<EducationItem> entries;
-
-  @override
-  Widget build(BuildContext context) {
-    return DarkInfoPanel(
-      title: "Formal Education",
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isSingleColumn = constraints.maxWidth < 520;
-          final items =
-              entries
-                  .map(
-                    (entry) => EducationItemCard(
-                      title: entry.title,
-                      period: entry.period,
-                      description: entry.description,
-                    ),
-                  )
-                  .toList();
-
-          if (isSingleColumn) {
-            return Column(
-              children: [
-                for (int i = 0; i < items.length; i++) ...[
-                  items[i],
-                  if (i < items.length - 1) const SizedBox(height: 28),
-                ],
-              ],
-            );
-          }
-
-          return Wrap(
-            spacing: 28,
-            runSpacing: 28,
-            children:
-                items
-                    .map(
-                      (item) => SizedBox(
-                        width: (constraints.maxWidth - 28) / 2,
-                        child: item,
-                      ),
-                    )
-                    .toList(),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class ExperiencePanel extends StatelessWidget {
-  const ExperiencePanel({super.key, required this.experiences});
-
-  final List<Experience> experiences;
-
-  @override
-  Widget build(BuildContext context) {
-    final splitIndex = (experiences.length / 2).ceil();
-    final left = experiences.take(splitIndex).toList();
-    final right = experiences.skip(splitIndex).toList();
-    final isSingleColumn =
-        ResponsiveHelper.isMobile(context) || experiences.length < 3;
-
-    return DarkInfoPanel(
-      title: "Work Experience",
-      child:
-          isSingleColumn
-              ? Column(
-                children: [
-                  for (int i = 0; i < experiences.length; i++) ...[
-                    ExperienceBullet(experience: experiences[i]),
-                    if (i < experiences.length - 1) const SizedBox(height: 22),
-                  ],
-                ],
-              )
-              : Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        for (int i = 0; i < left.length; i++) ...[
-                          ExperienceBullet(experience: left[i]),
-                          if (i < left.length - 1) const SizedBox(height: 22),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 28),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        for (int i = 0; i < right.length; i++) ...[
-                          ExperienceBullet(experience: right[i]),
-                          if (i < right.length - 1) const SizedBox(height: 22),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-    );
-  }
-}
-
-class DarkInfoPanel extends StatelessWidget {
-  const DarkInfoPanel({super.key, required this.title, required this.child});
-
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(34),
-      decoration: BoxDecoration(
-        color: const Color(0xFF111111),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-      ),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(hPad, sectionGap, hPad, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.manrope(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              height: 1.1,
+          if (experiences.isNotEmpty) ...[
+            const _SectionHeading(
+              eyebrow: '{01} - Experience',
+              title: 'Work Experience',
+              subtitle: 'Roles, teams and the products I have shipped',
             ),
-          ),
-          const SizedBox(height: 14),
-          const AboutAccentWaveDivider(),
-          const SizedBox(height: 34),
-          child,
+            SizedBox(height: isMobile ? 32 : 52),
+            for (int i = 0; i < experiences.length; i++) ...[
+              TimelineExperienceCard(experience: experiences[i]),
+              if (i < experiences.length - 1) SizedBox(height: cardGap),
+            ],
+          ],
+          if (education.isNotEmpty && experiences.isNotEmpty)
+            SizedBox(height: sectionGap),
+          if (education.isNotEmpty) ...[
+            const _SectionHeading(
+              eyebrow: '{02} - Education',
+              title: 'Formal Education',
+              subtitle: 'Where the foundations were built',
+            ),
+            SizedBox(height: isMobile ? 32 : 52),
+            for (int i = 0; i < education.length; i++) ...[
+              EducationCard(entry: education[i]),
+              if (i < education.length - 1) SizedBox(height: cardGap),
+            ],
+          ],
         ],
       ),
     );
   }
 }
 
-class EducationItemCard extends StatelessWidget {
-  const EducationItemCard({
-    super.key,
+/// Eyebrow + big heading + subtitle, matching the Featured Projects header
+/// on the My Work page.
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading({
+    required this.eyebrow,
     required this.title,
-    required this.period,
-    required this.description,
+    required this.subtitle,
   });
 
+  final String eyebrow;
   final String title;
-  final String period;
-  final String description;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: GoogleFonts.manrope(
-            fontSize: 26,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-            height: 1.15,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          period,
-          style: GoogleFonts.manrope(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.white.withValues(alpha: 0.85),
-            height: 1.5,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          description,
-          style: GoogleFonts.manrope(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: Colors.white.withValues(alpha: 0.72),
-            height: 1.55,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class ExperienceBullet extends StatelessWidget {
-  const ExperienceBullet({super.key, required this.experience});
-
-  final Experience experience;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 20,
-          height: 20,
-          margin: const EdgeInsets.only(top: 4),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.primaryGreen, width: 2),
-          ),
-          child: Center(
-            child: Container(
+        Row(
+          children: [
+            Text(
+              eyebrow,
+              style: GoogleFonts.manrope(
+                fontSize: 14,
+                color: colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
               width: 6,
               height: 6,
               decoration: const BoxDecoration(
@@ -270,45 +107,26 @@ class ExperienceBullet extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          title,
+          style: GoogleFonts.inter(
+            fontSize: isMobile ? 36 : 52,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+            letterSpacing: -1.5,
+            height: 1.1,
           ),
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                experience.position,
-                style: GoogleFonts.manrope(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  height: 1.25,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '${experience.company} • ${experience.duration}',
-                style: GoogleFonts.manrope(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withValues(alpha: 0.78),
-                  height: 1.45,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                experience.description,
-                style: GoogleFonts.manrope(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white.withValues(alpha: 0.68),
-                  height: 1.5,
-                ),
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+        const SizedBox(height: 8),
+        Text(
+          subtitle,
+          style: GoogleFonts.manrope(
+            fontSize: isMobile ? 15 : 17,
+            color: colorScheme.onSurface.withValues(alpha: 0.5),
+            height: 1.5,
           ),
         ),
       ],
@@ -316,51 +134,113 @@ class ExperienceBullet extends StatelessWidget {
   }
 }
 
-class AboutAccentWaveDivider extends StatelessWidget {
-  const AboutAccentWaveDivider({super.key});
+/// One education entry, styled like the experience timeline cards: title
+/// with a green dot, the period in a pill, and the full description.
+class EducationCard extends StatelessWidget {
+  const EducationCard({super.key, required this.entry});
+
+  final EducationItem entry;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 280,
-      height: 14,
-      child: CustomPaint(painter: AboutWaveLinePainter()),
+    final colorScheme = Theme.of(context).colorScheme;
+    final isMobile = ResponsiveHelper.isMobile(context);
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(isMobile ? 20 : 28),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: colorScheme.onSurface.withValues(alpha: 0.08),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 26,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Date pill pinned right on wider screens, under the title on phones.
+          Flex(
+            direction: isMobile ? Axis.vertical : Axis.horizontal,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _expandUnless(
+                isMobile,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 14,
+                      height: 14,
+                      margin: const EdgeInsets.only(top: 8),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryGreen,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        entry.title,
+                        style: GoogleFonts.inter(
+                          fontSize: isMobile ? 24 : 30,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                          height: 1.05,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (entry.period.isNotEmpty) ...[
+                SizedBox(width: 16, height: isMobile ? 14 : 0),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Text(
+                    entry.period,
+                    style: GoogleFonts.manrope(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          if (entry.description.isNotEmpty) ...[
+            const SizedBox(height: 18),
+            Text(
+              entry.description,
+              style: GoogleFonts.manrope(
+                fontSize: 15,
+                height: 1.8,
+                color: colorScheme.onSurface.withValues(alpha: 0.74),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
 
-class AboutWaveLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint =
-        Paint()
-          ..color = AppColors.primaryGreen.withValues(alpha: 0.78)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.4;
-
-    final path = Path();
-    const waveWidth = 12.0;
-    final halfHeight = size.height / 2;
-    path.moveTo(0, halfHeight);
-
-    for (double x = 0; x < size.width; x += waveWidth) {
-      path.quadraticBezierTo(
-        x + waveWidth / 4,
-        0,
-        x + waveWidth / 2,
-        halfHeight,
-      );
-      path.quadraticBezierTo(
-        x + 3 * waveWidth / 4,
-        size.height,
-        x + waveWidth,
-        halfHeight,
-      );
-    }
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
+/// The title row fills the space beside the date pill in a horizontal
+/// layout; stacked on phones, it just takes the full width.
+Widget _expandUnless(bool stacked, Widget child) =>
+    stacked ? child : Expanded(child: child);

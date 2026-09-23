@@ -17,12 +17,9 @@ class AboutPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const AboutHeroSection(),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(24, 48, 24, 0),
-              child: EducationExperienceSection(),
-            ),
+            const EducationExperienceSection(),
             const SizedBox(height: 32),
-            const SkillsSection(),
+            const SkillsSection(eyebrow: '{03} - My Skills'),
             const FooterSection(),
           ],
         ),

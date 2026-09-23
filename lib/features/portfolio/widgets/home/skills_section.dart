@@ -13,7 +13,14 @@ import 'skills_components.dart';
 class SkillsSection extends ConsumerStatefulWidget {
   final ScrollController? scrollController;
 
-  const SkillsSection({super.key, this.scrollController});
+  /// Numbered eyebrow above the heading; pages set it to fit their order.
+  final String eyebrow;
+
+  const SkillsSection({
+    super.key,
+    this.scrollController,
+    this.eyebrow = '{01} - My Skills',
+  });
 
   @override
   ConsumerState<SkillsSection> createState() => _SkillsSectionState();
@@ -259,7 +266,7 @@ class _SkillsSectionState extends ConsumerState<SkillsSection>
                                             MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            "{01} - My Skills",
+                                            widget.eyebrow,
                                             style: GoogleFonts.manrope(
                                               fontSize: 18,
                                               color: Theme.of(context).colorScheme.onSurface,

@@ -6,7 +6,11 @@ import '../../models/portfolio_models.dart';
 import '../../../../core/utils/responsive_helper.dart';
 
 class ExperienceProfileCard extends StatelessWidget {
-  const ExperienceProfileCard({super.key, required this.info, required this.experiences});
+  const ExperienceProfileCard({
+    super.key,
+    required this.info,
+    required this.experiences,
+  });
 
   final PersonalInfo info;
   final List<Experience> experiences;
@@ -115,54 +119,55 @@ class TimelineExperienceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 16,
-            runSpacing: 14,
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          // Date pill pinned right on wider screens, under the title on phones.
+          Flex(
+            direction: isMobile ? Axis.vertical : Axis.horizontal,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 14,
-                    height: 14,
-                    margin: const EdgeInsets.only(top: 8),
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryGreen,
-                      shape: BoxShape.circle,
+              _expandUnless(
+                isMobile,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 14,
+                      height: 14,
+                      margin: const EdgeInsets.only(top: 8),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryGreen,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: isMobile ? 260 : 520),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          experience.position,
-                          style: GoogleFonts.inter(
-                            fontSize: isMobile ? 24 : 30,
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onSurface,
-                            height: 1.05,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            experience.position,
+                            style: GoogleFonts.inter(
+                              fontSize: isMobile ? 24 : 30,
+                              fontWeight: FontWeight.w700,
+                              color: colorScheme.onSurface,
+                              height: 1.05,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          experience.company,
-                          style: GoogleFonts.manrope(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.darkGreen,
+                          const SizedBox(height: 8),
+                          Text(
+                            experience.company,
+                            style: GoogleFonts.manrope(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.darkGreen,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              SizedBox(width: 16, height: isMobile ? 14 : 0),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -207,7 +212,11 @@ class TimelineExperienceCard extends StatelessWidget {
 }
 
 class StrengthCard extends StatelessWidget {
-  const StrengthCard({super.key, required this.title, required this.description});
+  const StrengthCard({
+    super.key,
+    required this.title,
+    required this.description,
+  });
 
   final String title;
   final String description;
@@ -315,7 +324,11 @@ class HeroActionButton extends StatelessWidget {
 }
 
 class ExperienceHeroPill extends StatelessWidget {
-  const ExperienceHeroPill({super.key, required this.icon, required this.label});
+  const ExperienceHeroPill({
+    super.key,
+    required this.icon,
+    required this.label,
+  });
 
   final IconData icon;
   final String label;
@@ -485,3 +498,8 @@ class TechPill extends StatelessWidget {
     );
   }
 }
+
+/// The title row fills the space beside the date pill in a horizontal
+/// layout; stacked on phones, it just takes the full width.
+Widget _expandUnless(bool stacked, Widget child) =>
+    stacked ? child : Expanded(child: child);
