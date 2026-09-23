@@ -61,31 +61,29 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final palette = _FormPalette.of(context);
     final isCompact =
         ResponsiveHelper.isMobile(context) ||
         ResponsiveHelper.isTablet(context);
-    final socialLinks = ref.watch(portfolioProvider).personalInfo.socialLinks
-        .take(4)
-        .toList(growable: false);
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(34),
       decoration: BoxDecoration(
-        color: const Color(0xFF111111),
+        color: palette.panel,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        border: Border.all(color: palette.panelBorder),
       ),
       child:
           isCompact
+              // The copy column already ends with the email, location and
+              // socials, so the form just follows it.
               ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildContactCopy(context),
                   const SizedBox(height: 28),
                   _buildContactFormCard(context, colorScheme),
-                  const SizedBox(height: 24),
-                  _buildContactDetails(context, socialLinks, colorScheme),
                 ],
               )
               : Row(
@@ -103,6 +101,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
   }
 
   Widget _buildContactCopy(BuildContext context) {
+    final palette = _FormPalette.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -111,7 +110,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
           style: GoogleFonts.manrope(
             fontSize: 36,
             fontWeight: FontWeight.w800,
-            color: Colors.white,
+            color: palette.text,
             height: 1.1,
           ),
         ),
@@ -123,7 +122,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
           style: GoogleFonts.manrope(
             fontSize: 17,
             fontWeight: FontWeight.w400,
-            color: Colors.white.withValues(alpha: 0.72),
+            color: palette.textMuted,
             height: 1.7,
           ),
         ),
@@ -141,13 +140,15 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
 
   Widget _buildContactFormCard(BuildContext context, ColorScheme colorScheme) {
     final isMobile = ResponsiveHelper.isMobile(context);
+    final palette = _FormPalette.of(context);
 
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 22 : 28),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: palette.card,
         borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: palette.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,7 +158,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
             style: GoogleFonts.manrope(
               fontSize: isMobile ? 36 : 42,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF2F2F2F),
+              color: palette.cardText,
               height: 1.05,
               letterSpacing: -1.5,
             ),
@@ -186,20 +187,20 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
+                color: palette.errorFill,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.red.shade200),
+                border: Border.all(color: palette.errorBorder),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.error_outline_rounded, color: Colors.red.shade600, size: 20),
+                  Icon(Icons.error_outline_rounded, color: palette.errorText, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Something went wrong. Please try again or email me directly.',
                       style: GoogleFonts.manrope(
                         fontSize: 14,
-                        color: Colors.red.shade700,
+                        color: palette.errorText,
                         height: 1.4,
                       ),
                     ),
@@ -214,9 +215,9 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
             child: ElevatedButton(
               onPressed: _isSubmitting ? null : _submitInquiry,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2F2F2F),
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: const Color(0xFF2F2F2F).withValues(alpha: 0.6),
+                backgroundColor: palette.button,
+                foregroundColor: palette.buttonText,
+                disabledBackgroundColor: palette.button.withValues(alpha: 0.6),
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
@@ -224,12 +225,12 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
                 elevation: 0,
               ),
               child: _isSubmitting
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 22,
                       height: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.5,
-                        color: Colors.white,
+                        color: palette.buttonText,
                       ),
                     )
                   : Text(
@@ -237,7 +238,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
                       style: GoogleFonts.manrope(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: palette.buttonText,
                       ),
                     ),
             ),
@@ -253,6 +254,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
     int maxLines = 1,
     TextInputType? keyboardType,
   }) {
+    final palette = _FormPalette.of(context);
     return TextField(
       controller: controller,
       maxLines: maxLines,
@@ -260,17 +262,18 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
       style: GoogleFonts.manrope(
         fontSize: 18,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFF2F2F2F),
+        color: palette.cardText,
       ),
+      cursorColor: AppColors.primaryGreen,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: GoogleFonts.manrope(
           fontSize: 18,
           fontWeight: FontWeight.w500,
-          color: const Color(0xFFB5B5B5),
+          color: palette.inputHint,
         ),
         filled: true,
-        fillColor: const Color(0xFFF5F5F5),
+        fillColor: palette.inputFill,
         contentPadding: EdgeInsets.symmetric(
           horizontal: 24,
           vertical: maxLines > 1 ? 24 : 22,
@@ -299,6 +302,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
     List socialLinks,
     ColorScheme colorScheme,
   ) {
+    final palette = _FormPalette.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -320,7 +324,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
             fontSize: 13,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.1,
-            color: Colors.white.withValues(alpha: 0.5),
+            color: palette.textFaint,
           ),
         ),
         const SizedBox(height: 14),
@@ -339,11 +343,9 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: colorScheme.surface.withValues(alpha: 0.06),
+                          color: palette.chipFill,
                           borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.12),
-                          ),
+                          border: Border.all(color: palette.chipBorder),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -351,7 +353,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
                             Icon(
                               _iconForPlatform(link.platform),
                               size: 14,
-                              color: Colors.white.withValues(alpha: 0.8),
+                              color: palette.chipText,
                             ),
                             const SizedBox(width: 8),
                             Text(
@@ -359,7 +361,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
                               style: GoogleFonts.manrope(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white.withValues(alpha: 0.8),
+                                color: palette.chipText,
                               ),
                             ),
                           ],
@@ -378,6 +380,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
     required String label,
     required String value,
   }) {
+    final palette = _FormPalette.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -401,7 +404,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.0,
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: palette.textFaint,
                 ),
               ),
               const SizedBox(height: 6),
@@ -410,7 +413,7 @@ class ContactFormSectionState extends ConsumerState<ContactFormSection> {
                 style: GoogleFonts.manrope(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: palette.text,
                   height: 1.35,
                 ),
               ),
@@ -674,4 +677,95 @@ class WaveLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Colours for the contact form block: a soft light panel with a white form
+/// card in light mode, near-black with a dark card in dark mode.
+class _FormPalette {
+  const _FormPalette({
+    required this.panel,
+    required this.panelBorder,
+    required this.text,
+    required this.textMuted,
+    required this.textFaint,
+    required this.chipFill,
+    required this.chipBorder,
+    required this.chipText,
+    required this.card,
+    required this.cardBorder,
+    required this.cardText,
+    required this.inputFill,
+    required this.inputHint,
+    required this.button,
+    required this.buttonText,
+    required this.errorFill,
+    required this.errorBorder,
+    required this.errorText,
+  });
+
+  factory _FormPalette.of(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? _dark : _light;
+  }
+
+  static final _light = _FormPalette(
+    panel: const Color(0xFFF4F6F2),
+    panelBorder: Colors.black.withValues(alpha: 0.08),
+    text: const Color(0xFF111111),
+    textMuted: Colors.black.withValues(alpha: 0.65),
+    textFaint: Colors.black.withValues(alpha: 0.5),
+    chipFill: Colors.white,
+    chipBorder: Colors.black.withValues(alpha: 0.1),
+    chipText: Colors.black.withValues(alpha: 0.75),
+    card: Colors.white,
+    cardBorder: Colors.black.withValues(alpha: 0.06),
+    cardText: const Color(0xFF2F2F2F),
+    inputFill: const Color(0xFFF3F4F1),
+    inputHint: const Color(0xFF9A9A9A),
+    button: const Color(0xFF111111),
+    buttonText: Colors.white,
+    errorFill: Colors.red.shade50,
+    errorBorder: Colors.red.shade200,
+    errorText: Colors.red.shade700,
+  );
+
+  static final _dark = _FormPalette(
+    panel: const Color(0xFF111111),
+    panelBorder: Colors.white.withValues(alpha: 0.18),
+    text: Colors.white,
+    textMuted: Colors.white.withValues(alpha: 0.72),
+    textFaint: Colors.white.withValues(alpha: 0.5),
+    chipFill: Colors.white.withValues(alpha: 0.06),
+    chipBorder: Colors.white.withValues(alpha: 0.12),
+    chipText: Colors.white.withValues(alpha: 0.8),
+    card: const Color(0xFF1A1C1F),
+    cardBorder: Colors.white.withValues(alpha: 0.08),
+    cardText: Colors.white,
+    inputFill: const Color(0xFF26292C),
+    inputHint: Colors.white.withValues(alpha: 0.4),
+    button: AppColors.primaryGreen,
+    buttonText: Colors.black,
+    errorFill: Colors.red.withValues(alpha: 0.12),
+    errorBorder: Colors.red.withValues(alpha: 0.4),
+    errorText: Colors.red.shade300,
+  );
+
+  final Color panel;
+  final Color panelBorder;
+  final Color text;
+  final Color textMuted;
+  final Color textFaint;
+  final Color chipFill;
+  final Color chipBorder;
+  final Color chipText;
+  final Color card;
+  final Color cardBorder;
+  final Color cardText;
+  final Color inputFill;
+  final Color inputHint;
+  final Color button;
+  final Color buttonText;
+  final Color errorFill;
+  final Color errorBorder;
+  final Color errorText;
 }
