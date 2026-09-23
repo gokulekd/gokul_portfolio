@@ -44,47 +44,57 @@ class BlogPostsSection extends StatelessWidget {
                 'Practical write-ups on widgets, state and the small details that make apps feel right. Newest first.',
           ),
           const SizedBox(height: 32),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              const gap = 24.0;
-              final columns =
-                  constraints.maxWidth >= 1100
-                      ? 3
-                      : constraints.maxWidth >= 640
-                      ? 2
-                      : 1;
-
-              // Rows of equal-height tiles so cards line up side by side.
-              return Column(
-                children: [
-                  for (int start = 0;
-                      start < posts.length;
-                      start += columns) ...[
-                    if (start > 0) const SizedBox(height: gap),
-                    IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          for (int i = 0; i < columns; i++) ...[
-                            if (i > 0) const SizedBox(width: gap),
-                            Expanded(
-                              child: start + i < posts.length
-                                  ? BlogPostTile(
-                                    post: posts[start + i],
-                                  )
-                                  : const SizedBox.shrink(),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-              );
-            },
-          ),
+          BlogPostGrid(posts: posts),
         ],
       ),
+    );
+  }
+}
+
+/// Responsive grid of [BlogPostTile]s (3/2/1 columns by width) laid out in
+/// equal-height rows.
+class BlogPostGrid extends StatelessWidget {
+  const BlogPostGrid({super.key, required this.posts});
+
+  final List<BlogPost> posts;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const gap = 24.0;
+        final columns =
+            constraints.maxWidth >= 1100
+                ? 3
+                : constraints.maxWidth >= 640
+                ? 2
+                : 1;
+
+        // Rows of equal-height tiles so cards line up side by side.
+        return Column(
+          children: [
+            for (int start = 0; start < posts.length; start += columns) ...[
+              if (start > 0) const SizedBox(height: gap),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (int i = 0; i < columns; i++) ...[
+                      if (i > 0) const SizedBox(width: gap),
+                      Expanded(
+                        child:
+                            start + i < posts.length
+                                ? BlogPostTile(post: posts[start + i])
+                                : const SizedBox.shrink(),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -122,9 +132,10 @@ class _BlogPostTileState extends State<BlogPostTile> {
             color: colorScheme.surface,
             borderRadius: BorderRadius.circular(radius),
             border: Border.all(
-              color: _hovered
-                  ? AppColors.primaryGreen.withValues(alpha: 0.5)
-                  : colorScheme.onSurface.withValues(alpha: 0.08),
+              color:
+                  _hovered
+                      ? AppColors.primaryGreen.withValues(alpha: 0.5)
+                      : colorScheme.onSurface.withValues(alpha: 0.08),
             ),
             boxShadow: [
               BoxShadow(
@@ -148,15 +159,17 @@ class _BlogPostTileState extends State<BlogPostTile> {
                     ),
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
-                      child: post.imageUrl.isEmpty
-                          ? _ImagePlaceholder(color: colorScheme.onSurface)
-                          : Image.network(
-                            post.imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _ImagePlaceholder(
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
+                      child:
+                          post.imageUrl.isEmpty
+                              ? _ImagePlaceholder(color: colorScheme.onSurface)
+                              : Image.network(
+                                post.imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (_, __, ___) => _ImagePlaceholder(
+                                      color: colorScheme.onSurface,
+                                    ),
+                              ),
                     ),
                   ),
                   Expanded(
@@ -183,9 +196,10 @@ class _BlogPostTileState extends State<BlogPostTile> {
                               fontWeight: FontWeight.w700,
                               height: 1.3,
                               letterSpacing: -0.3,
-                              color: _hovered
-                                  ? AppColors.darkGreen
-                                  : colorScheme.onSurface,
+                              color:
+                                  _hovered
+                                      ? AppColors.darkGreen
+                                      : colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -220,8 +234,9 @@ class _BlogPostTileState extends State<BlogPostTile> {
                                           decoration: BoxDecoration(
                                             color: AppColors.darkGreen
                                                 .withValues(alpha: 0.08),
-                                            borderRadius:
-                                                BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                           ),
                                           child: Text(
                                             tag,
@@ -243,9 +258,7 @@ class _BlogPostTileState extends State<BlogPostTile> {
                                 child: Icon(
                                   Icons.arrow_forward_rounded,
                                   size: 20,
-                                  color: _hovered
-                                      ? AppColors.darkGreen
-                                      : muted,
+                                  color: _hovered ? AppColors.darkGreen : muted,
                                 ),
                               ),
                             ],
