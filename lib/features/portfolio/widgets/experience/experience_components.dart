@@ -481,18 +481,28 @@ class TechPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // White with black text in light mode, black with white text in dark
+    // mode; the hairline border keeps it distinct from the card behind.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       decoration: BoxDecoration(
-        color: AppColors.primaryGreen.withValues(alpha: 0.12),
+        color: isDark ? Colors.black : Colors.white,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color:
+              isDark
+                  ? Colors.white.withValues(alpha: 0.14)
+                  : Colors.black.withValues(alpha: 0.1),
+        ),
       ),
       child: Text(
         label,
         style: GoogleFonts.manrope(
           fontSize: 13,
           fontWeight: FontWeight.w700,
-          color: const Color(0xFF24552F),
+          color: isDark ? Colors.white : Colors.black,
         ),
       ),
     );
