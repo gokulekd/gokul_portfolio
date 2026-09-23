@@ -32,7 +32,7 @@ class BlogPage extends ConsumerWidget {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  BlogHeroSection(featuredPost: featuredPost),
+                  BlogHeroSection(posts: posts),
                   if (featuredPost != null)
                     BlogFeaturedSection(featuredPost: featuredPost),
                   if (gridPosts.isNotEmpty)
