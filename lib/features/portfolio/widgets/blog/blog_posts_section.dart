@@ -39,9 +39,9 @@ class BlogPostsSection extends StatelessWidget {
         children: [
           BlogSectionHeading(
             eyebrow: eyebrow,
-            title: 'Blogs shown directly underneath the hero.',
+            title: 'Notes from building with Flutter.',
             description:
-                'Browse through the writing archive in a cleaner card layout that is easier to scan on desktop and mobile.',
+                'Practical write-ups on widgets, state and the small details that make apps feel right. Newest first.',
           ),
           const SizedBox(height: 32),
           LayoutBuilder(

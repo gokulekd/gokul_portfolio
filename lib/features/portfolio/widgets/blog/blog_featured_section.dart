@@ -27,9 +27,9 @@ class BlogFeaturedSection extends StatelessWidget {
         children: [
           const BlogSectionHeading(
             eyebrow: '{01} - Featured Story',
-            title: 'A highlighted post right at the top.',
+            title: 'Start with this one.',
             description:
-                'The latest or most important write-up gets a larger spotlight before the full list of posts below.',
+                'A hand-picked post worth reading first, before diving into the rest of the archive.',
           ),
           const SizedBox(height: 24),
           FeaturedPostCard(post: featuredPost),
