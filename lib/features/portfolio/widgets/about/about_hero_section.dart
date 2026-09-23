@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
+import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/utils/responsive_helper.dart';
 import '../shared/custom_widgets.dart';
 
@@ -103,6 +104,7 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
   }
 
   Widget _buildRightColumn(BuildContext context) {
+    final bio = ref.watch(portfolioProvider).personalInfo.bio;
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
 
@@ -164,7 +166,7 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
               (context, child) => Opacity(
                 opacity: _contentOpacity.value,
                 child: Text(
-                  "I'm a dynamic Flutter Developer with 3+ years of hands-on experience building scalable, cross-platform mobile applications. I bring proven expertise in Flutter, Firebase, Bloc, and GetX — with a passion for creating pixel-perfect UIs using Figma. Skilled in API integration, payment systems, and location-based services.",
+                  bio,
                   style: GoogleFonts.manrope(
                     fontSize:
                         isMobile
@@ -176,30 +178,6 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
                     color: Theme.of(context).colorScheme.onSurface,
                     height: 1.5,
                     letterSpacing: -0.4,
-                  ),
-                ),
-              ),
-        ),
-        const SizedBox(height: 28),
-        AnimatedBuilder(
-          animation: _taglineController,
-          builder:
-              (context, child) => Opacity(
-                opacity: _taglineOpacity.value,
-                child: Text(
-                  "Over 3 years I've delivered government apps, social platforms, payment systems, and HRM tools — consistently recognised for clean, maintainable code and on-time delivery across freelance and full-time roles.",
-                  style: GoogleFonts.manrope(
-                    fontSize:
-                        isMobile
-                            ? 16
-                            : isTablet
-                            ? 18
-                            : 20,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.5),
-                    height: 1.6,
                   ),
                 ),
               ),
@@ -337,6 +315,7 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
     double titleFontSize,
     double socialIconScale,
   ) {
+    final bio = ref.watch(portfolioProvider).personalInfo.bio;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -353,7 +332,7 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
               (context, child) => Opacity(
                 opacity: _contentOpacity.value,
                 child: Text(
-                  "I'm a dynamic Flutter Developer with 3+ years of hands-on experience building scalable, cross-platform mobile applications. I bring proven expertise in Flutter, Firebase, Bloc, and GetX — with a passion for creating pixel-perfect UIs using Figma. Skilled in API integration, payment systems, and location-based services.",
+                  bio,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.manrope(
                     fontSize: 18,
@@ -361,26 +340,6 @@ class _AboutHeroSectionState extends ConsumerState<AboutHeroSection>
                     color: Theme.of(context).colorScheme.onSurface,
                     height: 1.5,
                     letterSpacing: -0.3,
-                  ),
-                ),
-              ),
-        ),
-        const SizedBox(height: 24),
-        AnimatedBuilder(
-          animation: _taglineController,
-          builder:
-              (context, child) => Opacity(
-                opacity: _taglineOpacity.value,
-                child: Text(
-                  "Over 3 years I've delivered government apps, social platforms, payment systems, and HRM tools — consistently recognised for clean, maintainable code and on-time delivery across freelance and full-time roles.",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.manrope(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.5),
-                    height: 1.6,
                   ),
                 ),
               ),
