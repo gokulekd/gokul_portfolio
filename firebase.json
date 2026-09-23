@@ -33,6 +33,7 @@
   },
   "hosting": {
     "public": "build/web",
+    "cleanUrls": true,
     "predeploy": [
       "bash ./build.sh"
     ],

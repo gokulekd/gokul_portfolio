@@ -355,9 +355,10 @@ class _ShareButtons extends StatelessWidget {
     // A plain path, not the /#/ app route: link previews (WhatsApp, LinkedIn,
     // X) never see anything after #. /blog/<id> is a static page with this
     // post's preview tags that forwards to the app (built by
-    // scripts/generate_blog_share_pages.py). Built from the post id rather
-    // than the address bar, which is stale when arriving from the blog list.
-    final link = '${Uri.base.origin}/blog/${post.id}';
+    // scripts/generate_blog_share_pages.py). Always the canonical www host,
+    // and built from the post id rather than the address bar, which is
+    // stale when arriving from the blog list.
+    final link = 'https://www.gokulks.in/blog/${post.id}';
     final encodedLink = Uri.encodeComponent(link);
     final encodedTitle = Uri.encodeComponent(post.title);
     final color = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
