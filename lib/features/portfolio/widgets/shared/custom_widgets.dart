@@ -1,6 +1,5 @@
 export 'app_bar.dart';
 export 'available_badge.dart';
-export 'blog_card.dart';
 export 'custom_button.dart';
 export 'drawer.dart';
 export 'experience_card.dart';
