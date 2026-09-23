@@ -352,10 +352,12 @@ class _ShareButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Built from the post id rather than read from the address bar: when the
-    // page is opened from the blog list, it builds before the browser URL
-    // switches from /#/blog to the post, so the address bar is stale here.
-    final link = '${Uri.base.origin}/#${AppRoutes.blogPost(post.id)}';
+    // A plain path, not the /#/ app route: link previews (WhatsApp, LinkedIn,
+    // X) never see anything after #. /blog/<id> is a static page with this
+    // post's preview tags that forwards to the app (built by
+    // scripts/generate_blog_share_pages.py). Built from the post id rather
+    // than the address bar, which is stale when arriving from the blog list.
+    final link = '${Uri.base.origin}/blog/${post.id}';
     final encodedLink = Uri.encodeComponent(link);
     final encodedTitle = Uri.encodeComponent(post.title);
     final color = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);

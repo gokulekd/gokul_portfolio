@@ -15,6 +15,15 @@
     the `--base-href` argument provided to `flutter build`.
   -->
   <base href="$FLUTTER_BASE_HREF">
+  <script>
+    // Blog share links are /blog/<id> (see scripts/generate_blog_share_pages.py).
+    // A post published after the last deploy has no static page yet, so the
+    // link falls through to this file: forward it to the app's route.
+    (function () {
+      var m = location.pathname.match(/^\/blog\/([^\/]+)\/?$/);
+      if (m && !location.hash) location.replace('/#/blog/' + m[1]);
+    })();
+  </script>
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">

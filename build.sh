@@ -59,4 +59,7 @@ flutter build web --release \
   --dart-define=FCM_VAPID_KEY="${FCM_VAPID_KEY}" \
   "$@"
 
+# Per-post pages with Open Graph tags so shared blog links preview properly.
+python3 scripts/generate_blog_share_pages.py
+
 echo "Done. Output in build/web — deploy with: firebase deploy --only hosting"
