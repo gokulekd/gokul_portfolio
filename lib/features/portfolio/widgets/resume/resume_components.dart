@@ -7,79 +7,6 @@ import '../../../../core/config/app_colors.dart';
 import '../../models/portfolio_models.dart';
 import '../../../../core/utils/responsive_helper.dart';
 
-class ResumeIdentityCard extends StatelessWidget {
-  const ResumeIdentityCard({super.key, required this.info});
-
-  final PersonalInfo info;
-
-  @override
-  Widget build(BuildContext context) {
-    final isMobile = ResponsiveHelper.isMobile(context);
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      width: isMobile ? double.infinity : 360,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: colorScheme.onSurface.withValues(alpha: 0.08),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 30,
-            offset: const Offset(0, 18),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 34,
-            backgroundColor: Colors.grey[300],
-            backgroundImage: const AssetImage(
-              'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            info.name,
-            style: GoogleFonts.inter(
-              fontSize: 26,
-              fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            info.title,
-            style: GoogleFonts.manrope(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface.withValues(alpha: 0.65),
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Divider(height: 1),
-          const SizedBox(height: 20),
-          IdentityRow(icon: Icons.email_outlined, label: info.email),
-          const SizedBox(height: 14),
-          IdentityRow(icon: Icons.location_on_outlined, label: info.location),
-          const SizedBox(height: 14),
-          IdentityRow(
-            icon: Icons.verified_outlined,
-            label: 'Open to impactful Flutter work',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class ResumeExperienceCard extends StatelessWidget {
   const ResumeExperienceCard({super.key, required this.experience});
 
@@ -394,43 +321,6 @@ class ResumeActionButton extends StatelessWidget {
           style: buttonStyle,
           child: child,
         );
-  }
-}
-
-class ResumeHeroPill extends StatelessWidget {
-  const ResumeHeroPill({super.key, required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-      decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: colorScheme.onSurface.withValues(alpha: 0.08),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: AppColors.primaryGreen),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: GoogleFonts.manrope(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface.withValues(alpha: 0.72),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

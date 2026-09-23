@@ -5,25 +5,116 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../shared/custom_widgets.dart';
 import 'resume_components.dart';
 
-class ResumeHeroSection extends ConsumerWidget {
+/// Strengths typed out one after another in the hero subtitle.
+const _kStrengths = [
+  'Flutter apps.',
+  'pixel-perfect UI.',
+  'clean architecture.',
+  'cross-platform products.',
+  'things that ship.',
+];
+
+/// Resume page hero, laid out like the About and Blog page heroes: the
+/// profile card on the left, and a "My resume" heading with an animated
+/// subtitle, intro, CV download CTA and stats on the right.
+class ResumeHeroSection extends ConsumerStatefulWidget {
   const ResumeHeroSection({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(portfolioProvider);
-    final info = state.personalInfo;
+  ConsumerState<ResumeHeroSection> createState() => _ResumeHeroSectionState();
+}
+
+class _ResumeHeroSectionState extends ConsumerState<ResumeHeroSection>
+    with TickerProviderStateMixin {
+  late final AnimationController _textController;
+  late final AnimationController _contentController;
+  late final AnimationController _ctaController;
+
+  @override
+  void initState() {
+    super.initState();
+    _textController = _fadeController();
+    _contentController = _fadeController();
+    _ctaController = _fadeController();
+    _startAfter(300, _textController);
+    _startAfter(500, _contentController);
+    _startAfter(700, _ctaController);
+  }
+
+  AnimationController _fadeController() => AnimationController(
+    duration: const Duration(milliseconds: 800),
+    vsync: this,
+  );
+
+  void _startAfter(int ms, AnimationController controller) {
+    Future.delayed(Duration(milliseconds: ms), () {
+      if (mounted) controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    _contentController.dispose();
+    _ctaController.dispose();
+    super.dispose();
+  }
+
+  Widget _fadeIn(AnimationController controller, Widget child) {
+    return FadeTransition(
+      opacity: CurvedAnimation(parent: controller, curve: Curves.easeOut),
+      child: child,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final colorScheme = Theme.of(context).colorScheme;
-    final hPad =
+
+    final horizontalPadding =
         isMobile
-            ? 20.0
+            ? 16.0
+            : isTablet
+            ? 40.0
+            : 80.0;
+    final verticalPadding =
+        isMobile
+            ? 32.0
             : isTablet
             ? 48.0
-            : 88.0;
+            : 64.0;
+
+    final profileCard = ProfileHeroCard(
+      imageRadius:
+          isMobile
+              ? 80.0
+              : isTablet
+              ? 100.0
+              : 120.0,
+      nameFontSize:
+          isMobile
+              ? 28.0
+              : isTablet
+              ? 36.0
+              : 42.0,
+      titleFontSize:
+          isMobile
+              ? 16.0
+              : isTablet
+              ? 18.0
+              : 20.0,
+      socialIconScale:
+          isMobile
+              ? 1.2
+              : isTablet
+              ? 1.35
+              : 1.5,
+    );
 
     return Container(
       width: double.infinity,
@@ -34,132 +125,197 @@ class ResumeHeroSection extends ConsumerWidget {
           colors:
               isDark
                   ? const [
-                    Color(0xFF080808),
-                    Color(0xFF101813),
+                    Color(0xFF0A0A0A),
+                    Color(0xFF111111),
                     Color(0xFF0A0A0A),
                   ]
-                  : const [
-                    Color(0xFFF8FBF7),
-                    Color(0xFFEFF6EC),
-                    Color(0xFFF9FAF8),
-                  ],
+                  : [Colors.grey[50]!, Colors.grey[100]!, Colors.grey[50]!],
         ),
       ),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          hPad,
-          isMobile ? 40 : 64,
-          hPad,
-          isMobile ? 40 : 64,
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: verticalPadding,
         ),
-        child: Wrap(
-          spacing: 36,
-          runSpacing: 36,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: isMobile ? double.infinity : 640,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        child:
+            isMobile
+                ? Column(
+                  children: [
+                    profileCard,
+                    const SizedBox(height: 40),
+                    _buildContent(context, centered: true),
+                  ],
+                )
+                : Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(flex: 2, child: profileCard),
+                    SizedBox(width: isTablet ? 40 : 80),
+                    Expanded(flex: 3, child: _buildContent(context)),
+                  ],
+                ),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, {bool centered = false}) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+    final isTablet = ResponsiveHelper.isTablet(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    final state = ref.watch(portfolioProvider);
+    final crossAlign =
+        centered ? CrossAxisAlignment.center : CrossAxisAlignment.start;
+    final textAlign = centered ? TextAlign.center : TextAlign.start;
+    final wrapAlign = centered ? WrapAlignment.center : WrapAlignment.start;
+
+    final roles = state.visibleExperiences.length;
+    final skills = state.visibleSkills.length;
+    final apps = state.appProjects.length;
+
+    return Column(
+      crossAxisAlignment: crossAlign,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _fadeIn(
+          _textController,
+          Column(
+            crossAxisAlignment: crossAlign,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryGreen,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Portfolio / Resume',
-                        style: GoogleFonts.manrope(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: colorScheme.onSurface.withValues(alpha: 0.5),
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                    ],
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryGreen,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                  SizedBox(height: isMobile ? 16 : 24),
+                  const SizedBox(width: 8),
                   Text(
-                    'Resume',
-                    style: GoogleFonts.inter(
-                      fontSize:
-                          isMobile
-                              ? 60
-                              : isTablet
-                              ? 88
-                              : 108,
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.onSurface,
-                      height: 0.92,
-                      letterSpacing: isMobile ? -2.5 : -4.5,
+                    'Portfolio / Resume',
+                    style: GoogleFonts.manrope(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      letterSpacing: 0.4,
                     ),
-                  ),
-                  SizedBox(height: isMobile ? 18 : 28),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 560),
-                    child: Text(
-                      'A clean snapshot of my work, experience, strengths, and the product thinking I bring into every Flutter build.',
-                      style: GoogleFonts.manrope(
-                        fontSize: isMobile ? 16 : 19,
-                        fontWeight: FontWeight.w400,
-                        color: colorScheme.onSurface.withValues(alpha: 0.58),
-                        height: 1.6,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: isMobile ? 28 : 36),
-                  Wrap(
-                    spacing: 14,
-                    runSpacing: 14,
-                    children: [
-                      ResumeActionButton(
-                        label: 'Download CV',
-                        icon: Icons.download_rounded,
-                        isPrimary: true,
-                        onPressed: () => ref.read(portfolioProvider.notifier).launchResume(),
-                      ),
-                      ResumeActionButton(
-                        label: 'Email Me',
-                        icon: Icons.north_east_rounded,
-                        onPressed: () => ref.read(portfolioProvider.notifier).launchEmail(),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: isMobile ? 28 : 40),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      ResumeHeroPill(
-                        icon: Icons.phone_android_rounded,
-                        label: 'Flutter Specialist',
-                      ),
-                      ResumeHeroPill(
-                        icon: Icons.design_services_outlined,
-                        label: 'UI-minded Builder',
-                      ),
-                      ResumeHeroPill(
-                        icon: Icons.location_on_outlined,
-                        label: info.location,
-                      ),
-                    ],
                   ),
                 ],
               ),
-            ),
-            ResumeIdentityCard(info: info),
-          ],
+              SizedBox(height: isMobile ? 12 : 16),
+              Text(
+                'My resume',
+                textAlign: textAlign,
+                style: GoogleFonts.inter(
+                  fontSize:
+                      isMobile
+                          ? 52
+                          : isTablet
+                          ? 72
+                          : 88,
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                  height: 0.95,
+                  letterSpacing: isMobile ? -2.0 : -3.5,
+                ),
+              ),
+              SizedBox(height: isMobile ? 20 : 28),
+              TypewriterSubtitle(
+                prefix: 'I build ',
+                words: _kStrengths,
+                textAlign: textAlign,
+                fontSize:
+                    isMobile
+                        ? 22
+                        : isTablet
+                        ? 28
+                        : 34,
+              ),
+              SizedBox(height: isMobile ? 20 : 28),
+            ],
+          ),
         ),
-      ),
+        _fadeIn(
+          _contentController,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 620),
+            child: Text(
+              'A clean snapshot of my work, experience, strengths, and the '
+              'product thinking I bring into every Flutter build.',
+              textAlign: textAlign,
+              style: GoogleFonts.manrope(
+                fontSize:
+                    isMobile
+                        ? 16
+                        : isTablet
+                        ? 18
+                        : 19,
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface.withValues(alpha: 0.65),
+                height: 1.6,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: isMobile ? 28 : 36),
+        _fadeIn(
+          _ctaController,
+          Column(
+            crossAxisAlignment: crossAlign,
+            children: [
+              Wrap(
+                spacing: 14,
+                runSpacing: 14,
+                alignment: wrapAlign,
+                children: [
+                  ResumeActionButton(
+                    label: 'Download CV',
+                    icon: Icons.download_rounded,
+                    isPrimary: true,
+                    onPressed:
+                        () =>
+                            ref.read(portfolioProvider.notifier).launchResume(),
+                  ),
+                  ResumeActionButton(
+                    label: 'Email me',
+                    icon: Icons.north_east_rounded,
+                    onPressed:
+                        () =>
+                            ref.read(portfolioProvider.notifier).launchEmail(),
+                  ),
+                ],
+              ),
+              if (roles > 0 || skills > 0 || apps > 0) ...[
+                SizedBox(height: isMobile ? 28 : 36),
+                Wrap(
+                  spacing: isMobile ? 24 : 36,
+                  runSpacing: 16,
+                  alignment: wrapAlign,
+                  children: [
+                    if (roles > 0)
+                      HeroStat(
+                        value: '$roles',
+                        label: roles == 1 ? 'Role' : 'Roles',
+                      ),
+                    if (apps > 0)
+                      HeroStat(
+                        value: '$apps',
+                        label: apps == 1 ? 'App shipped' : 'Apps shipped',
+                      ),
+                    if (skills > 0)
+                      HeroStat(
+                        value: '$skills',
+                        label: skills == 1 ? 'Skill' : 'Skills',
+                      ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

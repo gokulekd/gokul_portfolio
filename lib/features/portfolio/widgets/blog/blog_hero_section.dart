@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -231,8 +229,9 @@ class _BlogHeroSectionState extends ConsumerState<BlogHeroSection>
                 ),
               ),
               SizedBox(height: isMobile ? 20 : 28),
-              _TypewriterSubtitle(
-                topics: _kTopics,
+              TypewriterSubtitle(
+                prefix: 'I write about ',
+                words: _kTopics,
                 textAlign: textAlign,
                 fontSize:
                     isMobile
@@ -303,13 +302,13 @@ class _BlogHeroSectionState extends ConsumerState<BlogHeroSection>
                   runSpacing: 16,
                   alignment: wrapAlign,
                   children: [
-                    _HeroStat(
+                    HeroStat(
                       value: '${posts.length}',
                       label: posts.length == 1 ? 'Post' : 'Posts',
                     ),
-                    _HeroStat(value: '$totalMinutes min', label: 'Of reading'),
+                    HeroStat(value: '$totalMinutes min', label: 'Of reading'),
                     if (topicCount > 0)
-                      _HeroStat(
+                      HeroStat(
                         value: '$topicCount',
                         label: topicCount == 1 ? 'Topic' : 'Topics',
                       ),
@@ -320,188 +319,6 @@ class _BlogHeroSectionState extends ConsumerState<BlogHeroSection>
           ),
         ),
       ],
-    );
-  }
-}
-
-/// "I write about [topic]" where the topic is typed out, held, deleted and
-/// replaced by the next one, with a blinking cursor.
-class _TypewriterSubtitle extends StatefulWidget {
-  const _TypewriterSubtitle({
-    required this.topics,
-    required this.fontSize,
-    required this.textAlign,
-  });
-
-  final List<String> topics;
-  final double fontSize;
-  final TextAlign textAlign;
-
-  @override
-  State<_TypewriterSubtitle> createState() => _TypewriterSubtitleState();
-}
-
-class _TypewriterSubtitleState extends State<_TypewriterSubtitle>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _cursor = AnimationController(
-    duration: const Duration(milliseconds: 530),
-    vsync: this,
-  )..repeat(reverse: true);
-
-  Timer? _timer;
-  int _topic = 0;
-  int _chars = 0;
-  bool _deleting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _schedule(const Duration(milliseconds: 900));
-  }
-
-  void _schedule(Duration delay) {
-    _timer = Timer(delay, _tick);
-  }
-
-  void _tick() {
-    if (!mounted) return;
-    final word = widget.topics[_topic];
-    setState(() {
-      if (!_deleting) {
-        _chars++;
-      } else {
-        _chars--;
-      }
-    });
-
-    if (!_deleting && _chars == word.length) {
-      _deleting = true;
-      _schedule(const Duration(milliseconds: 1800)); // hold the full topic
-    } else if (_deleting && _chars == 0) {
-      _deleting = false;
-      _topic = (_topic + 1) % widget.topics.length;
-      _schedule(const Duration(milliseconds: 350));
-    } else {
-      _schedule(Duration(milliseconds: _deleting ? 35 : 75));
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _cursor.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final accent = blogAccent(context);
-    final base = GoogleFonts.inter(
-      fontSize: widget.fontSize,
-      fontWeight: FontWeight.w600,
-      height: 1.3,
-      letterSpacing: -0.6,
-      color: colorScheme.onSurface.withValues(alpha: 0.85),
-    );
-    final typed = widget.topics[_topic].substring(0, _chars);
-    final longest = widget.topics.reduce(
-      (a, b) => a.length >= b.length ? a : b,
-    );
-
-    Widget line(String topic, {bool cursor = true}) {
-      return Text.rich(
-        TextSpan(
-          children: [
-            const TextSpan(text: 'I write about '),
-            TextSpan(
-              text: topic,
-              style: TextStyle(color: accent, fontWeight: FontWeight.w700),
-            ),
-            WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: FadeTransition(
-                opacity: cursor ? _cursor : const AlwaysStoppedAnimation(0),
-                child: Container(
-                  width: 3,
-                  height: widget.fontSize * 0.95,
-                  margin: const EdgeInsets.only(left: 3),
-                  decoration: BoxDecoration(
-                    color: accent,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        textAlign: widget.textAlign,
-        style: base,
-      );
-    }
-
-    // An invisible copy of the longest topic reserves its size (one line on
-    // desktop, maybe two on phones), so the layout below never jumps while
-    // text is typed and deleted.
-    return Stack(
-      alignment:
-          widget.textAlign == TextAlign.center
-              ? Alignment.topCenter
-              : Alignment.topLeft,
-      children: [
-        Visibility(
-          visible: false,
-          maintainSize: true,
-          maintainAnimation: true,
-          maintainState: true,
-          child: line(longest, cursor: false),
-        ),
-        line(typed),
-      ],
-    );
-  }
-}
-
-class _HeroStat extends StatelessWidget {
-  const _HeroStat({required this.value, required this.label});
-
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.only(left: 14),
-      decoration: const BoxDecoration(
-        border: Border(
-          left: BorderSide(color: AppColors.primaryGreen, width: 2),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 26,
-              fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: GoogleFonts.manrope(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface.withValues(alpha: 0.55),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
