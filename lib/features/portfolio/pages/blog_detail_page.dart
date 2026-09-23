@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -360,7 +361,7 @@ class _ShareButtons extends StatelessWidget {
       return IconButton(
         tooltip: tooltip,
         onPressed: onPressed,
-        icon: Icon(icon, size: 20, color: color),
+        icon: FaIcon(icon, size: 17, color: color),
         visualDensity: VisualDensity.compact,
       );
     }
@@ -368,7 +369,7 @@ class _ShareButtons extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        button(Icons.link_rounded, 'Copy link', () async {
+        button(FontAwesomeIcons.link, 'Copy link', () async {
           await Clipboard.setData(ClipboardData(text: link));
           if (!context.mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -381,14 +382,14 @@ class _ShareButtons extends StatelessWidget {
           );
         }),
         button(
-          Icons.work_outline_rounded,
+          FontAwesomeIcons.linkedinIn,
           'Share on LinkedIn',
           () => _open(
             'https://www.linkedin.com/sharing/share-offsite/?url=$encodedLink',
           ),
         ),
         button(
-          Icons.alternate_email_rounded,
+          FontAwesomeIcons.xTwitter,
           'Share on X',
           () => _open(
             'https://twitter.com/intent/tweet?url=$encodedLink&text=$encodedTitle',
