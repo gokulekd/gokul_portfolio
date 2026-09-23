@@ -51,8 +51,9 @@ class BlogPostsSection extends StatelessWidget {
   }
 }
 
-/// Responsive grid of [BlogPostTile]s (3/2/1 columns by width) laid out in
-/// equal-height rows.
+/// Responsive grid of [BlogPostTile]s (3 or 2 columns by width) laid out in
+/// equal-height rows. On narrow screens it becomes a compact list of
+/// [BlogPostListItem]s so more posts fit on a phone screen.
 class BlogPostGrid extends StatelessWidget {
   const BlogPostGrid({super.key, required this.posts});
 
@@ -63,12 +64,18 @@ class BlogPostGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         const gap = 24.0;
-        final columns =
-            constraints.maxWidth >= 1100
-                ? 3
-                : constraints.maxWidth >= 640
-                ? 2
-                : 1;
+        if (constraints.maxWidth < 640) {
+          return Column(
+            children: [
+              for (int i = 0; i < posts.length; i++)
+                BlogPostListItem(
+                  post: posts[i],
+                  showDivider: i != posts.length - 1,
+                ),
+            ],
+          );
+        }
+        final columns = constraints.maxWidth >= 1100 ? 3 : 2;
 
         // Rows of equal-height tiles so cards line up side by side.
         return Column(
@@ -192,10 +199,7 @@ class _BlogPostTileState extends State<BlogPostTile> {
                               fontWeight: FontWeight.w700,
                               height: 1.3,
                               letterSpacing: -0.3,
-                              color:
-                                  _hovered
-                                      ? accent
-                                      : colorScheme.onSurface,
+                              color: _hovered ? accent : colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -268,6 +272,122 @@ class _BlogPostTileState extends State<BlogPostTile> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact, Medium-style list row for phones: text on the left, a square
+/// thumbnail on the right.
+class BlogPostListItem extends StatelessWidget {
+  const BlogPostListItem({
+    super.key,
+    required this.post,
+    this.showDivider = true,
+  });
+
+  final BlogPost post;
+  final bool showDivider;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final muted = colorScheme.onSurface.withValues(alpha: 0.55);
+    final accent = blogAccent(context);
+
+    return InkWell(
+      onTap: () => openBlogPost(context, post),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          border:
+              showDivider
+                  ? Border(
+                    bottom: BorderSide(
+                      color: colorScheme.onSurface.withValues(alpha: 0.08),
+                    ),
+                  )
+                  : null,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (post.tags.isNotEmpty) ...[
+                    Text(
+                      post.tags.first.toUpperCase(),
+                      style: GoogleFonts.manrope(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                        color: accent,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                  ],
+                  Text(
+                    post.title,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
+                      letterSpacing: -0.2,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    post.excerpt,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.manrope(
+                      fontSize: 13,
+                      height: 1.5,
+                      color: colorScheme.onSurface.withValues(alpha: 0.65),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '${formatDate(post.publishDate)}  ·  ${post.readingTimeMinutes} min read',
+                    style: GoogleFonts.manrope(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: muted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            // 16:9 like the covers, so their title text isn't cropped.
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 112,
+                  height: 63,
+                  child:
+                      post.imageUrl.isEmpty
+                          ? _ImagePlaceholder(color: colorScheme.onSurface)
+                          : Image.network(
+                            post.imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder:
+                                (_, __, ___) => _ImagePlaceholder(
+                                  color: colorScheme.onSurface,
+                                ),
+                          ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

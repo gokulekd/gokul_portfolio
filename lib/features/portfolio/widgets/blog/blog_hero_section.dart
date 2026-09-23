@@ -73,7 +73,12 @@ class BlogHeroSection extends ConsumerWidget {
           child:
               latest == null
                   ? intro
-                  : isMobile || isTablet
+                  // On phones the Start reading button covers the latest
+                  // post, and the list right below repeats it, so skip the
+                  // big card to keep the page short.
+                  : isMobile
+                  ? intro
+                  : isTablet
                   ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

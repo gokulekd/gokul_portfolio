@@ -401,8 +401,8 @@ class _ShareButtons extends StatelessWidget {
 }
 
 /// Renders plain-text content as paragraphs split on blank lines, with light
-/// support for headings (`#`/`##` or a short ALL-CAPS line), `>` quotes and
-/// `-`/`*` bullet lists.
+/// support for headings (`#`/`##` or a short ALL-CAPS line), subheadings (a
+/// short first line leading a paragraph), `>` quotes and `-`/`*` bullets.
 class _ArticleContent extends StatelessWidget {
   const _ArticleContent({required this.content});
 
@@ -423,6 +423,8 @@ class _ArticleContent extends StatelessWidget {
         .map((b) => b.trim())
         .where((b) => b.isNotEmpty);
 
+    final casing = _wordCasing(content);
+
     final widgets = <Widget>[];
     for (final block in blocks) {
       final isCapsHeading = !block.contains('\n') &&
@@ -435,7 +437,10 @@ class _ArticleContent extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: isMobile ? 16 : 24, bottom: 16),
             child: Text(
-              _sentenceCase(block.replaceFirst(RegExp(r'^#+\s*'), '')),
+              _sentenceCase(
+                block.replaceFirst(RegExp(r'^#+\s*'), ''),
+                casing,
+              ),
               style: GoogleFonts.inter(
                 fontSize: isMobile ? 24 : 28,
                 fontWeight: FontWeight.w700,
@@ -449,8 +454,33 @@ class _ArticleContent extends StatelessWidget {
         continue;
       }
 
+      // A short first line without end punctuation followed by more text is
+      // a subheading, e.g. "Riverpod\nMade by the author of Provider...".
+      final lines = block.split('\n');
+      final isSubheading = lines.length > 1 &&
+          lines.first.length <= 60 &&
+          !RegExp(r'[.,:;!?]$').hasMatch(lines.first.trim()) &&
+          !RegExp(r'^([-*>]|#)').hasMatch(lines.first);
+
       Widget child;
-      if (block.startsWith('>')) {
+      if (isSubheading) {
+        child = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              lines.first.trim(),
+              style: GoogleFonts.inter(
+                fontSize: isMobile ? 19 : 21,
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(lines.skip(1).join('\n'), style: bodyStyle),
+          ],
+        );
+      } else if (block.startsWith('>')) {
         child = Container(
           padding: const EdgeInsets.fromLTRB(22, 4, 0, 4),
           decoration: const BoxDecoration(
@@ -522,11 +552,38 @@ class _ArticleContent extends StatelessWidget {
     );
   }
 
-  /// `WHAT "STATE" ACTUALLY MEANS` -> `What "state" actually means`.
-  static String _sentenceCase(String text) {
+  /// Maps lowercase words to how the article body writes them, for words
+  /// that must keep their casing: camelCase identifiers (setState) and names
+  /// that never appear lowercase (Flutter, Riverpod).
+  static Map<String, String> _wordCasing(String content) {
+    final mixed = <String, String>{};
+    final lowerSeen = <String>{};
+    for (final m in RegExp(r'[A-Za-z][A-Za-z0-9]*').allMatches(content)) {
+      final word = m[0]!;
+      if (word == word.toUpperCase()) continue; // headings, acronyms
+      if (word == word.toLowerCase()) {
+        lowerSeen.add(word);
+      } else {
+        mixed.putIfAbsent(word.toLowerCase(), () => word);
+      }
+    }
+    return {
+      for (final e in mixed.entries)
+        if (e.value.substring(1) != e.value.substring(1).toLowerCase() ||
+            !lowerSeen.contains(e.key))
+          e.key: e.value,
+    };
+  }
+
+  /// `START SIMPLE: SETSTATE` -> `Start simple: setState`, using [casing] to
+  /// restore words the article writes in a specific case.
+  static String _sentenceCase(String text, Map<String, String> casing) {
     if (text != text.toUpperCase()) return text;
-    final lower = text.toLowerCase();
-    final first = lower.indexOf(RegExp('[a-z]'));
+    final lower = text.toLowerCase().replaceAllMapped(
+      RegExp(r'[a-z][a-z0-9]*'),
+      (m) => casing[m[0]!] ?? m[0]!,
+    );
+    final first = lower.indexOf(RegExp('[A-Za-z]'));
     if (first < 0) return text;
     return lower.substring(0, first) +
         lower[first].toUpperCase() +
