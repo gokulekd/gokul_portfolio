@@ -1,35 +1,126 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/config/app_colors.dart';
-import '../../models/portfolio_models.dart';
 import '../../../../core/providers/portfolio_provider.dart';
 import '../../../../core/utils/responsive_helper.dart';
+import '../../models/portfolio_models.dart';
+import '../shared/custom_widgets.dart';
 import 'blog_components.dart';
 
-/// Blog page hero: intro copy, reading stats and a spotlight on the newest
-/// post so readers can jump straight into something.
-class BlogHeroSection extends ConsumerWidget {
+/// Topics typed out one after another in the hero subtitle.
+const _kTopics = [
+  'Flutter internals.',
+  'state management.',
+  'pixel-perfect UI.',
+  'shipping real apps.',
+  'clean architecture.',
+];
+
+/// Blog page hero, laid out like the About page hero: the profile card on
+/// the left, and a "My blog" heading with an animated subtitle, intro,
+/// reading CTA and stats on the right.
+class BlogHeroSection extends ConsumerStatefulWidget {
   const BlogHeroSection({super.key, this.posts = const []});
 
   /// Public posts, newest first.
   final List<BlogPost> posts;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BlogHeroSection> createState() => _BlogHeroSectionState();
+}
+
+class _BlogHeroSectionState extends ConsumerState<BlogHeroSection>
+    with TickerProviderStateMixin {
+  late final AnimationController _textController;
+  late final AnimationController _contentController;
+  late final AnimationController _ctaController;
+
+  @override
+  void initState() {
+    super.initState();
+    _textController = _fadeController();
+    _contentController = _fadeController();
+    _ctaController = _fadeController();
+    _startAfter(300, _textController);
+    _startAfter(500, _contentController);
+    _startAfter(700, _ctaController);
+  }
+
+  AnimationController _fadeController() => AnimationController(
+    duration: const Duration(milliseconds: 800),
+    vsync: this,
+  );
+
+  void _startAfter(int ms, AnimationController controller) {
+    Future.delayed(Duration(milliseconds: ms), () {
+      if (mounted) controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    _contentController.dispose();
+    _ctaController.dispose();
+    super.dispose();
+  }
+
+  Widget _fadeIn(AnimationController controller, Widget child) {
+    return FadeTransition(
+      opacity: CurvedAnimation(parent: controller, curve: Curves.easeOut),
+      child: child,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final hPad =
+
+    final horizontalPadding =
         isMobile
-            ? 20.0
+            ? 16.0
+            : isTablet
+            ? 40.0
+            : 80.0;
+    final verticalPadding =
+        isMobile
+            ? 32.0
             : isTablet
             ? 48.0
-            : 88.0;
-    final latest = posts.isEmpty ? null : posts.first;
+            : 64.0;
 
-    final intro = _HeroIntro(posts: posts, latest: latest);
+    final profileCard = ProfileHeroCard(
+      imageRadius:
+          isMobile
+              ? 80.0
+              : isTablet
+              ? 100.0
+              : 120.0,
+      nameFontSize:
+          isMobile
+              ? 28.0
+              : isTablet
+              ? 36.0
+              : 42.0,
+      titleFontSize:
+          isMobile
+              ? 16.0
+              : isTablet
+              ? 18.0
+              : 20.0,
+      socialIconScale:
+          isMobile
+              ? 1.2
+              : isTablet
+              ? 1.35
+              : 1.5,
+    );
 
     return Container(
       width: double.infinity,
@@ -40,80 +131,49 @@ class BlogHeroSection extends ConsumerWidget {
           colors:
               isDark
                   ? const [
-                    Color(0xFF080808),
-                    Color(0xFF11151C),
+                    Color(0xFF0A0A0A),
+                    Color(0xFF111111),
                     Color(0xFF0A0A0A),
                   ]
-                  : const [
-                    Color(0xFFF8FBF7),
-                    Color(0xFFEEF4FB),
-                    Color(0xFFF9FAF8),
-                  ],
+                  : [Colors.grey[50]!, Colors.grey[100]!, Colors.grey[50]!],
         ),
       ),
-      // Soft green glow behind the latest-post card.
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: const Alignment(0.55, -0.1),
-            radius: 1.1,
-            colors: [
-              AppColors.primaryGreen.withValues(alpha: isDark ? 0.10 : 0.07),
-              AppColors.primaryGreen.withValues(alpha: 0),
-            ],
-          ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: verticalPadding,
         ),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            hPad,
-            isMobile ? 40 : 72,
-            hPad,
-            isMobile ? 48 : 80,
-          ),
-          child:
-              latest == null
-                  ? intro
-                  // On phones the Start reading button covers the latest
-                  // post, and the list right below repeats it, so skip the
-                  // big card to keep the page short.
-                  : isMobile
-                  ? intro
-                  : isTablet
-                  ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      intro,
-                      const SizedBox(height: 40),
-                      _LatestPostCard(post: latest, horizontal: true),
-                    ],
-                  )
-                  : Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(flex: 6, child: intro),
-                      const SizedBox(width: 64),
-                      Expanded(flex: 5, child: _LatestPostCard(post: latest)),
-                    ],
-                  ),
-        ),
+        child:
+            isMobile
+                ? Column(
+                  children: [
+                    profileCard,
+                    const SizedBox(height: 40),
+                    _buildContent(context, centered: true),
+                  ],
+                )
+                : Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(flex: 2, child: profileCard),
+                    SizedBox(width: isTablet ? 40 : 80),
+                    Expanded(flex: 3, child: _buildContent(context)),
+                  ],
+                ),
       ),
     );
   }
-}
 
-class _HeroIntro extends ConsumerWidget {
-  const _HeroIntro({required this.posts, required this.latest});
-
-  final List<BlogPost> posts;
-  final BlogPost? latest;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final info = ref.watch(portfolioProvider).personalInfo;
+  Widget _buildContent(BuildContext context, {bool centered = false}) {
     final isMobile = ResponsiveHelper.isMobile(context);
     final isTablet = ResponsiveHelper.isTablet(context);
     final colorScheme = Theme.of(context).colorScheme;
-    final muted = colorScheme.onSurface.withValues(alpha: 0.58);
+    final posts = widget.posts;
+    final latest = posts.isEmpty ? null : posts.first;
+    final crossAlign =
+        centered ? CrossAxisAlignment.center : CrossAxisAlignment.start;
+    final textAlign = centered ? TextAlign.center : TextAlign.start;
+    final wrapAlign = centered ? WrapAlignment.center : WrapAlignment.start;
 
     final totalMinutes = posts.fold<int>(
       0,
@@ -122,137 +182,281 @@ class _HeroIntro extends ConsumerWidget {
     final topicCount = posts.expand((p) => p.tags).toSet().length;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: crossAlign,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryGreen,
-                shape: BoxShape.circle,
+        _fadeIn(
+          _textController,
+          Column(
+            crossAxisAlignment: crossAlign,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryGreen,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Portfolio / Blog',
+                    style: GoogleFonts.manrope(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Portfolio / Blog',
+              SizedBox(height: isMobile ? 12 : 16),
+              Text(
+                'My blog',
+                textAlign: textAlign,
+                style: GoogleFonts.inter(
+                  fontSize:
+                      isMobile
+                          ? 52
+                          : isTablet
+                          ? 72
+                          : 88,
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                  height: 0.95,
+                  letterSpacing: isMobile ? -2.0 : -3.5,
+                ),
+              ),
+              SizedBox(height: isMobile ? 20 : 28),
+              _TypewriterSubtitle(
+                topics: _kTopics,
+                textAlign: textAlign,
+                fontSize:
+                    isMobile
+                        ? 22
+                        : isTablet
+                        ? 28
+                        : 34,
+              ),
+              SizedBox(height: isMobile ? 20 : 28),
+            ],
+          ),
+        ),
+        _fadeIn(
+          _contentController,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 620),
+            child: Text(
+              'Thoughts, notes and practical write-ups from building '
+              'Flutter apps: what worked, what broke, and the small '
+              'details that make an interface feel right.',
+              textAlign: textAlign,
               style: GoogleFonts.manrope(
-                fontSize: 13,
+                fontSize:
+                    isMobile
+                        ? 16
+                        : isTablet
+                        ? 18
+                        : 19,
                 fontWeight: FontWeight.w500,
-                color: colorScheme.onSurface.withValues(alpha: 0.5),
-                letterSpacing: 0.4,
+                color: colorScheme.onSurface.withValues(alpha: 0.65),
+                height: 1.6,
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: isMobile ? 16 : 24),
-        Text(
-          'Blog',
-          style: GoogleFonts.inter(
-            fontSize:
-                isMobile
-                    ? 60
-                    : isTablet
-                    ? 88
-                    : 108,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-            height: 0.92,
-            letterSpacing: isMobile ? -2.5 : -4.5,
-          ),
-        ),
-        SizedBox(height: isMobile ? 18 : 28),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
-          child: Text(
-            'Thoughts, notes, and practical writing on Flutter development, interface craft, and building products with clarity.',
-            style: GoogleFonts.manrope(
-              fontSize: isMobile ? 16 : 19,
-              color: muted,
-              height: 1.6,
             ),
           ),
         ),
-        SizedBox(height: isMobile ? 24 : 32),
-        Row(
-          children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.grey[300],
-              backgroundImage: const AssetImage(
-                'assets/images/WhatsApp Image 2025-02-21 at 11.02.33.jpeg',
+        SizedBox(height: isMobile ? 28 : 36),
+        _fadeIn(
+          _ctaController,
+          Column(
+            crossAxisAlignment: crossAlign,
+            children: [
+              Wrap(
+                spacing: 14,
+                runSpacing: 14,
+                alignment: wrapAlign,
+                children: [
+                  if (latest != null)
+                    BlogHeroActionButton(
+                      label: 'Start reading',
+                      icon: Icons.auto_stories_outlined,
+                      isPrimary: true,
+                      onPressed: () => openBlogPost(context, latest),
+                    ),
+                  BlogHeroActionButton(
+                    label: 'Email me',
+                    icon: Icons.north_east_rounded,
+                    isPrimary: latest == null,
+                    onPressed:
+                        () =>
+                            ref.read(portfolioProvider.notifier).launchEmail(),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: 12),
-            Flexible(
-              child: Text.rich(
-                TextSpan(
+              if (posts.isNotEmpty) ...[
+                SizedBox(height: isMobile ? 28 : 36),
+                Wrap(
+                  spacing: isMobile ? 24 : 36,
+                  runSpacing: 16,
+                  alignment: wrapAlign,
                   children: [
-                    TextSpan(
-                      text: 'Written by ',
-                      style: TextStyle(color: muted),
+                    _HeroStat(
+                      value: '${posts.length}',
+                      label: posts.length == 1 ? 'Post' : 'Posts',
                     ),
-                    TextSpan(
-                      text: info.name,
-                      style: TextStyle(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (info.title.isNotEmpty)
-                      TextSpan(
-                        text: '  ·  ${info.title}',
-                        style: TextStyle(color: muted),
+                    _HeroStat(value: '$totalMinutes min', label: 'Of reading'),
+                    if (topicCount > 0)
+                      _HeroStat(
+                        value: '$topicCount',
+                        label: topicCount == 1 ? 'Topic' : 'Topics',
                       ),
                   ],
                 ),
-                style: GoogleFonts.manrope(fontSize: 14),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: isMobile ? 28 : 36),
-        Wrap(
-          spacing: 14,
-          runSpacing: 14,
-          children: [
-            if (latest != null)
-              BlogHeroActionButton(
-                label: 'Start reading',
-                icon: Icons.auto_stories_outlined,
-                isPrimary: true,
-                onPressed: () => openBlogPost(context, latest!),
-              ),
-            BlogHeroActionButton(
-              label: 'Email me',
-              icon: Icons.north_east_rounded,
-              isPrimary: latest == null,
-              onPressed:
-                  () => ref.read(portfolioProvider.notifier).launchEmail(),
-            ),
-          ],
-        ),
-        if (posts.isNotEmpty) ...[
-          SizedBox(height: isMobile ? 32 : 44),
-          Wrap(
-            spacing: isMobile ? 24 : 36,
-            runSpacing: 16,
-            children: [
-              _HeroStat(
-                value: '${posts.length}',
-                label: posts.length == 1 ? 'Post' : 'Posts',
-              ),
-              _HeroStat(value: '$totalMinutes min', label: 'Of reading'),
-              if (topicCount > 0)
-                _HeroStat(
-                  value: '$topicCount',
-                  label: topicCount == 1 ? 'Topic' : 'Topics',
-                ),
+              ],
             ],
           ),
-        ],
+        ),
+      ],
+    );
+  }
+}
+
+/// "I write about [topic]" where the topic is typed out, held, deleted and
+/// replaced by the next one, with a blinking cursor.
+class _TypewriterSubtitle extends StatefulWidget {
+  const _TypewriterSubtitle({
+    required this.topics,
+    required this.fontSize,
+    required this.textAlign,
+  });
+
+  final List<String> topics;
+  final double fontSize;
+  final TextAlign textAlign;
+
+  @override
+  State<_TypewriterSubtitle> createState() => _TypewriterSubtitleState();
+}
+
+class _TypewriterSubtitleState extends State<_TypewriterSubtitle>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _cursor = AnimationController(
+    duration: const Duration(milliseconds: 530),
+    vsync: this,
+  )..repeat(reverse: true);
+
+  Timer? _timer;
+  int _topic = 0;
+  int _chars = 0;
+  bool _deleting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _schedule(const Duration(milliseconds: 900));
+  }
+
+  void _schedule(Duration delay) {
+    _timer = Timer(delay, _tick);
+  }
+
+  void _tick() {
+    if (!mounted) return;
+    final word = widget.topics[_topic];
+    setState(() {
+      if (!_deleting) {
+        _chars++;
+      } else {
+        _chars--;
+      }
+    });
+
+    if (!_deleting && _chars == word.length) {
+      _deleting = true;
+      _schedule(const Duration(milliseconds: 1800)); // hold the full topic
+    } else if (_deleting && _chars == 0) {
+      _deleting = false;
+      _topic = (_topic + 1) % widget.topics.length;
+      _schedule(const Duration(milliseconds: 350));
+    } else {
+      _schedule(Duration(milliseconds: _deleting ? 35 : 75));
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _cursor.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final accent = blogAccent(context);
+    final base = GoogleFonts.inter(
+      fontSize: widget.fontSize,
+      fontWeight: FontWeight.w600,
+      height: 1.3,
+      letterSpacing: -0.6,
+      color: colorScheme.onSurface.withValues(alpha: 0.85),
+    );
+    final typed = widget.topics[_topic].substring(0, _chars);
+    final longest = widget.topics.reduce(
+      (a, b) => a.length >= b.length ? a : b,
+    );
+
+    Widget line(String topic, {bool cursor = true}) {
+      return Text.rich(
+        TextSpan(
+          children: [
+            const TextSpan(text: 'I write about '),
+            TextSpan(
+              text: topic,
+              style: TextStyle(color: accent, fontWeight: FontWeight.w700),
+            ),
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: FadeTransition(
+                opacity: cursor ? _cursor : const AlwaysStoppedAnimation(0),
+                child: Container(
+                  width: 3,
+                  height: widget.fontSize * 0.95,
+                  margin: const EdgeInsets.only(left: 3),
+                  decoration: BoxDecoration(
+                    color: accent,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        textAlign: widget.textAlign,
+        style: base,
+      );
+    }
+
+    // An invisible copy of the longest topic reserves its size (one line on
+    // desktop, maybe two on phones), so the layout below never jumps while
+    // text is typed and deleted.
+    return Stack(
+      alignment:
+          widget.textAlign == TextAlign.center
+              ? Alignment.topCenter
+              : Alignment.topLeft,
+      children: [
+        Visibility(
+          visible: false,
+          maintainSize: true,
+          maintainAnimation: true,
+          maintainState: true,
+          child: line(longest, cursor: false),
+        ),
+        line(typed),
       ],
     );
   }
@@ -297,195 +501,6 @@ class _HeroStat extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Clickable preview of the newest post.
-class _LatestPostCard extends StatefulWidget {
-  const _LatestPostCard({required this.post, this.horizontal = false});
-
-  final BlogPost post;
-
-  /// Image beside the text instead of above it (used on tablets).
-  final bool horizontal;
-
-  @override
-  State<_LatestPostCard> createState() => _LatestPostCardState();
-}
-
-class _LatestPostCardState extends State<_LatestPostCard> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final post = widget.post;
-    final colorScheme = Theme.of(context).colorScheme;
-    final muted = colorScheme.onSurface.withValues(alpha: 0.55);
-    const radius = 28.0;
-
-    final image = ClipRRect(
-      borderRadius: BorderRadius.circular(radius - 10),
-      child: AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (post.imageUrl.isEmpty)
-              ColoredBox(color: colorScheme.onSurface.withValues(alpha: 0.05))
-            else
-              Image.network(
-                post.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder:
-                    (_, __, ___) => ColoredBox(
-                      color: colorScheme.onSurface.withValues(alpha: 0.05),
-                    ),
-              ),
-            Positioned(
-              top: 12,
-              left: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryGreen,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'LATEST',
-                  style: GoogleFonts.manrope(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-    final details = Padding(
-      padding: const EdgeInsets.fromLTRB(12, 20, 12, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${formatDate(post.publishDate)}  ·  ${post.readingTimeMinutes} min read',
-            style: GoogleFonts.manrope(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: muted,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            post.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              height: 1.3,
-              letterSpacing: -0.4,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            post.excerpt,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.manrope(
-              fontSize: 14,
-              height: 1.6,
-              color: colorScheme.onSurface.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(height: 18),
-          Row(
-            children: [
-              Text(
-                'Read the story',
-                style: GoogleFonts.manrope(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: blogAccent(context),
-                ),
-              ),
-              const SizedBox(width: 6),
-              AnimatedSlide(
-                offset: Offset(_hovered ? 0.25 : 0, 0),
-                duration: const Duration(milliseconds: 200),
-                child: Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 18,
-                  color: blogAccent(context),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        transform: Matrix4.translationValues(0, _hovered ? -4 : 0, 0),
-        decoration: BoxDecoration(
-          color: blogCardColor(context),
-          borderRadius: BorderRadius.circular(radius),
-          border: Border.all(
-            color:
-                _hovered
-                    ? AppColors.primaryGreen.withValues(alpha: 0.5)
-                    : colorScheme.onSurface.withValues(alpha: 0.08),
-          ),
-          boxShadow:
-              Theme.of(context).brightness == Brightness.dark
-                  ? blogCardShadow(context, hovered: _hovered)
-                  : [
-                    BoxShadow(
-                      color: Colors.black.withValues(
-                        alpha: _hovered ? 0.1 : 0.06,
-                      ),
-                      blurRadius: 36,
-                      offset: const Offset(0, 20),
-                    ),
-                  ],
-        ),
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(radius),
-            onTap: () => openBlogPost(context, post),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child:
-                  widget.horizontal
-                      ? Row(
-                        children: [
-                          Expanded(flex: 5, child: image),
-                          const SizedBox(width: 8),
-                          Expanded(flex: 6, child: details),
-                        ],
-                      )
-                      : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [image, details],
-                      ),
-            ),
-          ),
-        ),
       ),
     );
   }
